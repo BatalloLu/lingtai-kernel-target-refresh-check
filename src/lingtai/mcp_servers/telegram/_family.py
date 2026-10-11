@@ -134,6 +134,8 @@ def _telegram_input_schemas() -> dict[str, dict[str, Any]]:
     )
     send["properties"]["media"]["anyOf"][0]["description"] = (
         "Media attachment: {type: 'photo'|'document', path: '/path/to/file'}. "
+        "The path may be an explicit local absolute path, including one outside "
+        "the agent working directory; relative paths resolve against it. "
         "For charts, HTML/SVG/PNG reports, CSVs, PDFs, and other generated artifacts "
         "that should arrive as an intact file, use type='document'. Use type='photo' "
         "only for native inline photo previews; Telegram photo delivery can crop, "
