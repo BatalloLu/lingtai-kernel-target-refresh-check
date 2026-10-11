@@ -1,11 +1,14 @@
 """Outbound-file containment tests for MCP send surfaces (issue #631).
 
 A prompt-injection or over-broad tool call must not be able to exfiltrate
-arbitrary local files through IMAP ``attachments``, Telegram ``media.path``
-or WeChat ``media_path``.  These tests pin the shared policy in
-``lingtai.mcp_servers._outbound_files`` and its enforcement at each manager
-boundary: absolute paths outside the agent working directory, ``..`` escapes
-and symlink escapes are rejected before any bytes are read or sent.
+arbitrary local files through IMAP ``attachments`` or WeChat ``media_path``.
+These tests pin the shared policy in ``lingtai.mcp_servers._outbound_files``
+and its enforcement at the IMAP and WeChat manager boundaries: absolute paths
+outside the agent working directory, ``..`` escapes and symlink escapes are
+rejected before any bytes are read or sent.
+
+Telegram ``media.path`` is the human-authorized exception: it accepts explicit
+external absolute paths (still requiring an existing, non-empty file).
 """
 from __future__ import annotations
 
@@ -206,20 +209,6 @@ def _tg_manager(tmp_path: Path) -> tuple[TelegramManager, FakeTgAccount]:
     return manager, service.default_account
 
 
-def test_telegram_send_rejects_media_path_outside_workdir(tmp_path):
-    manager, account = _tg_manager(tmp_path)
-
-    result = manager._send({
-        "account": "mybot",
-        "chat_id": 123,
-        "media": {"type": "document", "path": "/etc/passwd"},
-    })
-
-    assert "error" in result
-    assert "outside working directory" in result["error"]
-    assert account.calls == []
-
-
 def test_telegram_send_accepts_media_path_inside_workdir(tmp_path):
     manager, account = _tg_manager(tmp_path)
     media_path = tmp_path / "demo.txt"
@@ -237,17 +226,59 @@ def test_telegram_send_accepts_media_path_inside_workdir(tmp_path):
     assert account.calls[0][1][1] == str(media_path.resolve())
 
 
-def test_telegram_send_rejects_dotdot_media_path(tmp_path):
-    manager, account = _tg_manager(tmp_path)
+@pytest.mark.parametrize("kind", ["absolute", "symlink", "dotdot", "relative"])
+def test_telegram_send_uploads_explicit_path_once(tmp_path, kind):
+    # Telegram is deliberately not contained: an explicit absolute path
+    # outside the agent workdir (directly, via symlink, or via ``..``) is
+    # uploaded as given, and a relative path resolves against the workdir.
+    agent_dir = tmp_path / "agent"
+    agent_dir.mkdir()
+    outside = tmp_path / "outside" / "report.pdf"
+    outside.parent.mkdir()
+    outside.write_text("pdf", encoding="utf-8")
+    inside = agent_dir / "sub" / "note.txt"
+    inside.parent.mkdir()
+    inside.write_text("note", encoding="utf-8")
+    if kind == "symlink":
+        try:
+            (agent_dir / "link.pdf").symlink_to(outside)
+        except OSError as exc:
+            pytest.skip(f"symlink unavailable: {exc}")
+    raw, expected = {
+        "absolute": (str(outside), outside),
+        "symlink": ("link.pdf", outside),
+        "dotdot": ("../outside/report.pdf", outside),
+        "relative": ("sub/note.txt", inside),
+    }[kind]
+    manager, account = _tg_manager(agent_dir)
 
     result = manager._send({
         "account": "mybot",
         "chat_id": 123,
-        "media": {"type": "photo", "path": "../secret.png"},
+        "media": {"type": "document", "path": raw},
     })
 
-    assert "error" in result
-    assert "outside working directory" in result["error"]
+    assert "error" not in result
+    assert [c[0] for c in account.calls] == ["send_document"]
+    assert account.calls[0][1][1] == str(expected.resolve())
+
+
+@pytest.mark.parametrize("kind", ["missing", "empty"])
+def test_telegram_send_rejects_missing_or_empty_external_file(tmp_path, kind):
+    agent_dir = tmp_path / "agent"
+    agent_dir.mkdir()
+    external = tmp_path / "outside.pdf"
+    if kind == "empty":
+        external.write_bytes(b"")
+    manager, account = _tg_manager(agent_dir)
+
+    result = manager._send({
+        "account": "mybot",
+        "chat_id": 123,
+        "media": {"type": "document", "path": str(external)},
+    })
+
+    assert "readable, non-empty" in result["error"]
     assert account.calls == []
 
 

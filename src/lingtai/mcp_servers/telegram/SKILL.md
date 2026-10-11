@@ -127,8 +127,16 @@ A successful reply is not a guarantee that the best-effort reaction succeeded.
 plots, reports, HTML/SVG/PNG/PDF exports, CSVs, and other generated artifacts the
 user should open intact. Use `photo` only for an inline preview: Telegram may
 crop, compress, or thumbnail it, making text-heavy graphics unreadable. Attach
-the file, not a local path in message text; the outbound path must be inside the
-agent working directory and readable/non-empty. `reply_markup` is only for
+the file, not a local path in message text. The outbound path may be an explicit
+local absolute path, including one outside the agent working directory (symlinks
+and `..` are followed); a relative path resolves against the agent working
+directory. The file must exist and be readable/non-empty. This is a
+human-authorized Telegram-only behavior change, not a security fix: the send
+makes no copy, retry, or fallback and infers no authority from the path.
+This permits uploading any local file the MCP process can read, including
+sensitive files; the caller must independently be authorized to send those
+contents to that recipient. A valid path is not permission to disclose it.
+`reply_markup` is only for
 `send`/`edit`; `caption_entities` only for media `send` in `entities` mode;
 `link_preview_options` and `disable_web_page_preview` are send-only text options.
 

@@ -1,15 +1,20 @@
 """Shared outbound-file containment policy for MCP send tools.
 
-The IMAP ``attachments``, Telegram ``media.path`` and WeChat ``media_path``
-tool fields accept agent-supplied local file paths that are then read and
-uploaded/sent to an external service.  Without containment, a
-prompt-injection or an over-broad tool call can exfiltrate arbitrary local
-files (``~/.ssh/id_rsa``, agent ``.secrets/*``, ...) to an outside
-recipient/chat.
+The IMAP ``attachments`` and WeChat ``media_path`` tool fields accept
+agent-supplied local file paths that are then read and uploaded/sent to an
+external service.  Without containment, a prompt-injection or an over-broad
+tool call can exfiltrate arbitrary local files (``~/.ssh/id_rsa``, agent
+``.secrets/*``, ...) to an outside recipient/chat.
 
-This module is the single enforcement point: relative paths resolve against
-the agent working directory, and anything that, after symlink/``..``
+This module is the enforcement point for those two: relative paths resolve
+against the agent working directory, and anything that, after symlink/``..``
 resolution, lies outside the working directory is rejected.
+
+Telegram ``media.path`` is deliberately excluded.  By human authorization its
+manager accepts explicit absolute local paths outside the working directory
+and resolves relative paths against it without containment; that is a
+Telegram-only behavior change, not a security fix, and does not alter the
+IMAP/WeChat policy here.
 """
 from __future__ import annotations
 
