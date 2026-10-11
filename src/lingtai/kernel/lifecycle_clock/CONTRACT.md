@@ -131,8 +131,10 @@ to prove substitutability. Core never imports the adapter package.
 4. Monotonic-domain reads feed process-local elapsed intervals only:
    `_idle_since_monotonic` at construction and state transition, `_uptime_anchor`
    at start/reset and status uptime, the AED `_aed_start` comparison, the one shared
-   snapshot/GC tick, and the hidden IDLE→ASLEEP idle-timeout default (`now_mono`
-   test seam preserved). No monotonic value becomes persisted state.
+   snapshot/GC tick, the hidden IDLE→ASLEEP idle-timeout default (`now_mono`
+   test seam preserved), and the IDLE/ASLEEP inactivity period
+   (`_inactive_since_monotonic`, sampled at state transition and compared by the
+   heartbeat's auto-molt reminder). No monotonic value becomes persisted state.
 5. Own-heartbeat publication passes the raw wall float unchanged to the injected
    `AgentPresenceStorePort`. Exact `str(value)`-no-newline byte conformance is
    owned by the Agent Presence Contract and `tests/test_agent_presence.py`, not

@@ -309,6 +309,12 @@ SYSTEM_ENVIRONMENT_SETTING_SPECS: tuple[_EnvironmentSettingSpec, ...] = (
         "agent_alive",
     ),
     _EnvironmentSettingSpec(
+        "lifecycle.auto_molt_idle_seconds",
+        ("LINGTAI_AUTO_MOLT_IDLE_SECONDS",),
+        1800.0,
+        "auto_molt_idle",
+    ),
+    _EnvironmentSettingSpec(
         "prompt.tool_prose_section_enabled",
         ("LINGTAI_TOOL_PROSE_SECTION_ENABLED",),
         False,
@@ -1087,6 +1093,10 @@ def _environment_current(resolver: str, root: Path) -> Any:
         from lingtai.kernel.base_agent.lifecycle import _active_stuck_threshold_s
 
         return _active_stuck_threshold_s()
+    if resolver == "auto_molt_idle":
+        from lingtai.kernel.config import auto_molt_idle_seconds
+
+        return auto_molt_idle_seconds()
     if resolver == "agent_alive":
         from lingtai.kernel.config import HEARTBEAT_LIVENESS_SECONDS
 

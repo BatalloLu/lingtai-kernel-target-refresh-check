@@ -72,8 +72,8 @@ paired [`CONTRACT.md`](CONTRACT.md) and the capability is taught by the manual
 
 The Port itself owns no state; it is an abstract boundary. It reads live clock
 values on demand and holds nothing. Callers own the derived anchors
-(`_uptime_anchor`, `_idle_since_monotonic`, `_aed_start`, `_last_snapshot`,
-`_last_gc` are process-local monotonic anchors; `_state_changed_at`,
+(`_uptime_anchor`, `_idle_since_monotonic`, `_inactive_since_monotonic`,
+`_aed_start`, `_last_snapshot`, `_last_gc` are process-local monotonic anchors; `_state_changed_at`,
 `_last_progress_at`, `_heartbeat`, and event/status ages are wall values); the
 concrete time mechanism lives entirely in the outside adapter.
 

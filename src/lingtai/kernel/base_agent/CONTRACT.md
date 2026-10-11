@@ -5,6 +5,8 @@ root_contract: CONTRACT.md
 related_files:
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - tests/test_lifecycle_clock.py
+  - tests/test_auto_molt_notification.py
+  - src/lingtai/tools/context/manual/SKILL.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
   - src/lingtai/tools/system/CONTRACT.md
   - src/lingtai/kernel/base_agent/BEHAVIORS.md
@@ -213,6 +215,20 @@ Missing anchors omit the field; it is not recovered across process restart.
 State ordering and wall-domain event `ts` are unchanged. Guarded by
 [BA008](BEHAVIORS.md#behavior-ba008); the consumer procedure is in the
 [Telegram Task Card manual](../../../mcp_servers/telegram/task_card/SKILL.md).
+
+An inactivity period is continuous IDLE and/or ASLEEP time on the injected
+monotonic lifecycle clock; IDLE↔ASLEEP switches keep it, and leaving both for
+ACTIVE, STUCK, or SUSPENDED clears it and re-arms its one-shot latch. Once the
+period reaches `LINGTAI_AUTO_MOLT_IDLE_SECONDS` (default 1800; invalid or
+nonpositive → 1800, no disable value) the heartbeat publishes exactly one
+ordinary `system.auto_molt` system event through the existing producer, and the
+existing notification sync owns wake and delivery. It is a reminder only: no
+synchronous molt, refresh, checkpoint write, or cancellation. The producer does
+not invoke a provider directly; normal notification delivery may start an
+ordinary paid LLM turn. A failed publish does not set the latch. It is separate from
+`idle_elapsed_s` and the hidden 24h IDLE→ASLEEP timeout. Guarded by
+[BA009](BEHAVIORS.md#behavior-ba009); the agent-facing procedure is the
+[Context manual](../../tools/context/manual/SKILL.md).
 
 Clause IDs are stable; each rule composes the linked normative source.
 
@@ -668,6 +684,8 @@ the poison-recovery boot baseline that keeps a relaunch ASLEEP until a
 genuinely later notification change), `tests/test_cli_worker_poison_recovery.py`
 (hard exit after poison, and no refresh-success kick-start while a worker
 recovery is pending), `tests/test_silence_kill.py` (idempotent private producer),
+`tests/test_auto_molt_notification.py` (inactivity-period continuity, one-shot
+reminder, retry, real heartbeat wiring, ASLEEP wake),
 `tests/test_system.py` + `tests/test_system_declared_plugin.py` (direct and
 official self-sleep ordering), and `tests/test_karma.py` +
 `tests/test_perform_refresh_handshake.py` (signal-file and watcher-spawn

@@ -19,7 +19,11 @@ from decimal import Decimal, InvalidOperation, localcontext
 from enum import Enum
 from pathlib import Path
 
-from ..config import HEARTBEAT_TICK_SECONDS, IDLE_SLEEP_TIMEOUT_SECONDS
+from ..config import (
+    HEARTBEAT_TICK_SECONDS,
+    IDLE_SLEEP_TIMEOUT_SECONDS,
+    auto_molt_idle_seconds,
+)
 from ..refresh_watcher import RefreshWatcherRequest
 from ..snapshot import SourceRevisionPort
 
@@ -823,6 +827,16 @@ def _heartbeat_loop(agent) -> None:
                     f"{idle_sleep_err}"
                 )
 
+            # A due inactivity reminder is an ordinary system event; like the
+            # alarm below, this tick's notification sync owns any ASLEEP wake.
+            try:
+                _maybe_notify_auto_molt(agent)
+            except Exception as auto_molt_err:
+                agent._log(
+                    "auto_molt_notification_check_failed",
+                    error=str(auto_molt_err)[:200],
+                )
+
             # A due system.sleep alarm becomes an ordinary system event before
             # this tick's existing notification sync performs any ASLEEP wake.
             try:
@@ -946,6 +960,64 @@ def _maybe_sleep_after_idle_timeout(agent, *, now_mono: float | None = None) -> 
     agent._set_state(AgentState.ASLEEP, reason="idle sleep timeout")
     agent._save_chat_history()
     agent._asleep.set()
+
+
+_AUTO_MOLT_SOURCE = "system.auto_molt"
+
+
+def _maybe_notify_auto_molt(agent) -> None:
+    """Publish one molt reminder per continuous IDLE/ASLEEP inactivity period.
+
+    The period anchor and one-shot latch are owned by ``BaseAgent._set_state``
+    (IDLE<->ASLEEP keeps the period; ACTIVE/STUCK/SUSPENDED clears it). This
+    only publishes an ordinary system event; the notification sync that follows
+    in the same heartbeat tick owns any ASLEEP wake and delivery. It never
+    molts, cancels work, or writes checkpoints. A failed publish leaves the
+    latch unset so a later tick retries.
+    """
+    from ..state import AgentState
+
+    if agent._state not in (AgentState.IDLE, AgentState.ASLEEP):
+        return
+    since = getattr(agent, "_inactive_since_monotonic", None)
+    if since is None or getattr(agent, "_auto_molt_notified_since", None) == since:
+        return
+
+    threshold = auto_molt_idle_seconds()
+    elapsed = agent._lifecycle_clock.monotonic_seconds() - since
+    if elapsed < threshold:
+        return
+
+    ref_id = f"auto_molt:{since}"
+    try:
+        agent._enqueue_system_notification(
+            source=_AUTO_MOLT_SOURCE,
+            ref_id=ref_id,
+            body=(
+                f"Inactivity reminder: this agent has been idle or asleep for "
+                f"over {threshold:g} seconds. Read the context manual "
+                f'(context(action="manual")), tend durable state, write a '
+                f"valid session journal, then call context molt at a safe "
+                f"boundary. "
+                f"This is a reminder, not a forced reset: if authorized work "
+                f"is unfinished, preserve or defer it rather than discarding it."
+            ),
+            skip_if_ref_id_exists=True,
+        )
+    except Exception as exc:
+        agent._log(
+            "auto_molt_notification_publish_failed",
+            ref_id=ref_id,
+            error=str(exc)[:200],
+        )
+        return
+    agent._auto_molt_notified_since = since
+    agent._log(
+        "auto_molt_notification_published",
+        ref_id=ref_id,
+        inactive_seconds=round(elapsed, 1),
+        threshold_seconds=threshold,
+    )
 
 
 def _write_heartbeat_tick(agent) -> None:

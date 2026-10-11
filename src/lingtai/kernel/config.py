@@ -151,6 +151,28 @@ def tool_prose_section_enabled() -> bool:
 # prompts, status, or tool metadata.
 IDLE_SLEEP_TIMEOUT_SECONDS = 86400.0
 
+# Inactivity auto-molt reminder: one system notification after the agent has
+# been continuously IDLE and/or ASLEEP for this long. Read live at each
+# heartbeat evaluation; missing, blank, malformed, non-finite, zero, or negative
+# values fall back to the default (there is no disable value).
+AUTO_MOLT_IDLE_SECONDS_ENV = "LINGTAI_AUTO_MOLT_IDLE_SECONDS"
+DEFAULT_AUTO_MOLT_IDLE_SECONDS = 1800.0
+
+
+def auto_molt_idle_seconds() -> float:
+    """Return the valid current environment threshold, or the default."""
+    raw = os.environ.get(AUTO_MOLT_IDLE_SECONDS_ENV)
+    if raw is None or not raw.strip():
+        return DEFAULT_AUTO_MOLT_IDLE_SECONDS
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return DEFAULT_AUTO_MOLT_IDLE_SECONDS
+    if not math.isfinite(value) or value <= 0:
+        return DEFAULT_AUTO_MOLT_IDLE_SECONDS
+    return value
+
+
 # Heartbeat cadence and shared cross-process liveness. _heartbeat_loop
 # stamps .agent.heartbeat every HEARTBEAT_TICK_SECONDS; a reader considers the
 # agent alive if the stamp is younger than HEARTBEAT_LIVENESS_SECONDS. The

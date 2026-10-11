@@ -6,6 +6,7 @@ contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
   - tests/test_lifecycle_clock.py
+  - tests/test_auto_molt_notification.py
   - src/lingtai/kernel/base_agent/CONTRACT.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
   - src/lingtai/kernel/base_agent/lifecycle.py
@@ -270,3 +271,24 @@ Pass when both assertions hold and no test sends a real message. Fail if a hidde
 
 ### Pass / Fail
 Pass when the focused producer tests pass; fail on inferred duration or wall-time subtraction.
+
+## Behavior BA009 — continuous IDLE/ASLEEP inactivity yields one molt reminder per period, never a forced molt
+
+- **id**: BA009
+- **title**: continuous IDLE/ASLEEP inactivity yields one molt reminder per period, never a forced molt
+- **guards**: `agent-runtime` § [Contract rules](CONTRACT.md#contract-rules), inactivity-period reminder paragraph
+- **runner**: any LingTai agent with shell access
+- **prerequisites**: checkout of this repository and its test Python; no live agent or provider
+- **estimate**: ≈ 1 minute
+
+### Steps
+1. Run `python -m pytest -q tests/test_auto_molt_notification.py` from the repository root.
+
+### Expected evidence
+- [ ] The default and malformed/nonpositive/nonfinite environment values resolve to 1800 seconds; a valid value wins.
+- [ ] IDLE↔ASLEEP switching keeps one period and publishes one `system.auto_molt` event at the threshold; ACTIVE/STUCK/SUSPENDED clears it and a later period re-arms.
+- [ ] A failed publish is retried and the success latch is set only after it succeeds.
+- [ ] The real heartbeat loop publishes the event without molting, and the existing notification sync wakes an ASLEEP agent.
+
+### Pass / Fail
+Pass when the focused suite passes. Fail if switching IDLE↔ASLEEP resets the period, a period reminds twice, a failed publish latches, or the heartbeat itself molts, refreshes, or cancels work.

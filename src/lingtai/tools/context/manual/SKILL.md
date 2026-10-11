@@ -11,6 +11,8 @@ related_files:
 - src/lingtai/tools/system/summarize.py
 - src/lingtai/agent.py
 - src/lingtai/tools/psyche/CONTRACT.md
+- src/lingtai/kernel/base_agent/CONTRACT.md
+- src/lingtai/kernel/base_agent/lifecycle.py
 maintenance: |
   This package is the canonical Context manual source and runtime-installed owner.
   Update it when the tool/capability behavior changes.
@@ -36,7 +38,9 @@ Before a deliberate molt:
 3. Pass its path as `session_journal_path` and write the shortest sufficient handoff: active state, verified results, pending authority, next steps, live IDs, artifact/evidence paths, blockers, and lessons. Use the [optional handoff scaffold](assets/molt-template.md) only when it lowers real risk.
 4. Call `context(action="molt", ...)`. The journal is validated before shedding; invalid input leaves molt count/history untouched. `keep_tool_calls` refuses unknown IDs; `keep_last` preserves a suffix and complete tool-call batches. The schema is authoritative.
 
-Molt preserves durable files and source reconstruction: it archives/snapshots the old conversation, rebuilds the fresh prompt, and publishes a post-molt notification. It does not delete durable stores. Molt for sustained pressure, an explicit human reset, or confusion—not merely task completion. Tending stores need not create gratuitous edits or new skills.
+Molt preserves durable files and source reconstruction: it archives/snapshots the old conversation, rebuilds the fresh prompt, and publishes a post-molt notification. It does not delete durable stores. Molt for sustained pressure, an explicit human reset, confusion, or a long-inactivity reminder as described below—not merely task completion. Tending stores need not create gratuitous edits or new skills.
+
+A `system.auto_molt` notification means only that you have been idle or asleep for a long period (default 1800 s, `LINGTAI_AUTO_MOLT_IDLE_SECONDS`); it is a permitted prompt to consider a molt, not completion and not a forced reset. Follow the steps above at a safe boundary, and if authorized work is unfinished, record it and defer rather than discard it. Each inactivity period sends one reminder. Its ordinary notification wake can start a paid LLM turn and reset the period; returning to inactivity re-arms it even if no molt occurred. The process-local timer resets on restart, and a fresh or empty conversation is also eligible.
 
 Ordinary molt/rebuild retains notification delivery identity within this agent process: already delivered events do not automatically replay. Carry still-needed message content and routing IDs in your authorized handoff; new post-molt notices and new producer events still deliver. A new Agent/process restart starts fresh bookkeeping, not cross-crash exactly-once.
 
