@@ -298,7 +298,7 @@ def test_render_reconstruction_molt_unparseable_returns_none():
 
 
 # ---------------------------------------------------------------------------
-# Delegation — SessionManager compat shims read through to the reminder.
+# Ownership — SessionManager exposes its transient reminder.
 # ---------------------------------------------------------------------------
 
 
@@ -321,26 +321,27 @@ def _make_session_manager():
     )
 
 
-def test_session_manager_delegates_streak_to_reminder():
+def test_session_manager_owns_one_transient_reminder():
     sm = _make_session_manager()
-    assert isinstance(sm.context_pressure_reminder, ContextPressureReminder)
+    reminder = sm.context_pressure_reminder
+    assert isinstance(reminder, ContextPressureReminder)
+    assert sm.context_pressure_reminder is reminder
 
-    sm.note_context_pressure_round(0.90, round_id=1)
-    sm.note_context_pressure_round(0.90, round_id=2)
-    assert sm.context_pressure_streak == 2
-    assert sm.context_pressure_warning_active is False
-    # The compat surface and the reminder must agree.
-    assert sm.context_pressure_streak == sm.context_pressure_reminder.streak
+    reminder.note_round(0.90, round_id=1)
+    reminder.note_round(0.90, round_id=2)
+    assert reminder.streak == 2
+    assert reminder.active is False
 
-    sm.note_context_pressure_round(0.90, round_id=3)
-    assert sm.context_pressure_warning_active is True
-    assert sm.context_pressure_reminder.active is True
+    reminder.note_round(0.90, round_id=3)
+    assert reminder.active is True
+    fresh = _make_session_manager().context_pressure_reminder
+    assert fresh is not reminder
+    assert fresh.streak == 0
+    assert fresh.active is False
 
 
 # ---------------------------------------------------------------------------
-# Delegation — meta_block uses the reminder when present, and its
-# compatibility fallback still renders identical prose for bare session
-# stand-ins that only expose context_pressure_* attributes.
+# Delegation — meta_block uses the session's owned reminder.
 # ---------------------------------------------------------------------------
 
 
@@ -348,17 +349,6 @@ def _agent_with_reminder(reminder):
     return SimpleNamespace(
         _intrinsics={"context": object()},
         _session=SimpleNamespace(context_pressure_reminder=reminder),
-    )
-
-
-def _agent_with_compat_attrs(*, active, streak):
-    # No context_pressure_reminder attribute -> meta_block falls back.
-    return SimpleNamespace(
-        _intrinsics={"context": object()},
-        _session=SimpleNamespace(
-            context_pressure_warning_active=active,
-            context_pressure_streak=streak,
-        ),
     )
 
 
@@ -373,21 +363,18 @@ def test_meta_block_build_molt_context_uses_reminder():
     assert "3 consecutive fresh model calls" in molt
 
 
-def test_meta_block_build_molt_context_compat_fallback_matches_reminder():
+def test_meta_block_build_molt_context_matches_owner_across_rounds():
     from lingtai.kernel.meta_block import build_molt_context
 
-    via_reminder = ContextPressureReminder()
-    for rid in (1, 2, 3):
-        via_reminder.note_round(0.90, round_id=rid)
-    reminder_prose = build_molt_context(_agent_with_reminder(via_reminder), 0.90)
-
-    fallback_prose = build_molt_context(
-        _agent_with_compat_attrs(active=True, streak=3), 0.90
-    )
-    assert fallback_prose == reminder_prose
-
-    # Fallback stays silent when not active, exactly like the reminder path.
-    assert build_molt_context(_agent_with_compat_attrs(active=False, streak=2), 0.90) is None
+    reminder = ContextPressureReminder()
+    agent = _agent_with_reminder(reminder)
+    for rid, usage in enumerate((0.85, 0.90, 0.95, 0.84), start=1):
+        reminder.note_round(usage, round_id=rid)
+        before = reminder.snapshot()
+        assert build_molt_context(agent, usage) == reminder.current_molt_context(usage)
+        assert build_molt_context(agent, usage) == reminder.current_molt_context(usage)
+        assert reminder.snapshot() == before
+        assert reminder.active is (rid == 3)
 
 
 # ---------------------------------------------------------------------------

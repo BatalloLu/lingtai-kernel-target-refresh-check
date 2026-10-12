@@ -349,9 +349,8 @@ class ContextPressureReminder:
 
 # ---------------------------------------------------------------------------
 # Pure prose renderers — shared by the class methods above and by the
-# meta_block compatibility path (which may see a session stand-in without a
-# real ContextPressureReminder, e.g. a bare test SimpleNamespace).  Keeping the
-# strings here is the single source of truth for the reminder wording.
+# meta_block reconstruction and overflow-warning paths. Keeping the strings
+# here is the single source of truth for the reminder wording.
 # ---------------------------------------------------------------------------
 
 

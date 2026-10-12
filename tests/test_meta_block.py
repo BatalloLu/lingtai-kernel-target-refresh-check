@@ -38,6 +38,7 @@ from lingtai.kernel.meta_block import (
     validate_runtime_guidance,
 )
 from lingtai.kernel.llm.interface import ToolResultBlock
+from lingtai.kernel.reminders.context_pressure import ContextPressureReminder
 
 
 @pytest.mark.parametrize(
@@ -1634,8 +1635,7 @@ def _recon_agent(
         _tools_tokens=0,
         _latest_input_tokens=provider_input,
         chat=chat,
-        context_pressure_warning_active=False,
-        context_pressure_streak=0,
+        context_pressure_reminder=ContextPressureReminder(),
     )
     agent = SimpleNamespace(
         _intrinsics={"context": object()},
@@ -4056,7 +4056,7 @@ def test_attach_active_runtime_is_wired_into_turn_boundary():
 # ---------------------------------------------------------------------------
 
 
-def _molt_agent(*, warning_active=False, streak=0, context_intrinsic=True):
+def _molt_agent(*, streak=0, context_intrinsic=True):
     """Minimal agent stand-in for build_molt_context.
 
     build_molt_context reads agent._intrinsics (must contain 'context') and the
@@ -4070,32 +4070,31 @@ def _molt_agent(*, warning_active=False, streak=0, context_intrinsic=True):
             timezone_awareness=True,
         ),
         _session=SimpleNamespace(
-            context_pressure_warning_active=warning_active,
-            context_pressure_streak=streak,
+            context_pressure_reminder=ContextPressureReminder(streak=streak),
         ),
     )
 
 
 def test_build_molt_context_absent_without_context():
-    agent = _molt_agent(warning_active=True, streak=5, context_intrinsic=False)
+    agent = _molt_agent(streak=5, context_intrinsic=False)
     # Even with a fully-armed streak, no molt context when context is absent.
     assert build_molt_context(agent, 0.95) is None
 
 
 def test_build_molt_context_absent_for_first_two_high_rounds():
     # Streak below the warn threshold (3) -> no warning yet, even at high usage.
-    assert build_molt_context(_molt_agent(warning_active=False, streak=1), 0.90) is None
-    assert build_molt_context(_molt_agent(warning_active=False, streak=2), 0.92) is None
+    assert build_molt_context(_molt_agent(streak=1), 0.90) is None
+    assert build_molt_context(_molt_agent(streak=2), 0.92) is None
 
 
 def test_build_molt_context_recovery_target_no_longer_trips():
     """Regression: 0.81 (above the recovery target) with no sustained
     streak must NOT produce a warning anymore."""
-    assert build_molt_context(_molt_agent(warning_active=False, streak=1), 0.81) is None
+    assert build_molt_context(_molt_agent(streak=1), 0.81) is None
 
 
 def test_build_molt_context_warns_from_third_high_round():
-    agent = _molt_agent(warning_active=True, streak=3)
+    agent = _molt_agent(streak=3)
     molt = build_molt_context(agent, 0.90)
     assert isinstance(molt, str)
     assert "Context has stayed high" in molt
@@ -4113,14 +4112,14 @@ def test_build_molt_context_warns_from_third_high_round():
 
 def test_build_molt_context_keeps_warning_while_streak_sustained():
     for streak in (3, 4, 7):
-        molt = build_molt_context(_molt_agent(warning_active=True, streak=streak), 0.95)
+        molt = build_molt_context(_molt_agent(streak=streak), 0.95)
         assert molt is not None
         assert f"{streak} consecutive fresh model calls" in molt
         assert "95%" in molt
 
 
 def test_build_molt_context_is_natural_language_not_tag_payload():
-    molt = build_molt_context(_molt_agent(warning_active=True, streak=3), 0.90)
+    molt = build_molt_context(_molt_agent(streak=3), 0.90)
 
     assert isinstance(molt, str)
     assert "stage" not in molt
@@ -4149,10 +4148,9 @@ def test_build_meta_attaches_context_molt_only_when_streak_armed():
         _tools_tokens=0,
         _latest_input_tokens=0,
         chat=SimpleNamespace(interface=fake_iface, context_window=lambda: 100),
-        context_pressure_warning_active=False,
-        context_pressure_streak=2,
+        context_pressure_reminder=ContextPressureReminder(streak=2),
     )
-    agent = _molt_agent(warning_active=False, streak=2)
+    agent = _molt_agent(streak=2)
     agent._session = fake_session
     agent._uptime_anchor = None
 
@@ -4167,8 +4165,7 @@ def test_build_meta_attaches_context_molt_only_when_streak_armed():
 
     # Arm the streak; same high usage now surfaces the warning under the transit
     # key (ToolExecutor._attach_tool_block promotes it into agent_state.context).
-    fake_session.context_pressure_warning_active = True
-    fake_session.context_pressure_streak = 3
+    fake_session.context_pressure_reminder.note_round(0.90, round_id=3)
     meta = build_meta(agent)
     context_transit = meta[meta_block.TOOL_META_CONTEXT_PENDING_KEY]
     assert isinstance(context_transit["molt"], str)
@@ -4248,7 +4245,6 @@ def _budget_agent(
     input_tokens=0,
     cached_tokens=0,
     context_intrinsic=True,
-    warning_active=False,
     streak=0,
     has_getter=True,
     budget=None,
@@ -4256,8 +4252,7 @@ def _budget_agent(
     """Minimal guard/meta stub with an optional outer budget hook."""
     session = SimpleNamespace(
         _token_decomp_dirty=True,
-        context_pressure_warning_active=warning_active,
-        context_pressure_streak=streak,
+        context_pressure_reminder=ContextPressureReminder(streak=streak),
     )
     agent = SimpleNamespace(
         _intrinsics={"context": object()} if context_intrinsic else {},
@@ -4729,10 +4724,7 @@ def test_build_meta_preserves_sustained_overflow_and_budget_molt_lines():
             _token_decomp_dirty=False,
             chat=chat,
             _chat=chat,
-            # Compat sustained-pressure surface (no real reminder object needed).
-            context_pressure_reminder=None,
-            context_pressure_warning_active=True,
-            context_pressure_streak=3,
+            context_pressure_reminder=ContextPressureReminder(streak=3),
         ),
     )
 
