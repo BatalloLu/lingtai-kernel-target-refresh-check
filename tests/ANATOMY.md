@@ -183,10 +183,10 @@ graph.
   canonical-wire wake and generic adapter-hook regressions.
   `test_notification_sync.py` is only their existing 70-line helper closure;
   its former notification matrices are retired, not restored.
-- `test_auto_molt_idle_episode.py` covers idle-episode ownership across real
-  dequeue/wake/molt seams, work-delivery rearm, publication retry/race, journal
-  refusal, threshold validation and hermetic full Agent prompt construction.
-  It does not restore the retired full heartbeat/notification matrices.
+- `test_auto_molt_idle_episode.py` covers the strict current-context/time gate,
+  IDLE/ASLEEP continuity, unloaded/unknown context, publication retry, actual
+  post-molt context, journal refusal, env parsing and full Agent prompt loading.
+  It does not restore retired heartbeat/notification matrices.
 - Reduced `test_tool_executor.py` retains the accepted ordinary serial/parallel
   unexpected-key and explicit custom-handler boundaries. Reduced
   `test_context_pressure_reminder.py` plus `test_context_pressure_streak.py`

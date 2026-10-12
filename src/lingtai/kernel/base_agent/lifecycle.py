@@ -762,11 +762,6 @@ def _heartbeat_loop(agent) -> None:
                 except OSError:
                     pass
                 if content:
-                    # A real external prompt is new work, unlike an internal
-                    # system retry or degraded notification request.
-                    rearm = getattr(agent, "_rearm_auto_molt_for_work", None)
-                    if callable(rearm):
-                        rearm()
                     agent.send(content, sender="system")
                     agent._log("prompt_received", source="signal_file")
 
@@ -970,77 +965,59 @@ def _maybe_sleep_after_idle_timeout(agent, *, now_mono: float | None = None) -> 
 _AUTO_MOLT_SOURCE = "system.auto_molt"
 
 
-def _auto_molt_notification_has_work(pending: dict) -> bool:
-    """Use producer identity, never notification prose, to recognize new work.
-
-    Communication/task/completion producers count. Maintenance reminders and
-    post-molt reorientation do not create work or another idle episode.
-    """
-    def work_source(source: str) -> bool:
-        return source in ("email", "daemon", "bash", "cron", "system.sleep_alarm") or (
-            source.startswith(("mcp.", "email.", "daemon.", "bash.", "cron."))
-        )
-
-    for channel, payload in pending.items():
-        if work_source(channel):
-            return True
-        if channel == "system" and isinstance(payload, dict):
-            data = payload.get("data")
-            events = data.get("events", []) if isinstance(data, dict) else []
-            if not isinstance(events, list):
-                continue
-            if any(
-                isinstance(event, dict)
-                and isinstance(event.get("source"), str)
-                and work_source(event["source"])
-                for event in events
-            ):
-                return True
-    return False
-
-
 def _maybe_notify_auto_molt(agent) -> None:
-    """Publish once per idle episode; new real work alone re-arms it.
+    """Publish once per due IDLE/ASLEEP period with current context >100000.
 
-    The existing notification lock protects the episode claim and success
-    latch, but is not held across publication. A failed publish remains
-    retryable; an old episode's success cannot latch a newer one. This only
-    publishes an ordinary event: never force shed, journal, or cancellation.
+    The period anchor and one-shot latch are owned by ``BaseAgent._set_state``
+    (IDLE<->ASLEEP keeps the period; ACTIVE/STUCK/SUSPENDED clears it). This
+    only publishes an ordinary system event; the notification sync that follows
+    in the same heartbeat tick owns any ASLEEP wake and delivery. It never
+    molts, cancels work, or writes checkpoints. A failed publish leaves the
+    latch unset so a later tick retries.
     """
     from ..state import AgentState
 
-    # Partial lifecycle doubles without episode state have nothing to publish.
-    if getattr(agent, "_inactive_since_monotonic", None) is None:
+    if agent._state not in (AgentState.IDLE, AgentState.ASLEEP):
         return
-    with agent._notification_sync_lock:
-        if agent._state not in (AgentState.IDLE, AgentState.ASLEEP):
-            return
-        since = agent._inactive_since_monotonic
-        if since is None or agent._auto_molt_notified_since == since:
-            return
-        episode = agent._auto_molt_episode
-        threshold = auto_molt_idle_seconds()
-        elapsed = agent._lifecycle_clock.monotonic_seconds() - since
-        if elapsed < threshold:
-            return
+    since = getattr(agent, "_inactive_since_monotonic", None)
+    if since is None or getattr(agent, "_auto_molt_notified_since", None) == since:
+        return
 
-    ref_id = f"auto_molt:{episode}:{since}"
+    threshold = auto_molt_idle_seconds()
+    elapsed = agent._lifecycle_clock.monotonic_seconds() - since
+    if elapsed < threshold:
+        return
+
+    # Read the canonical current wire, not cumulative spending or the last
+    # provider input snapshot. Never create a session from the heartbeat.
+    session = getattr(agent, "_session", None)
+    chat = getattr(session, "chat", None)
+    if chat is None:
+        return
+    try:
+        context_tokens = chat.interface.estimate_context_tokens()
+    except Exception:
+        return  # Unknown context is not eligible.
+    if type(context_tokens) is not int or context_tokens <= 100_000:
+        return
+
+    ref_id = f"auto_molt:{since}"
     try:
         agent._enqueue_system_notification(
             source=_AUTO_MOLT_SOURCE,
             ref_id=ref_id,
             body=(
                 f"Inactivity reminder: this agent has been idle or asleep for "
-                f"over {threshold:g} seconds. This eligible inactivity event "
-                f"is a valid actionable molt reason. Read the context manual "
+                f"at least {threshold:g} seconds and its current context exceeds "
+                f"100000 tokens. This eligible inactivity event is a valid "
+                f"actionable molt reason. Read the context manual "
                 f'(context(action="manual")), tend only changed durable stores, '
                 f"write a valid session journal, then call context molt once "
                 f"at a safe idle boundary. After reorientation, remain IDLE "
-                f"until human input or other real work arrives. "
-                f"If authorized work is unfinished, explicitly preserve it "
-                f"and defer the molt rather than discarding context. "
-                f"This reminder's own wake, molt, and post-molt notice do not "
-                f"re-arm it; no forced reset or automatic journal is performed."
+                f"until human input or other real work arrives. If authorized "
+                f"work is unfinished, explicitly preserve it and defer the molt "
+                f"rather than discarding context. This is a reminder, not a "
+                f"forced reset or automatic journal."
             ),
             skip_if_ref_id_exists=True,
         )
@@ -1051,9 +1028,7 @@ def _maybe_notify_auto_molt(agent) -> None:
             error=str(exc)[:200],
         )
         return
-    with agent._notification_sync_lock:
-        if agent._auto_molt_episode == episode:
-            agent._auto_molt_notified_since = since
+    agent._auto_molt_notified_since = since
     agent._log(
         "auto_molt_notification_published",
         ref_id=ref_id,

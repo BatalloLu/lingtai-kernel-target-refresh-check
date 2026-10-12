@@ -115,9 +115,11 @@ and current tool/meta sections.
 mutation and provider request. `molt` retains refusal-before-shed and its distinct
 archive/count/replay effects. No retired root or action is an alias.
 
-`_molt.py::_context_molt` replaces session/history but does not reset the
-runtime idle-episode latch. `_publish_post_molt` is reorientation, not new work;
-[BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009) guards that composition.
+`_molt.py::_context_molt` replaces session/history and estimates the fresh
+canonical interface before resetting session token counters. The runtime's
+inactivity gate reads that current interface, not old provider input; a molt is
+not guaranteed to put context below 100000. [BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009)
+guards the gate; `_publish_post_molt` remains reorientation.
 
 `_molt.py:_publish_post_molt` also requests
 `Agent._publish_memory_length_warning` after successful agent/system molt
