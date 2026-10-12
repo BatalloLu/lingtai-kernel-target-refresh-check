@@ -35,6 +35,12 @@ maintenance: |
 ---
 # Feishu (Lark) MCP
 
+In the LingTai host, root `summarize` defaults to `true`; specify what to retain
+in `reasoning`. Proactively set `summarize=false` for verbatim manuals and
+mandatory gates, exact names/paths or message ids, field presence, source,
+diffs, or evidence. Summaries are lossy and noncanonical; raw results remain
+preserved. This is result presentation, not action input or Context compression.
+
 This is the packaged `action='manual'` entry point and the progressive disclosure
 router. A normal schema-sufficient call does **not** need to load it first. Load
 one route only when the call is unfamiliar, consequential, or recovery-sensitive.

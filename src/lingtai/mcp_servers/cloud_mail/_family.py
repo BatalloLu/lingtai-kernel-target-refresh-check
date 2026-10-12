@@ -164,9 +164,14 @@ def cloud_mail_schema() -> dict[str, Any]:
             },
             "summarize": {
                 "type": "boolean",
+                "default": True,
                 "description": (
-                    "Root, cross-cutting result post-processing control; "
-                    "absent or false by default. Not action input."
+                    "A-priori result summarization is ON by default (omitted means true). "
+                    "Proactively set summarize=false whenever raw results are required: "
+                    "verbatim manuals and mandatory gates, exact names/paths, field presence, "
+                    "source, diffs, or evidence. Specify what to retain in reasoning. "
+                    "Raw output remains preserved; summaries are noncanonical and lossy. "
+                    "Root result-presentation control, not action input or Context compression."
                 ),
             },
         },

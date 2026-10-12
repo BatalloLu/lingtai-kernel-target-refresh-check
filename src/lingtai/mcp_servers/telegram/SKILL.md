@@ -37,6 +37,12 @@ maintenance: |
 
 # Telegram MCP — usage manual
 
+In the LingTai host, root `summarize` defaults to `true`; specify what to retain
+in `reasoning`. Proactively set `summarize=false` for verbatim manuals and
+mandatory gates, exact names/paths or message ids, field presence, source,
+diffs, or evidence. Summaries are lossy and noncanonical; raw results remain
+preserved. This is result presentation, not action input or Context compression.
+
 This progressive disclosure manual complements the routine schema. Use the schema for routine calls;
 `telegram(action='manual', input={}, reasoning='...')` loads deeper guidance.
 Registration, activation, private config, and setup belong

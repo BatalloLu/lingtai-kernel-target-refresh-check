@@ -7,7 +7,7 @@ description: >
   daemon_common completion signaling, support-status honesty, run artifacts,
   terminal notifications, and compaction boundaries.
 status: active
-contract_version: 16
+contract_version: 17
 last_changed_at: "2026-09-08"
 related_files:
   - src/lingtai/tools/daemon/ANATOMY.md
@@ -646,8 +646,10 @@ tool schemas remain authoritative and full tool descriptions are not duplicated
 inside the prompt. The operating contract requires progressive disclosure: use
 visible schemas for routine calls, obey explicit schema manual gates, and read
 the relevant manual for unfamiliar or high-consequence workflows; use a
-visible result tool's `summary=true` only for predictably bulky output whose
-exact raw text is unnecessary; and use daemon `compact`, never the unavailable
+visible result tool's default-on root `summarize` with an explicit retention
+contract in `reasoning`, proactively setting `summarize=false` (or the visible
+legacy `summary=false`) for verbatim manuals, mandatory gates, exact paths,
+field presence, source, diffs, or evidence; and use daemon `compact`, never the unavailable
 parent `system.summarize`, for same-run context reset. The complete rendered
 string MUST be no more than the resolved `system_prompt_budget_chars` Python
 string-character limit. The base value is the per-agent daemon setting in
@@ -799,12 +801,14 @@ kernel `ToolExecutor`. The closure:
   ledgers consistent.
 
 `ToolExecutor` remains responsible for the summary gate (the parent-facing
-`daemon` tool now opts in via the canonical root `summarize`; the daemon
-worker's own visible result tools keep their unmigrated `summary=true`
-spelling), raw logging,
+`daemon` tool and migrated worker roots default on via canonical root
+`summarize`; explicit `false` requests raw presentation. Unmigrated worker
+tools retain their legacy literal-`summary=true` opt-in), raw logging,
 fail-closed replacement, and the 500,000-character cap. Daemons expose the
 run-local `logs/events.jsonl` / `daemon_tool_result` recovery locator. The closure
-is inert unless a tool explicitly requests `summary=true`.
+is invoked when the shared kernel resolver enables summary, including omission
+on migrated roots. No size threshold exempts tiny receipts. Guarded by
+[LP003](../BEHAVIORS.md#behavior-lp003).
 
 ## Backend Support Matrix
 

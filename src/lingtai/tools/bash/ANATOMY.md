@@ -93,7 +93,7 @@ The canonical `shell` tool is a migrated LTP v2 family (`src/lingtai/tools/CONTR
 | `action`     | string  | Required. One of `run`, `poll`, `cancel`, `settings`, `manual`. No default. |
 | `input`      | object  | Required. Strict, action-specific input; cross-action keys are rejected at dispatch. |
 | `reasoning`  | string  | Required. Host InvocationContext/audit metadata; never forwarded into `input`. |
-| `summarize`  | boolean | Optional root result post-processing control (default false); never forwarded into `input`. |
+| `summarize`  | boolean | Optional root result post-processing control (default true); explicitly set false for exact raw results; never forwarded into `input`. |
 
 Per-action `input` (run-only fields exist only in `run`; `job_id` only in `poll`/`cancel`):
 

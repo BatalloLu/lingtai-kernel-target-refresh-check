@@ -264,7 +264,7 @@ def _build_daemon_apriori_summarizer_fn(service, run_dir, *, provider, model, en
     The closure deliberately owns the effective daemon service and run directory for this run:
     it creates an untracked, no-tools session on that same provider/model and
     accounts usage through the daemon dual-ledger path. It is inert unless the
-    ToolExecutor receives summary=true.
+    ToolExecutor enables summary (including omission on migrated LTP roots).
     """
     if service is None or not callable(getattr(service, "create_session", None)):
         return None

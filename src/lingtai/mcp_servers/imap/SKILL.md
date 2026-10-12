@@ -26,6 +26,12 @@ maintenance: |
 
 # IMAP/SMTP email MCP
 
+In the LingTai host, root `summarize` defaults to `true`; specify what to retain
+in `reasoning`. Proactively set `summarize=false` for verbatim manuals and
+mandatory gates, exact names/paths or message ids, field presence, source,
+diffs, or evidence. Summaries are lossy and noncanonical; raw results remain
+preserved. This is result presentation, not action input or Context compression.
+
 This progressive disclosure router covers real mailbox access. Reads may persist
 local data; `send`/`reply` and `delete`/`move`/`flag` have external side effects. Use the schema for routine
 calls; read this manual for the gates below or unfamiliar workflows.

@@ -8,9 +8,11 @@ Difference in timing and authorship:
 
 - A-posteriori summarize: the agent has already *seen* a large result, digests
   it, and supplies its own summary string to replace the visible block.
-- A-priori summarize (this module): the caller sets ``summary=true`` on the
-  tool call *before* the result exists. The tool runs normally, the raw result
-  is preserved in the durable event log (``logs/events.jsonl`` by
+- A-priori summarize (this module): migrated LTP roots default to
+  ``summarize=true``; callers proactively set ``summarize=false`` for exact
+  raw results. Legacy tools still opt in with ``summary=true``. This control
+  is resolved *before* the result enters context. The tool runs normally; its
+  raw result is preserved in the durable event log (``logs/events.jsonl`` by
   ``tool_call_id``), and then — before the result enters the main agent's
   model-visible context — the visible payload is replaced by an LLM-generated
   summary driven by the call's ``reasoning`` field. The agent never sees the
@@ -159,6 +161,10 @@ _LTP_V2_MIGRATED_FAMILIES = frozenset(
         "shell", "notification", "system", "daemon", "email",
         "task_card",
         "context",
+        # Kernel-shipped curated MCP roots expose the same LTP control.
+        # Exact public names only; arbitrary external MCP domain fields are not
+        # presentation controls merely because their schema spells summarize.
+        "telegram", "feishu", "imap", "wechat", "whatsapp", "cloud_mail",
         # One public root for the four durable domains
         # (``pad + lingtai + knowledge + skills = psyche``). It replaced the
         # former ``pad``/``lingtai``/``knowledge``/``skills`` roots, which are
@@ -170,7 +176,7 @@ _LTP_V2_MIGRATED_FAMILIES = frozenset(
 
 
 def summary_requested(args: dict | None, tool_name: str | None = None) -> bool:
-    """Return True iff the normalized tool args opt into a-priori summary.
+    """Resolve the a-priori result-presentation control on normalized tool args.
 
     The legacy flag is the boolean ``summary`` field on the tool call, honored
     for every caller. ``shell``'s pre-migration ``summary`` boolean is still
@@ -184,23 +190,29 @@ def summary_requested(args: dict | None, tool_name: str | None = None) -> bool:
     ``summarize`` boolean; that spelling is
     recognized only when ``tool_name`` names a migrated family, so an
     unmigrated tool's own ``summarize``-named domain field is never
-    reinterpreted as this control. Anything other than a literal ``True``
-    (missing, ``False``, ``None``, truthy-but-not-True) preserves current
-    behavior exactly for either spelling.
+    reinterpreted as this control. For migrated families, omission of both
+    spellings enables summary by default; an explicit canonical ``summarize``
+    takes precedence over the legacy spelling. Present values still request
+    summary only when literally ``True``: ``False``, ``None``, and malformed
+    values do not enable it (family validation still rejects non-booleans).
+    Unmigrated tools retain the legacy explicit-``summary=True`` behavior.
 
-    This is only the opt-in control. It says nothing about which results are
-    worth summarizing: callers should opt in when raw output is bulky and
-    the retention contract is precise, while short receipts should be read
-    exactly. The summarizer never rewrites a recorded raw result or an error
-    either way.
+    This controls presentation, not Context history compression. Agents must
+    proactively set ``summarize=False`` when exact raw results are required,
+    and specify what a generated summary must retain in ``reasoning``. The
+    summarizer never rewrites a recorded raw result or a tool error.
     """
     if not isinstance(args, dict):
         return False
-    if args.get("summary") is True:
-        return True
     if tool_name in _LTP_V2_MIGRATED_FAMILIES:
-        return args.get("summarize") is True
-    return False
+        if "summarize" in args:
+            return args["summarize"] is True
+        # Historical/pending calls retain the legacy spelling's literal-boolean
+        # semantics. The canonical control, when present, takes precedence.
+        if "summary" in args:
+            return args["summary"] is True
+        return True
+    return args.get("summary") is True
 
 
 def _build_summarizer_prompt(reason: str, raw_text: str) -> str:
@@ -433,14 +445,16 @@ def maybe_summarize_result(
     raw_log_path: str | None = None,
     raw_event_type: str | None = None,
 ) -> Any:
-    """Return a summary replacement for *result* when ``summary=true``, else *result*.
+    """Return a summary replacement when the shared control enables it.
 
     Call this AFTER the raw result has been durably logged (raw preservation)
     and BEFORE the result is turned into the model-visible wire message.
 
     Contract:
-    - ``summary != true`` → returns *result* unchanged (current behavior).
-    - ``summary == true`` but no ``summarizer_fn`` wired (e.g. service without a
+    - Summary disabled (explicit canonical ``summarize=False`` on migrated
+      roots, or no legacy opt-in on other tools) → returns *result* unchanged.
+    - Summary enabled (including omission on migrated roots) but no
+      ``summarizer_fn`` wired (e.g. service without a
       one-shot generate gateway) → **fails closed**: returns a summary-layer
       error (with the raw-retrieval locator), NOT the raw result. ``summary=true``
       is a request to keep the raw out of context; honoring it must not depend on

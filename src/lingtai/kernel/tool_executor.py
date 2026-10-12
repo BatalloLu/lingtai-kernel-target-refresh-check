@@ -124,8 +124,9 @@ class ToolExecutor:
         # to the first dict result it stamps; the source is one-shot, so only
         # one result per reconstruction carries the event.
         self._reconstruction_event_fn = reconstruction_event_fn
-        # A-priori (reasoning-driven) summarizer. When a tool call sets
-        # ``summary=true``, ``_maybe_apriori_summary`` replaces the raw visible
+        # A-priori (reasoning-driven) summarizer. Migrated roots default on;
+        # explicit ``summarize=false`` opts out. ``_maybe_apriori_summary``
+        # replaces the raw visible
         # payload with an LLM-generated summary AFTER the raw is durably logged
         # and BEFORE it reaches the wire. ``summarizer_fn(system_prompt,
         # user_prompt, tool_name, tool_call_id) -> str``. When None,
@@ -770,13 +771,14 @@ class ToolExecutor:
         tool_name: str,
         tool_call_id: str | None,
     ) -> Any:
-        """Apply the a-priori (``summary=true``) summary replacement.
+        """Apply the shared default-on LTP a-priori summary control.
 
         Must be called AFTER the raw result is durably logged (so the raw is
         preserved by ``tool_call_id``) and BEFORE ``_build_result_message``
-        turns it into the wire message. When ``summary`` is not true the raw
-        result is returned unchanged — current behavior is preserved exactly.
-        When ``summary=true`` but no summarizer is wired this **fails closed**:
+        turns it into the wire message. Explicit canonical ``summarize=False``
+        returns raw unchanged; omission enables summary on migrated roots.
+        Unmigrated tools retain the legacy literal-True opt-in.
+        When enabled but no summarizer is wired this **fails closed**:
         it returns a summary-layer error/refusal carrying the raw-retrieval
         locator and never places the raw payload into context (the raw stays
         retrievable by ``tool_call_id``). See ``maybe_summarize_result``.
@@ -1276,8 +1278,8 @@ class ToolExecutor:
 
             # A-priori summary: the raw result is already durably logged above
             # (preserved by tool_call_id); replace the visible payload with the
-            # generated summary before it reaches the wire. No-op unless the call
-            # set summary=true and a summarizer is wired.
+            # generated summary before it reaches the wire. The shared resolver
+            # defaults on for migrated roots; explicit false keeps raw visible.
             visible = self._maybe_apriori_summary(
                 result, args=args, tool_name=tc.name, tool_call_id=tc_id,
             )

@@ -29,6 +29,12 @@ maintenance: |
 
 # WhatsApp MCP — usage manual (progressive disclosure)
 
+In the LingTai host, root `summarize` defaults to `true`; specify what to retain
+in `reasoning`. Proactively set `summarize=false` for verbatim manuals and
+mandatory gates, exact names/paths or message ids, field presence, source,
+diffs, or evidence. Summaries are lossy and noncanonical; raw results remain
+preserved. This is result presentation, not action input or Context compression.
+
 This document is returned on demand by `action='manual'`. The resident tool
 schema stays short and routes here for operational detail; do not call this
 manual before every send.

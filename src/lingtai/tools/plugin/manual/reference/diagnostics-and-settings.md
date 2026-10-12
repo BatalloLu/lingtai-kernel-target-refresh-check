@@ -45,7 +45,7 @@ optional `homepage`) and never implies registration.
 `{resolved, exists, plugins}`. `problems` contains `{plugin, path, error}` for
 whole-plugin/component failures. `mcp_appended` and `mcp_pruned` describe the
 last boot/refresh, not an `info` mutation. `summarize=true` is presentation only;
-keep it absent or false for exact names, paths, and reasons.
+set `summarize=false` explicitly for exact names, paths, and reasons.
 
 Diagnosis: absent from both tiers → inspect `paths` and `problems`; discovered
 only → an authorized owner must declare it and refresh; registered but incomplete

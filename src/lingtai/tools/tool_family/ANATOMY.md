@@ -70,8 +70,10 @@ that generic dispatch route.
   "Diagnostics sidecar" below.
 - `ToolFamily` — validates a fixed child registry (duplicate names and a
   `manual` reserved-name collision fail loudly at construction), composes a
-  model-facing schema from each child's own `input_schema` plus a REQUIRED
-  root `reasoning` string property (declared by the family schema itself, not
+  model-facing schema from each child's own `input_schema` plus an optional
+  root `summarize` boolean (`default: true`, with proactive raw opt-out guidance;
+  LP003 in `../BEHAVIORS.md`) and required `reasoning` string property
+  (declared by the family schema itself, not
   left to Agent schema composition's property-only re-injection), and
   provides an optional `handle()` dispatcher: validates `action`, type-checks
   and strips root `summarize`, rejects unknown root fields, and rejects

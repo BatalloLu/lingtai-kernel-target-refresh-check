@@ -182,8 +182,10 @@ summarizer (`src/lingtai/kernel/tool_result_summary.py`), which recognizes the
 canonical spelling only for a migrated family — there is no second summarizer
 and no shell-specific summarization mechanism. The pre-migration flat `summary`
 boolean is no longer advertised on the public schema, though the central
-summarizer still honors that spelling unconditionally for any historical or
-pending call that carries it.
+summarizer still honors that spelling for historical or pending calls, unless
+the canonical root control is present (explicit `summarize=false` always wins).
+Omission on the migrated `shell` root enables summary; proactively set
+`summarize=false` for verbatim manuals, exact paths/fields, source, diffs, or evidence.
 
 `ShellManager` is the unchanged execution engine. It still accepts the
 historical flat call shape (`{"action": "run", "command": ...}`, `action`

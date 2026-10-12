@@ -19,7 +19,7 @@ maintenance: |
 - `action`：必选。本族动作之一：'run' 执行命令，'poll' 查询异步任务状态，'cancel' 终止异步任务，'manual' 返回已安装的 shell-manual 技能。无默认值。
 - `input`：必选。所选 action 专属的严格入参对象；各动作的字段互不相通，跨动作字段会在派发前被拒绝。
 - `reasoning`：必选。简述调用本工具的缘由（记入日记）。属 Host 元数据，不会进入 action 入参。
-- `summarize`：可选，默认 false。根层跨切面的结果后处理开关，非 action 入参。为 true 时，该 tool 照常执行，原始结果会完整保存到持久日志（可按 tool_call_id 取回），但在结果进入你的上下文之前，会被一段由你的 `reasoning` 字段驱动的 LLM 生成摘要替换——所以请在 `reasoning` 中明确说明要保留什么。仅当预期输出很大（>10k 字符）且你不需要精确原文时才设为 true。需要精确的行/文件/diff/stderr 原文时请保持 false。摘要非权威；若原始结果超过 500,000 字符则不生成摘要，你会收到一条指向已保存原始结果的拒绝信息。
+- `summarize`：可选，省略默认 true；需要原始结果时显式设为 false。根层跨切面的结果后处理开关，非 action 入参。为 true 时，该 tool 照常执行，原始结果会完整保存到持久日志（可按 tool_call_id 取回），但在结果进入你的上下文之前，会被一段由你的 `reasoning` 字段驱动的 LLM 生成摘要替换——所以请在 `reasoning` 中明确说明要保留什么。不需要精确原文时可保留默认摘要；需要逐字依据时主动设为 false。需要精确的行/文件/diff/stderr 原文时请保持 false。摘要非权威；若原始结果超过 500,000 字符则不生成摘要，你会收到一条指向已保存原始结果的拒绝信息。
 - `input.command`（仅 run）：要执行的 shell 命令
 - `input.timeout`（仅 run）：超时秒数，传 null 即用默认 30；仅同步执行时生效。硬上限 `LINGTAI_TOOL_TIMEOUT_MAX_SECONDS`（默认 120）：超过上限会被拒绝并引导使用 async=true
 - `input.working_dir`（仅 run）：命令的工作目录，传 null 或空字符串即使用 agent 工作目录。必须位于 agent 工作目录沙箱内；沙箱外路径会被拒绝。若要操作外部仓库/路径，请将 working_dir 保持为 agent 目录，并在 command 中显式 cd，例如 cd /absolute/path && ...

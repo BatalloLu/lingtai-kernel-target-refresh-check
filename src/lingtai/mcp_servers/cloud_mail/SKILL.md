@@ -25,6 +25,12 @@ maintenance: |
 
 # Cloud Mail MCP — usage manual (progressive disclosure)
 
+In the LingTai host, root `summarize` defaults to `true`; specify what to retain
+in `reasoning`. Proactively set `summarize=false` for verbatim manuals and
+mandatory gates, exact names/paths or message ids, field presence, source,
+diffs, or evidence. Summaries are lossy and noncanonical; raw results remain
+preserved. This is result presentation, not action input or Context compression.
+
 Cloud Mail is a REST client for a self-hosted Cloud Mail deployment, not IMAP or
 SMTP. Inbound mail is polled automatically and delivered to the host agent's
 inbox via LICC; you normally do not poll `check` just to receive notifications.
@@ -86,9 +92,9 @@ cloud_mail(action="settings", input={}, reasoning="inspect owner settings")
   returns this packaged guide and its metadata on demand.
 
 `check`, `search`, and `read` can return bulky listings or full bodies. Keep
-exact ids and body text when a later action depends on them: this family does
-not currently promise result summarization. Read `manual` exactly so its
-procedure and constraints remain available.
+exact ids and body text when a later action depends on them by explicitly
+setting `summarize=false`. Read `manual` with the same explicit opt-out so its
+procedure and constraints remain verbatim.
 
 ## SETTINGS SHOW
 

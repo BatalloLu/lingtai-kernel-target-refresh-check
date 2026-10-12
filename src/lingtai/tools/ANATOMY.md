@@ -99,6 +99,7 @@ capability names and lazy adapters.
   the kernel-owned declared host-plugin form and package-owned manual, with the
   curated descriptor route retained only as an external-transport adapter.
 - `BEHAVIORS.md` — the paired LABT file: LP001 guards the closed LTP envelope,
+  LP003 guards default-on a-priori presentation and proactive raw opt-out,
   LP002 guards the Tool-to-MCP Plugin Contract's status, its two-class governed
   surface, its single selected wrapper form, the document graph, and the
   current inventory: thirteen static official families (`mcp`, `avatar`,

@@ -1,6 +1,6 @@
 ---
 name: web
-contract_version: 8
+contract_version: 9
 root_contract: CONTRACT.md
 related_files:
   - src/lingtai/tools/web_search/ANATOMY.md
@@ -314,8 +314,10 @@ Guarded by: [W002](BEHAVIORS.md#behavior-w002)
   object branches. Each branch is closed, every declared branch field is
   required, and browse optionals use JSON null, matching OpenAI strict-object
   conventions. No branch admits `reasoning`, `_reasoning`, or `summarize`.
-- `summarize` is a root-only optional boolean, absent or false by default. It
-  is envelope metadata, not action input: `handle()` validates its type
+- `summarize` is a root-only optional boolean with `default: true`; omission
+  enables a-priori summary. Proactively set `false` for verbatim manuals and
+  mandatory gates, exact names/paths/fields, source, diffs, or evidence; state
+  the retention contract in `reasoning`. It is envelope metadata, not action input: `handle()` validates its type
   (non-boolean fails loudly with `INVALID_ARGUMENT`) and strips it before
   dispatching to `search`/`browse`/`settings`/`manual`. `src/lingtai/kernel/
   tool_result_summary.py` recognizes canonical root `summarize=true` for

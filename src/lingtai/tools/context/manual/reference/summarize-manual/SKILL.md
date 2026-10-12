@@ -26,7 +26,7 @@ The root `summarize` boolean is a separate generic result-presentation control. 
 
 ## A-priori root result summaries
 
-Before a call, root `summarize=true` requests a generated, noncanonical, lossy summary; put the retention specification in `reasoning` and preserve its `raw_locator` (and producer ID) for recovery. If generation fails, it is fail-closed: no raw payload is returned, so rerun narrowly or with `summarize=false`. Check `summary_effect.prev_chars`, `after_chars`, and `saved_chars`; weak savings are a lesson to sharpen the retention specification or choose a narrower call.
+Before a call, root `summarize` defaults to `true` for migrated families and requests a generated, noncanonical, lossy summary. Proactively set `summarize=false` for required raw results: verbatim manuals and mandatory gates, exact names/paths, field presence, source, diffs, or evidence; put the retention specification in `reasoning` and preserve its `raw_locator` (and producer ID) for recovery. If generation fails, it is fail-closed: no raw payload is returned, so rerun narrowly or with `summarize=false`. Check `summary_effect.prev_chars`, `after_chars`, and `saved_chars`; weak savings are a lesson to sharpen the retention specification or choose a narrower call.
 
 ## Record a summary
 
