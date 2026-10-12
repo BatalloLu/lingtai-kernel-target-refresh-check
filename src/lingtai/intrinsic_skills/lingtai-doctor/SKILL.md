@@ -81,6 +81,6 @@ then follow the owning manual rather than improvising a repair:
 ## Scope
 
 Doctor is the shared diagnostic foundation and covers the whole agent footprint,
-not only MCP registry syntax — `mcp(action="info")` validates the registry, not
+not only MCP registry syntax — `plugin(mode="mcp", action="info")` validates the registry, not
 lifecycle, process, log, or mail evidence. TUI `/doctor` should call these
 scripts instead of maintaining a separate copy of the logic.

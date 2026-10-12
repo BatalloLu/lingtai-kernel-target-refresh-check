@@ -1,5 +1,7 @@
 ---
 related_files:
+  - tests/test_plugin_mcp_mode.py
+  - src/lingtai/tools/plugin/_mcp.py
   - ANATOMY.md
   - src/lingtai/intrinsic_skills/ANATOMY.md
   - src/lingtai/tools/BEHAVIORS.md

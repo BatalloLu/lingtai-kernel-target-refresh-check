@@ -154,26 +154,13 @@ diagnostic onto any envelope-level failure result, since a generic
 This division follows `../CONTRACT.md` "Implementation independence": using
 `ToolFamily.handle()` is `web`'s choice, not an inherited requirement.
 
-`mcp/__init__.py` ([`../mcp/ANATOMY.md`](../mcp/ANATOMY.md)) is the second
-consumer and the minimal shape of one: a two-child family (`info`, `manual`)
-whose public tool name and action values are unchanged by the migration, where
-both children take the canonical strict-empty `input`. It follows the same
-division — the `manual` child from
-`build_manual_child(host.workdir, DECLARATION.manual)` is registered directly
-and unwrapped, and `mcp`'s own flat `mcp_manual` public shape is reconstructed
-post-dispatch by a Host-owned adapter. `mcp` is the current base reference slice
-recut onto the kernel-owned family-generic declared host-plugin contract
-(`src/lingtai/kernel/tool_plugin/ANATOMY.md`), so it never receives the `Agent`
-at all: the builder is handed the granted `WorkdirPort`, and the installed
-manual's destination name is read back out of the family's own declaration
-rather than restated here. It also shows
-what a family, not this package, must own when a pre-migration public error
-envelope predates the generic dispatcher: `mcp` renders its exact
-unknown-action envelope in its own `handle_mcp` *before* delegating, including
-the missing-action empty-string default and unhashable `action` values that
-`ToolFamily.handle`'s dict lookup would otherwise raise `TypeError` on. The
-generic dispatcher's canonical error shape is never changed to accommodate a
-consumer.
+`plugin/_mcp.py` (see `../plugin/ANATOMY.md` and
+`../mcp/CONTRACT.md`) is the private MCP-mode consumer. Its family keeps
+`info`, `settings`, and `manual` with strict-empty child inputs and the exact
+historical MCP result/error envelopes. Plugin's public root selects this owner
+with `mode="mcp"`; there is no separately mounted MCP declaration or schema.
+The installed MCP manual and separately granted fixed protected MCP writer
+remain reachable. Generic dispatch does not acquire MCP-specific policy.
 
 `knowledge/__init__.py` is the third real consumer
 (`src/lingtai/tools/knowledge/ANATOMY.md`): one `_build_family(agent | None)`

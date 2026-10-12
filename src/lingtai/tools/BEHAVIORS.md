@@ -12,7 +12,7 @@ related_files:
   - src/lingtai/tools/registry.py
   - src/lingtai/tools/plugin/CONTRACT.md
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
-  - src/lingtai/tools/mcp/__init__.py
+  - src/lingtai/tools/plugin/_mcp.py
   - src/lingtai/tools/avatar/__init__.py
   - src/lingtai/tools/context/__init__.py
   - src/lingtai/tools/daemon/__init__.py
@@ -36,7 +36,7 @@ maintenance: |
   wording — current `mcp` base evidence and the separately landed `avatar`,
   `context`, `daemon`, `email`, `plugin`, `psyche`, `notification`, `shell`,
   `system`, `task_card`, `vision`, and `web` vertical evidence; the
-  exact nineteen-name grantable-host inventory; and the empty former later-family
+  exact twenty-name grantable-host inventory; and the empty former later-family
   target register — its two-class governed surface, its single selected form as
   the kernel-owned declared host-plugin contract, the retained and reclassified
   curated transport route, the resolved official-name collision decision and
@@ -83,10 +83,10 @@ repo root with the project's Python.
 ### Pass / Fail
 Pass when the suite passes and the closed-envelope observation holds for a real migrated family. Fail on an extra root property, on `reasoning`/`summarize` leaking into `input`, or on a summary replacing the recorded raw output; record the evidence trail in the task report.
 
-## Behavior LP002 — the shared declared host-plugin contract matches the current thirteen-family and nineteen-grant inventory
+## Behavior LP002 — the shared declared host-plugin contract matches the current twelve-family and twenty-grant inventory
 
 - **id**: LP002
-- **title**: the shared declared host-plugin contract matches the current thirteen-family and nineteen-grant inventory
+- **title**: the shared declared host-plugin contract matches the current twelve-family and twenty-grant inventory
 - **guards**: `lingtai-tool-protocol` §
   [Tool-to-MCP Plugin Contract](CONTRACT.md#tool-to-mcp-plugin-contract)
 - **runner**: any LingTai agent with `shell` access to a clean
@@ -104,11 +104,10 @@ Pass when the suite passes and the closed-envelope observation holds for a real 
 1. Read `src/lingtai/tools/CONTRACT.md`, section `### Tool-to-MCP Plugin
    Contract` (it sits under `## Contract rules`, between `### Non-goals` and
    `### Relationship to current runtime`). Confirm its opening **Status**
-   paragraph names exactly the thirteen static official families: `mcp`,
-   `avatar`, `context`, `daemon`, `email`, `plugin`, `psyche`,
+   paragraph names exactly the twelve static official families: `avatar`, `context`, `daemon`, `email`, `plugin`, `psyche`,
    `notification`, `shell`, `system`, `task_card`, `vision`, and `web`, in that order;
-   identifies `mcp` as the base reference; names the exact nineteen grantable host
-   names (`workdir`, `prompt_section`, `avatar_parent`, `context_runtime`,
+   identifies Plugin's private MCP mode as the reference; names the exact twenty grantable host
+   names (`workdir`, `prompt_section`, `mcp_prompt_section`, `avatar_parent`, `context_runtime`,
    `daemon_runtime`, `email_runtime`, `plugin_catalog`,
    `psyche_settings`, `notification_state`, `notifications`, `configuration`,
    `system_runtime`, `identity`, `shutdown`, `task_card_lifecycle`,
@@ -166,7 +165,7 @@ Pass when the suite passes and the closed-envelope observation holds for a real 
 
    Expect no output and shell exit status 1.
 
-   Then prove all thirteen landed declarations — the current base `mcp`, Avatar,
+   Then inspect all twelve landed declarations — Avatar,
    Context, Daemon, Email, Plugin, Psyche, Notification, Shell, System,
    Task Card, Vision, and Web — none of which goes through packaging:
 
@@ -175,22 +174,22 @@ Automated recipe retired by test pruning (2026-10-12).
 No replacement conformance claimed for: test_plugin_tool, test_task_card_notifications, test_tool_family_vision_migration, test_web_composition_port, test_web_official_plugin.
 ```
 
-   Expect thirteen ordered pairs whose names are `mcp, avatar, context, daemon,
+   Expect twelve ordered pairs whose names are `avatar, context, daemon,
    email, plugin, psyche, notification, shell, system, task_card,
    vision, web`,
-   with requires respectively `workdir/prompt_section`, `workdir/avatar_parent`,
+   with requires respectively `workdir/avatar_parent`,
    `workdir/context_runtime`, `workdir/daemon_runtime`,
    `workdir/email_runtime`,
-   `workdir/prompt_section/plugin_catalog`, `workdir/psyche_settings`,
+   `workdir/prompt_section/mcp_prompt_section/plugin_catalog`, `workdir/psyche_settings`,
    `workdir/notification_state`,
    `workdir/notifications/configuration`,
    `workdir/system_runtime/identity`,
    `workdir/shutdown/task_card_lifecycle/task_card_notifications`,
    `workdir/active_provider/configuration`, and
    `workdir/web_runtime/provider_identity`; then expect
-   exactly `('mcp', 'avatar', 'context', 'daemon', 'email', 'plugin', 'psyche',
+   exactly `('avatar', 'context', 'daemon', 'email', 'plugin', 'psyche',
    'notification', 'shell', 'system', 'task_card', 'vision', 'web')`,
-   then `True`. All thirteen declarations construct at import with no Agent,
+   then `True`. All twelve declarations construct at import with no Agent,
    server, transport, or catalog record. No `file` declaration, `file_io`
    port, or `lingtai.tools.file` module exists (`import lingtai.tools.file`
    must raise `ModuleNotFoundError`);
@@ -307,8 +306,8 @@ No replacement conformance claimed for: test_mcp_capability, test_tool_plugin_de
 
 ### Expected evidence
 
-- [ ] Step 1: the Status paragraph names the thirteen static official families
-      in official order, the exact nineteen grantable host names, and the empty
+- [ ] Step 1: the Status paragraph names the twelve static official families
+      in official order, the exact twenty grantable host names, and the empty
       former later-family target register; its remaining claims stay scoped to
       their current declaration, registry, transport, or LTP-envelope owner.
 - [ ] Step 2: no unqualified "No LingTai-owned family ships as an MCP plugin"
@@ -319,7 +318,7 @@ No replacement conformance claimed for: test_mcp_capability, test_tool_plugin_de
       Plugins and raw third-party schemas, and introduces no generic manifest
       compiler, admission engine, or wrapper runtime.
 - [ ] Step 4: `registry.py` contains no MCP-server packaging reference; all
-      thirteen declarations import without an Agent; their names and narrow
+      twelve declarations import without an Agent; their names and narrow
       requirements match the exact `OFFICIAL_TOOL_PLUGIN_NAMES` tuple; and the
       selected focused suites pass.
 - [ ] Step 5: the curated descriptor/catalog route agrees with the governed
@@ -342,13 +341,13 @@ No replacement conformance claimed for: test_mcp_capability, test_tool_plugin_de
 ### Pass / Fail
 
 Pass when every box above is observed. **Fail loudly** — do not soften the
-report — if the contract section does not name exactly `mcp`, `avatar`,
+report — if the contract section does not name exactly `avatar`,
 `context`, `daemon`, `email`, `plugin`, `psyche`, `notification`, `shell`,
 `system`, `task_card`, `vision`, and `web` as the static official
-families, does not name the exact nineteen grantable host names, or leaves the
+families, does not name the exact twenty grantable host names, or leaves the
 former later-family target register nonempty; if any `file` declaration,
 `file_io` grant, or `lingtai.tools.file` module reappears; if Plugin does not require exactly
-`workdir`/`prompt_section`/`plugin_catalog`, gains registration/prune/launch/
+`workdir`/`prompt_section`/`mcp_prompt_section`/`plugin_catalog`, gains registration/prune/launch/
 config-write/mount authority, or claims its skills enter the vanilla skills
 catalog; if it treats a
 curated or built-in MCP package as already conforming to the selected declared

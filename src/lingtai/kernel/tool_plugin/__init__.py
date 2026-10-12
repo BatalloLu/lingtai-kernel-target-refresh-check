@@ -124,6 +124,7 @@ def _settings_input_schema() -> dict[str, Any]:
 GRANTABLE_HOST_PORTS: tuple[str, ...] = (
     "workdir",
     "prompt_section",
+    "mcp_prompt_section",
     "avatar_parent",
     "context_runtime",
     "daemon_runtime",
@@ -153,7 +154,7 @@ GRANTABLE_HOST_PORTS: tuple[str, ...] = (
 #: discovery mechanism, and it holds names only — never a module path, an
 #: import, or any knowledge of what the family does.
 OFFICIAL_TOOL_PLUGIN_NAMES: tuple[str, ...] = (
-    "mcp", "avatar", "context", "daemon", "email", "plugin", "psyche",
+    "avatar", "context", "daemon", "email", "plugin", "psyche",
     "notification", "shell", "system", "task_card", "vision", "web",
 )
 

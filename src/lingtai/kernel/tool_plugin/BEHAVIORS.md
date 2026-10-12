@@ -5,6 +5,8 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
+  - src/lingtai/tools/plugin/_mcp.py
+  - tests/test_plugin_mcp_mode.py
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
   - src/lingtai/kernel/tool_plugin/ANATOMY.md
   - src/lingtai/kernel/tool_plugin/__init__.py
@@ -38,8 +40,7 @@ maintenance: |
   further family recuts onto the contract, or when authoring-time line numbers
   drift, extend the affected evidence with that family's own focused proof rather
   than leaving a stale pass. The shared C register is family-generic and distinguishes
-  target reserved names from candidate merge evidence. `mcp` is the shared-C base
-  reference; Avatar, Context, Daemon, Email, Plugin, Notification, Shell,
+  target reserved names from candidate merge evidence. Plugin owns the shared-C MCP mode reference; Avatar, Context, Daemon, Email, Plugin, Notification, Shell,
   System, Task Card, Vision, and Web are current
   vertical evidence. Ports remain least-privilege and tool-specific, while registrar
   mounts are runtime-bound rather
@@ -71,10 +72,10 @@ environment (`uv venv --python 3.11 && uv pip install -e . pytest`, per
 1. Prove the declaration exists and validates before any Agent does:
 
    ```bash
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -c "import sys; sys.path.insert(0, 'src'); from lingtai.tools.mcp import DECLARATION as mcp; from lingtai.tools.bash._tool_family import DECLARATION as shell; print(mcp.name, mcp.actions, mcp.public_actions, mcp.requires); print(shell.name, shell.actions, shell.public_actions, shell.requires)"
+   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -c "import sys; sys.path.insert(0, 'src'); from lingtai.tools.plugin import DECLARATION as plugin; from lingtai.tools.bash._tool_family import DECLARATION as shell; print(plugin.name, plugin.actions, plugin.public_actions, plugin.requires); print(shell.name, shell.actions, shell.public_actions, shell.requires)"
    ```
 
-   Expect `mcp ('info',) ('info', 'settings', 'manual') ('workdir', 'prompt_section')` and
+   Expect `plugin ('info',) ('info', 'settings', 'manual') ('workdir', 'prompt_section', 'mcp_prompt_section', 'plugin_catalog')` and
    `shell ('run', 'poll', 'cancel') ('run', 'poll', 'cancel', 'settings',
    'manual') ('workdir', 'notifications', 'configuration')`. No `Agent` was
    constructed; reserved generic `settings` and `manual` actions are
@@ -119,10 +120,10 @@ environment (`uv venv --python 3.11 && uv pip install -e . pytest`, per
 2. Prove the public model-facing surface contains the bounded owner addition:
 
    ```bash
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -c "import sys; sys.path.insert(0, 'src'); from lingtai.tools.mcp import get_schema; s = get_schema(); print(sorted(s['properties']), s['properties']['action']['enum'], s['additionalProperties'])"
+   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -c "import sys; sys.path.insert(0, 'src'); from lingtai.tools.plugin import get_schema; s = get_schema(); print(sorted(s['properties']), s['properties']['action']['enum'], s['additionalProperties'])"
    ```
 
-   Expect `['action', 'input', 'reasoning', 'summarize'] ['info', 'settings', 'manual']
+   Expect `['action', 'input', 'mode', 'reasoning', 'summarize'] ['info', 'settings', 'manual']
    False`.
 
 3. Prove a declaration is granted exactly its `requires` and nothing more:
@@ -131,7 +132,7 @@ environment (`uv venv --python 3.11 && uv pip install -e . pytest`, per
    PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -c "import sys; sys.path.insert(0, 'src'); from lingtai.kernel.tool_plugin import GRANTABLE_HOST_PORTS, ToolPluginHost; from lingtai.tools.bash._tool_family import DECLARATION; h = ToolPluginHost.grant(DECLARATION, {'workdir': object(), 'notifications': object(), 'configuration': object(), 'prompt_section': object()}); print(GRANTABLE_HOST_PORTS, h.granted); h.prompt_section"
    ```
 
-   Expect `('workdir', 'prompt_section', 'avatar_parent', 'context_runtime',
+   Expect `('workdir', 'prompt_section', 'mcp_prompt_section', 'avatar_parent', 'context_runtime',
    'daemon_runtime', 'email_runtime', 'plugin_catalog', 'psyche_settings',
    'notification_state', 'notifications', 'configuration',
    'system_runtime', 'identity', 'shutdown', 'task_card_lifecycle',
@@ -150,9 +151,10 @@ Automated recipe retired by test pruning (2026-10-12).
 No replacement conformance claimed for: test_tool_plugin_declaration.
 ```
 
-   Expect `1 passed`: Plugin reaches exactly
-   `('workdir', 'prompt_section', 'plugin_catalog')` while MCP reaches neither
-   `plugin_catalog` nor `avatar_parent`.
+   That recipe is retired; no passing replacement is inferred from it.
+   The current Plugin declaration requires exactly
+   `('workdir', 'prompt_section', 'mcp_prompt_section', 'plugin_catalog')`;
+   MCP is a private mode owner, not a separately granted declaration.
 
    Task Card's three ports are built in the standard table only for its own
    declaration, and its notification port is closed to five operations:
@@ -185,15 +187,15 @@ No replacement conformance claimed for: test_web_composition_port, test_web_offi
 4. Prove the family reaches the live Agent body only through granted ports:
 
    ```bash
-   grep -n "def _reconcile\|def _build_family\|def _bind" src/lingtai/tools/mcp/__init__.py
-   grep -n "working_dir = host.workdir.path" src/lingtai/tools/mcp/__init__.py
-   grep -n "host.prompt_section.write_protected_section(xml)" src/lingtai/tools/mcp/__init__.py
+   grep -n "def _reconcile\|def _build_family\|def _bind" src/lingtai/tools/plugin/__init__.py src/lingtai/tools/plugin/_mcp.py
+   grep -n "working_dir = host.workdir.path" src/lingtai/tools/plugin/_mcp.py
+   grep -n "host.mcp_prompt_section.write_protected_section(xml)" src/lingtai/tools/plugin/_mcp.py
    grep -n "host.workdir\|host.notifications\|host.configuration" src/lingtai/tools/bash/_tool_family.py
    grep -n "class AgentNotificationAdapter\|class StaticConfigurationAdapter\|extra_ports_for" src/lingtai/adapters/tool_plugin_host.py src/lingtai/tools/bash/__init__.py
    ```
 
-   Expect MCP's three internals to take `host`, then exactly one match each for
-   its two port calls. Expect Shell's `_bind` to reach the body only through
+   Expect Plugin's owner internals to take `host`, then exactly one match each for
+   the MCP mode's workdir and fixed protected writer calls. Expect Shell's `_bind` to reach the body only through
    `host.workdir`, `host.notifications`, and `host.configuration`, and its
    `setup` to supply `StaticConfigurationAdapter` only through
    `extra_ports_for`. Read those two adapters and confirm neither has an

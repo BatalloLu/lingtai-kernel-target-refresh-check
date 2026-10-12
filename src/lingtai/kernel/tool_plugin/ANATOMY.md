@@ -1,5 +1,7 @@
 ---
 related_files:
+  - tests/test_plugin_mcp_mode.py
+  - src/lingtai/tools/plugin/_mcp.py
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
   - src/lingtai/kernel/tool_plugin/BEHAVIORS.md
   - src/lingtai/kernel/tool_plugin/__init__.py
@@ -174,13 +176,11 @@ is in [`BEHAVIORS.md`](BEHAVIORS.md).
   `extra_ports_for`).
   No adapter exposes an Agent or generic dispatcher; `agent_host_ports` and
   `register_agent_tool_plugins` construct the private registrar mount seam.
-- `src/lingtai/tools/mcp/__init__.py` — the current base reference slice.
-  Its static declaration opts into the reserved SHOW-only settings child and
-  binds the per-host family and protected prompt
-  section; Avatar, Context, Daemon, Email, Plugin, Psyche, Notification, Shell,
-  System, Task Card, Vision, and Web are separately accepted vertical
-  slices. The later-family target register is now empty; the reserved list is
-  not an admission path.
+- `src/lingtai/tools/plugin/__init__.py:283` — the sole Plugin/MCP query
+  declaration. It earns `workdir`, `plugin_catalog` and two separate fixed
+  protected PromptSectionPort grants, `prompt_section` and `mcp_prompt_section`.
+  Its private MCP owner (`src/lingtai/tools/plugin/_mcp.py:26`) preserves fresh
+  read-only health; `mcp` is absent from official names (TP001/TP002, PL002).
 - `src/lingtai/tools/avatar/__init__.py` — separately landed vertical evidence,
   not a C candidate claim. Its static `DECLARATION` binds `AvatarManager` to
   `workdir` plus the earned, narrow `avatar_parent` port; the local packaged
@@ -312,7 +312,7 @@ is in [`BEHAVIORS.md`](BEHAVIORS.md).
 
 ## Connections
 
-- `lingtai.tools.mcp`, `lingtai.tools.avatar`, `lingtai.tools.context`,
+- `lingtai.tools.avatar`, `lingtai.tools.context`,
   `lingtai.tools.daemon`, `lingtai.tools.email`,
   `lingtai.tools.plugin`, and `lingtai.tools.notification` import
   `lingtai.kernel.tool_plugin` (declarations depend on the shape). The kernel
@@ -364,7 +364,7 @@ is in [`BEHAVIORS.md`](BEHAVIORS.md).
   performs the reserved-name guard; its seal check and same-name replacement
   for nonreserved tools remain unchanged. This is trusted-in-process Python
   provenance, not an absolute defense against deliberate private-state mutation.
-- `lingtai.tools.mcp.setup()`, `lingtai.tools.avatar.setup()`,
+- `lingtai.tools.avatar.setup()`,
   `lingtai.tools.context.setup()`, `lingtai.tools.daemon.setup()`,
   `lingtai.tools.plugin.setup()`,
   `lingtai.tools.task_card.setup()`, `lingtai.tools.vision.setup()`, and
@@ -398,7 +398,7 @@ is in [`BEHAVIORS.md`](BEHAVIORS.md).
 
 ## Composition
 
-`import lingtai.tools.mcp`, `import lingtai.tools.avatar`,
+`import lingtai.tools.plugin`, `import lingtai.tools.avatar`,
 `import lingtai.tools.context`, `import lingtai.tools.daemon`,
 `import lingtai.tools.email`,
 `import lingtai.tools.plugin`, `import lingtai.tools.task_card`,

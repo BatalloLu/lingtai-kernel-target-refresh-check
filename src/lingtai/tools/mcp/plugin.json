@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "mcp",
   "version": "1.0.0",
-  "description": "LingTai's read-only MCP registry signpost and its owned mcp-manual Agent Skill.",
+  "description": "Documentation resource for Plugin mcp mode: the owned mcp-manual Agent Skill; not a standalone tool or server.",
   "homepage": "https://github.com/Lingtai-AI/lingtai-kernel",
   "license": "Apache-2.0",
   "keywords": ["lingtai", "builtin-tool", "mcp", "registry", "signpost"]

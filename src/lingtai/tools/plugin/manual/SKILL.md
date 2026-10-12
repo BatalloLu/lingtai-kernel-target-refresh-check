@@ -8,6 +8,7 @@ description: >
 version: 2.4.0
 last_changed_at: 2026-09-09T03:00:00Z
 related_files:
+- src/lingtai/tools/mcp/skills/mcp-manual/SKILL.md
 - src/lingtai/tools/plugin/__init__.py
 - src/lingtai/tools/plugin/settings.py
 - src/lingtai/tools/plugin/ANATOMY.md
@@ -47,6 +48,28 @@ is not already in context, call
 untrusted input; a registered plugin is not thereby trusted. Do not repeatedly
 reload this manual for a routine schema-sufficient call after it has been read.
 
+## MCP registry mode
+
+For MCP registry/identity health, effective MCP settings, or its existing
+library, select root `mode="mcp"` explicitly (not in action `input`):
+
+```text
+plugin(mode="mcp", action="info", input={}, reasoning="inspect MCP registry health")
+plugin(mode="mcp", action="settings", input={}, reasoning="inspect effective MCP settings")
+plugin(mode="mcp", action="manual", input={}, reasoning="read MCP guidance")
+```
+
+MCP mode is signpost-only: no registration, activation, configuration, repair,
+network connection or server launch. Catalog, registered and active remain
+three distinct states; registry success is not active proof. The MCP manual
+routes to the exact server README, runtime/identity ownership and authorized
+change procedure. Do not publish raw registry problems or credentials. Both
+modes require strictly empty input; omitted mode retains this Plugin catalog.
+The standalone `mcp` tool/capability and its SDK setup/schema/declaration entry
+points are retired without an alias. Only the model-query surface is unified:
+top-level `addons`, `mcp` activation and MCP protocol/client behavior are not
+Plugin packaging or manifests. Read consequential MCP guidance unsummarized.
+
 ## The trust boundary
 
 - **Registered:** a plugin declared by canonical `init.json` `manifest.plugins`,
@@ -71,7 +94,7 @@ key is `manifest.plugins`; prefer it for new authorized configuration edits.
 | Author `plugin.json`, `mcp.json`, or review a path | [`format-and-containment.md`](reference/format-and-containment.md) |
 | Decide registered versus discovered, install, uninstall, or recovery | [`registration-and-lifecycle.md`](reference/registration-and-lifecycle.md) |
 | Inspect current declaration roots | `plugin(action="settings", input={}, reasoning="inspect plugin registration roots", summarize=false)`; paths stay redacted |
-| Activate an already registered MCP server | `mcp-manual`; registration here never launches it |
+| Activate an already registered MCP server | `plugin(mode="mcp", action="manual", input={}, reasoning="read MCP activation guidance")`; registration here never launches it |
 
 ## Plugin registration roots
 

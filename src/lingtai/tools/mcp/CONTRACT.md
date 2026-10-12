@@ -1,8 +1,13 @@
 ---
 name: mcp-contract
-tool: mcp
-contract_version: 1
+tool: plugin
+contract_version: 2
 related_files:
+  - src/lingtai/tools/plugin/__init__.py
+  - src/lingtai/tools/plugin/_mcp.py
+  - src/lingtai/tools/plugin/CONTRACT.md
+  - tests/test_plugin_mcp_mode.py
+  - tests/test_mcp_identity_discovery.py
   - src/lingtai/tools/mcp/__init__.py
   - src/lingtai/tools/mcp/settings.py
   - src/lingtai/tools/mcp/plugin.json
@@ -17,280 +22,116 @@ related_files:
   - src/lingtai/tools/CONTRACT.md
   - src/lingtai/tools/tool_family/CONTRACT.md
 maintenance: |
-  Keep related_files as repo-relative paths to real files. If behavior and this
-  contract disagree, the code is the source of truth — fix the contract in the
-  same change and bump contract_version on breaking contract edits. mcp's schema
-  composition and envelope dispatch build on the generic tool_family package;
-  keep that link current when either side's boundary changes. mcp is one declared
-  slice under the kernel-owned family-generic contract (the current base
-  reference); the shared C register also targets other names without claiming
-  their candidates merged. Keep §Declared host plugin below and that contract in
-  step, and if this family's required host ports change, move the declaration,
-  the narrow port set, the adapter, and both contracts together.
-  The source package is additionally a built-in Agent Plugins v1.0.0
-  documentation package: keep `plugin.json`, its sole owned
-  `skills/mcp-manual/` source, `Agent._install_intrinsic_manuals`, and the
-  compact packaging test in step. That source layout is not an external
-  declaration, transport, or registry route; use `plugin_registry.read_plugin`
-  as the only manifest/containment reader and never add a tools-local helper.
+  MCP presentation is owned by Plugin's explicit mcp mode, not a second tool.
+  Keep this contract, paired Anatomy/LABT, Plugin's declaration, narrow fixed
+  prompt grants, manual packaging, settings provider and tests synchronized.
+  Preserve protocol/client/service/catalog/activation/LICC behavior; packaging
+  is documentation only, never external-plugin registration or server launch.
 ---
-> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
 
+# MCP presentation resources contract
 
-# MCP capability contract
-
-`mcp` is a read-only tool family: it renders the per-agent MCP server registry
-into the protected `mcp` system-prompt section, reports registry health, and
-SHOWs the two MCP-owned top-level init settings. It does NOT register, activate,
-configure, or troubleshoot MCP servers —
-all mutations happen by editing `mcp_registry.jsonl` through `shell`. The tool
-slice lives in `src/lingtai/tools/mcp/__init__.py`; the registry machinery it renders
-lives in `src/lingtai/services/mcp_registry.py` (imported lazily). The code is the
-source of truth.
-
-## Routing Card
-Guarded by: [MC001](BEHAVIORS.md#behavior-mc001)
-
-
-**Use this when:**
-- You are editing the mcp tool slice's action dispatch or the reconciliation that
-  builds the prompt XML.
-- You need to confirm which fields `info` surfaces and that the tool never mutates
-  MCP configuration.
-
-**Do not use this for:**
-- Registry validation, JSONL I/O, catalog load, identity projection, or addon
-  decompression: those are the service at
-  `src/lingtai/services/mcp_registry.py`.
-- Code navigation only: read `src/lingtai/tools/mcp/ANATOMY.md`.
-- Actually registering an MCP: edit `mcp_registry.jsonl` through `shell`,
-  then call `system(action="refresh")`.
-
-**Fast paths:** tool schema and the LTP v2 envelope -> §Tool surface; registry
-file location & writers -> §State & storage; the `lingtai.tools → lingtai` lazy
-back-edge -> §Scope; the generic composition/dispatch infrastructure ->
-`src/lingtai/tools/tool_family/CONTRACT.md`.
-
-## Scope
-
-- Canonical tool name: `mcp`.
-- Registered via `capabilities=["mcp"]` or via init.json.
-- Symmetric to `skills` / `knowledge`: a per-agent presentation capability with a
-  protected prompt section.
-- Non-goals: this tool never writes configuration or the registry, never
-  launches or configures a server, and never troubleshoots one. `info` keeps
-  its re-render + health behavior, `settings` is SHOW-only, and `manual` keeps
-  returning the umbrella manual body. External MCP registration remains
-  entirely outside this tool.
-- Ownership boundary: the module is the agent-callable tool slice only. The
-  registry service is imported lazily inside `_reconcile` and the handlers, per
-  the `lingtai.tools → lingtai` lazy-back-edge rule, as is the host adapter
-  inside `setup`.
+MCP is an explicit **read-only mode of Plugin**, not a management API, protocol
+change, or conversion of servers into Agent Plugin manifests. The independent
+`mcp` model tool and capability and `lingtai.tools.mcp`'s `DECLARATION`, `setup`,
+`get_schema`, and `get_description` SDK entry points are deliberately retired
+without an alias. Enable the `plugin` capability (default-on) and call
+`plugin(mode="mcp", action=..., input={}, reasoning=...)`. Plain Plugin calls
+retain their Agent Plugins behavior.
 
 ## Tool surface
+Guarded by: [MC001](BEHAVIORS.md#behavior-mc001),
+[PL002](../plugin/BEHAVIORS.md#behavior-pl002).
 
-`mcp` is an LTP v2 action-separated family (`src/lingtai/tools/CONTRACT.md`
-"Envelope") built on the generic `src/lingtai/tools/tool_family/`
-infrastructure. The public tool name stays `mcp`; its public action values are
-exactly `info` / `settings` / `manual`, with settings immediately before the
-reserved manual child. Exactly three read-only actions; the handler is
-`handle_mcp`, which delegates envelope validation and dispatch to a per-Agent
-`ToolFamily`.
+Plugin has one declaration and one mounted model tool. The optional root
+`mode` selector is `plugin` (default) or `mcp`; it is not action input. All
+three actions retain strictly empty `input={}`. `reasoning` is Host audit
+metadata, and root boolean `summarize` is the existing presentation control.
+Unknown root fields, non-object/non-empty input, and non-boolean summarize
+fail before owner I/O. Invalid mode returns the three-field
+`status="failed", error_code="INVALID_ARGUMENT"` envelope with message
+`mode must be 'plugin' or 'mcp'`; it grants no fallback or mutation authority.
 
-**Envelope.** The model-facing schema is `get_schema()` =
-`ToolFamily.build_schema()` with the existing `info`/`manual` signpost meaning
-preserved and `settings` described additively. Root properties are exactly `action`, `input`,
-`reasoning`, and `summarize`; `required` is `[action, input, reasoning]` and the
-root is closed (`additionalProperties: false`). `reasoning` is required Host
-InvocationContext/audit metadata declared by the family itself, never action
-input. `summarize` is the optional root presentation control, validated as
-boolean and stripped before dispatch. All actions take **no arguments**, so
-all use the canonical strict-empty `input`
-(`{type: object, properties: {}, additionalProperties: false}`) — the
-`MANUAL_INPUT_SCHEMA` literal exported by `tool_family.manual` and reused here
-as `_EMPTY_INPUT`, rather than hand-copied per action, so the schema-only and
-dispatching families cannot advertise different shapes. The root
-`allOf`/`if`/`then` correlates each `action` const with its own `input` branch,
-and `input.anyOf` discloses all branches with titles
-`info input` / `settings inventory input` / `manual input`.
+| Action in mcp mode | Result and exact ownership |
+|---|---|
+| `info` | Fresh registry/identity read, separate protected `mcp` prompt render, `{status:"ok", registry_path, registered_count, registered:[{name, summary, identity?}], problems}`. No manual, cache of tool results, registry write or launch. |
+| `settings` | Fresh canonical effective init composition used by boot/refresh; exactly `init.addons`, then `init.mcp`. |
+| `manual` | Installed `.library/intrinsic/capabilities/mcp/SKILL.md`, flat `{status, mcp_manual, manual_path}` and optional truthful `error`. Missing manual is degraded with empty body; no fallback, registry/identity read or scan. |
 
-| Action | Required inputs | Optional inputs | Success output | Error shapes |
-|---|---|---|---|---|
-| `info` | `action="info"`, `input={}`, `reasoning` | `summarize` | reconciles registry, re-injects prompt XML, returns `{status: "ok", registry_path, registered_count, registered: [{name, summary, identity?}], problems}` | see below |
-| `settings` | `action="settings"`, `input={}`, `reasoning` | `summarize` | `{settings: [{key, current, default, configurable, comment}, ...]}` for exactly `init.addons`, `init.mcp`; the latter row's current and default are fully redacted | fixed bounded no-row failures from the shared SHOW seam |
-| `manual` | `action="manual"`, `input={}`, `reasoning` | `summarize` | `{status: "ok", mcp_manual, manual_path}` | degraded shape below |
+Identity is attached only for a matching registered server with nonempty
+accounts. The service retains its secret-field allowlist and narrower prompt
+projection (including omission of volatile `last_verified_at`). Raw registry
+problems may contain invalid lines/private values; do not publish them.
 
-**Settings ownership.** `MCPSettingsProvider` fresh-reads the same canonical
-materialized/resolved init composition used by boot and refresh. Row order is
-exactly `init.addons`, then `init.mcp`; both are configurable, with logical
-defaults `[]` and `{}`. `init.mcp` sets the private sensitive marker so both
-current and default become `<redacted>` before serialization. Registry/catalog
-contents, identity, curated-addon config/session data, Task Cards, agent
-identity, legacy `mcp/servers.json`, and live client/process state are excluded.
-Provider/read/row/serialization failure makes the whole inventory unavailable;
-the shared 65,536-byte bound never returns partial rows. No writer exists.
+**Preserved envelopes.** Unknown/missing/unhashable action returns
+`{status:"error", message:"unknown action: <repr>, only 'info', 'settings', or 'manual' is supported"}`
+before input validation or I/O. Valid mode delegates to the existing generic
+ToolFamily validation. MCP-mode invalid envelopes retain the historical
+`unsupported mcp argument` / `unsupported mcp input field` labels, and the
+existing `input must be an object` / `summarize must be a boolean` labels;
+all use the unwrapped three-field `INVALID_ARGUMENT` failure. This private
+family identity is not a mounted tool or public alias.
 
-Each `registered` entry is `{name, summary}` and carries `identity` only when a
-matching identity record with non-empty `accounts` exists. `manual` returns
-`status: "degraded"` with an empty `mcp_manual` and an `error` string when
-`.library/intrinsic/capabilities/mcp/SKILL.md` is missing.
+## Settings
+Guarded by: [MC001](BEHAVIORS.md#behavior-mc001),
+[PL002](../plugin/BEHAVIORS.md#behavior-pl002).
 
-`manual` is the family-owned reserved child, registered directly from
-`tool_family.manual.build_manual_child(host.workdir, DECLARATION.manual)`.
-`ToolFamily.handle()` returns that child's canonical `content`/`structuredContent`
-result verbatim (no double wrap); mcp's pre-migration flat public shape — body
-under the tool-specific key `mcp_manual`, not the generic `manual` — is
-reconstructed by the Host-owned `_flatten_manual_result` strictly *after*
-dispatch returns, never inside a registered child. `manual` performs no registry
-read, rescan, or mutation.
+Each row has exactly `key`, `current`, `default`, `configurable`, `comment`,
+in that order. `init.addons` uses current effective list, default `[]`;
+`init.mcp` has both current and default fully `<redacted>`. Both are
+configurable and link `mcp-manual#configuration-settings`. This read-only
+inventory excludes registry/identity files, legacy `mcp/servers.json`, private
+addon config/session data, Task Cards and live process state. The same
+canonical reader is called afresh; no raw-file fallback or partial values.
+Provider/read/shape/serialization failure is fixed `SETTINGS_UNAVAILABLE` with
+no private detail or rows. A complete response over 65,536 UTF-8 bytes is fixed
+`SETTINGS_RESPONSE_TOO_LARGE` with no partial rows. There is no setter/reset.
 
-**Error shapes** (plain dicts):
-- Unknown action: `{"status": "error", "message": "unknown action: <action>, only 'info', 'settings', or 'manual' is supported"}`. This envelope is Host-owned, so `handle_mcp` renders it *before* delegating: it preserves the empty-string default for a missing `action` key and routes an unhashable `action` (`[]`, `{}` from invalid JSON — issue #513) here instead of into the generic dispatcher's dict lookup. An unknown action is rejected before any input validation or handler I/O.
-- Invalid envelope/input (from the generic dispatcher, canonical and unwrapped): `{"status": "failed", "error_code": "INVALID_ARGUMENT", "message": ...}` for a non-object `input` (`input must be an object`), an unknown root field (`unsupported mcp argument`), a non-boolean `summarize` (`summarize must be a boolean`), or any `input` key outside the selected action's strict-empty schema (`unsupported mcp input field`). Because all actions declare an empty `input`, any extra input field fails **before** provider/registry/manual I/O.
+## Declared host composition
+Guarded by: [PL002](../plugin/BEHAVIORS.md#behavior-pl002).
 
-## Declared host plugin
+`plugin.DECLARATION` receives `workdir`, `plugin_catalog`, `prompt_section`
+(fixed protected Plugin field), and `mcp_prompt_section` (a second grant of the
+existing `PromptSectionPort`, fixed protected MCP field). The Plugin binder
+composes both owner children without I/O; activation reconciles both fields
+before mounting only `plugin`. Neither writer accepts a section name or an
+unprotected flag. No whole Agent, transport, lifecycle, mount or registry-write
+port is granted. Kernel official names and tools defaults omit `mcp`.
 
-`mcp` is the first family declared under the kernel-owned declared host-plugin
-contract, [`src/lingtai/kernel/tool_plugin/CONTRACT.md`](../../kernel/tool_plugin/CONTRACT.md).
-This section is this family's own conformance evidence for that contract; the
-normative rules stay there.
+## State and registration boundary
+Guarded by: [MC001](BEHAVIORS.md#behavior-mc001).
 
-- **Static declaration.** `DECLARATION` is a module-level
-  `ToolPluginDeclaration` built at import, before any `Agent` exists. It
-  declares `actions=("info",)` and `settings=True` — the reserved SHOW child
-  and `manual` are appended by the
-  declaration and never declared as an operational action — one strict-empty
-  `input` schema per action, `manual="mcp"` (the installed manual destination
-  the reserved child reads), the canonical description, and
-  `glossary_package="lingtai.tools.mcp"`. It reaches the registrar because
-  `setup` hands it over, never because anything was scanned.
-- **Reserved official name.** `mcp` is in the kernel's static
-  `OFFICIAL_TOOL_PLUGIN_NAMES`. A second, different declaration of `mcp` is
-  refused before any bind, activate, or official mount, and cannot replace the live
-  claim. Re-registering the same declaration on refresh is idempotent.
-- **Required host ports.** `requires=("workdir", "prompt_section")`, and
-  nothing else is reachable. `workdir` supplies the working directory used by
-  `_reconcile` and by the reserved `manual` child; `prompt_section` is the
-  declaration-bound port that writes this plugin's own protected section;
-  `mcp` can neither
-  address another section nor write an unprotected one. `mcp` never receives
-  the `Agent`, and never receives the mount port.
-- **Bind versus activate versus mount.** `_bind(host)` composes the per-host
-  `ToolFamily` and the `handle_mcp` wrapper and returns a `BoundToolPlugin`; it
-  performs no I/O and mounts nothing. The boot reconcile — the first registry
-  read and protected prompt render — is the separately declared `activate`
-  step, which the kernel registrar runs after the name check and immediately
-  before mounting. `setup(agent)` is composition wiring only.
-- **Bounded additive public change.** The only new public action is the generic
-  reserved `settings` child immediately before `manual`. Tool name, closed
-  root envelope, `info`'s health snapshot, and `manual`'s flat
-  `status`/`mcp_manual`/`manual_path` shape (including the degraded shape) stay
-  unchanged.
-- **No transport.** Nothing here spawns a process, opens a connection, or
-  publishes a catalog record. The curated MCP server packages and
-  `src/lingtai/mcp_catalog.json` remain a separate external-transport concern
-  that this family does not use.
-- **Packaged manual, not plugin admission.** `plugin.json` and its one owned
-  `skills/mcp-manual/` Agent Skill are read by the existing
-  `plugin_registry.read_plugin` inside `Agent._install_intrinsic_manuals`, then
-  copied under the manifest/declaration name `mcp`. This is only the source of
-  the reserved child’s installed manual. It neither calls `register_plugins`
-  nor writes `mcp_registry.jsonl`; `mcp.json` is forbidden for this package, so
-  packaging cannot add or activate an MCP server. The static `DECLARATION`
-  remains the only model-facing mount route.
+Presentation owns no durable state. Registry validation, JSONL I/O, catalog
+load/decompression, identity projection and XML rendering remain in
+`services.mcp_registry`. Agent addon decompression and explicit MCP activation,
+protocol/client behavior, curated server descriptors/catalog, LICC and runtime
+identity producers are unchanged. Catalog is not registered; registered is not
+active. Plugin-discovered packages are not registered. Plugin-sourced server
+records remain named in the protected Plugin catalog and excluded from the
+standalone `<registered_mcp>` field, without losing the existing info snapshot.
+Authorized changes still use explicit file operations and one controlled
+System refresh/relaunch, followed by live verification; tool calls imply no
+permission to configure or repair anything.
 
-## State & storage
+## Manual packaging
+Guarded by: [PL002](../plugin/BEHAVIORS.md#behavior-pl002).
 
-The capability reads (never writes) the per-agent registry:
+The retained `mcp/plugin.json` source owns exactly one `skills/mcp-manual/`
+Agent Skill. The existing `plugin_registry.read_plugin` reader and
+`Agent._install_intrinsic_manuals` copy it to `capabilities/mcp`, including its
+references and README helper. This source is documentation only, not a declared
+external plugin. `mcp.json` is forbidden for this built-in documentation
+package, so packaging cannot register or activate a server. Plugin's default
+manual and schema point meaningfully to mcp-mode manual/info/settings; no
+independent tool is needed to discover or read the MCP library.
 
-```text
-<agent>/mcp_registry.jsonl      # one JSON record per line, sibling to init.json
-<agent>/init.json               # canonical source for init.addons/init.mcp SHOW
-```
+## Verification and maintenance
 
-Writers of this file are OUTSIDE this tool: the agent (through `shell`) and the
-boot-time addon decompression (`decompress_addons`, run by the Agent initializer,
-which appends catalog entries named in init.json's `addons: [...]`, append-only
-and idempotent). Identity records are read separately via `read_identities`. `mcp`
-only reads, validates, and renders; `info` re-reads and re-injects on demand.
-
-## Cross-platform invariants
-
-Do not change any of the following; documented for reviewers only.
-
-- **Registry path:** resolved by `_registry_path(working_dir)` in the service; the
-  file sits beside `init.json` in the agent working dir.
-- **Prompt injection:** `_reconcile(host)` writes the registry XML through the
-  declaration-granted `host.prompt_section.write_protected_section(xml)` port,
-  which is bound to `mcp` and `protected=True`; it does not receive a whole
-  Agent or call `agent.update_system_prompt`.
-- **Lazy import:** `src/lingtai/services/mcp_registry.py` is imported lazily
-  inside `_reconcile`; `setup` only imports the production host adapter and
-  hands `DECLARATION` to the kernel registrar.
-- **Identity safety:** identity projection strips secret fields before they can
-  reach the prompt; only allowlisted, non-secret account fields are surfaced.
-
-## Anchored claims
-
-| Claim | Source | Test |
-|---|---|---|
-| The capability renders the registry into the `mcp` prompt section | `src/lingtai/tools/mcp/__init__.py` (`_reconcile`) | `retired-test:test_mcp_capability::test_mcp_capability_renders_registry_into_prompt` |
-| `info` returns a health snapshot | `src/lingtai/tools/mcp/__init__.py` (`_reconcile`) | `retired-test:test_mcp_capability::test_mcp_show_action_returns_health_snapshot`, `retired-test:test_tool_family_mcp_migration_parity::test_info_returns_health_snapshot_without_manual_body` |
-| Unknown actions return a `{status: error}` dict | `src/lingtai/tools/mcp/__init__.py` (`handle_mcp`) | `retired-test:test_mcp_capability::test_mcp_show_unknown_action_returns_error`, `retired-test:test_tool_family_mcp_migration_parity::test_unknown_action_envelope_preserves_shape_with_current_actions` |
-| Public name/actions and the LTP v2 envelope are exact on both wires | `src/lingtai/tools/mcp/__init__.py` (`get_schema`) | `retired-test:test_tool_family_mcp_migration_parity::test_schema_exposes_exact_public_actions_and_envelope`, `::test_schema_survives_chat_and_responses_wires` |
-| All actions declare a strict-empty `input`; extra input fails before handler I/O | `src/lingtai/tools/mcp/__init__.py` (`_EMPTY_INPUT`, `_build_family`) | `retired-test:test_tool_family_mcp_migration_parity::test_all_actions_declare_canonical_strict_empty_input`, `::test_extra_input_field_is_rejected_before_any_io`, `::test_schema_only_and_dispatching_families_declare_identical_children` |
-| `manual` returns the exact body/path with no registry rescan and no double wrap | `src/lingtai/tools/mcp/__init__.py` (`_flatten_manual_result`) | `retired-test:test_tool_family_mcp_migration_parity::test_manual_returns_exact_body_and_path`, `::test_manual_performs_no_registry_rescan_or_mutation`, `::test_manual_result_is_not_double_wrapped` |
-| `settings` returns only the two MCP-owned rows, fully redacts `init.mcp`, and writes nothing | `src/lingtai/tools/mcp/settings.py` | `retired-test:test_mcp_settings` |
-| init.json `addons: [...]` triggers append-only decompression | `src/lingtai/services/mcp_registry.py` | `retired-test:test_mcp_capability::test_addons_list_triggers_decompression`, `::test_decompress_is_idempotent` |
-| Duplicate / invalid registry lines are dropped | `src/lingtai/services/mcp_registry.py` | `retired-test:test_mcp_capability::test_registry_drops_duplicates_by_name`, `::test_registry_drops_invalid_lines` |
-| `mcp` is declared statically, with a reserved official name and only two required host ports | `src/lingtai/tools/mcp/__init__.py` (`DECLARATION`) | `retired-test:test_tool_plugin_declaration::test_mcp_declaration_is_static_and_needs_no_agent`, `::test_mcp_is_reserved_and_declares_only_the_ports_it_consumes` |
-| Boot claims the official name and mounts exactly one `mcp` tool; a foreign declaration cannot take it | `src/lingtai/tools/mcp/__init__.py` (`setup`) | `retired-test:test_tool_plugin_declaration::test_boot_claims_the_official_name_and_mounts_exactly_one_mcp_tool`, `::test_a_foreign_declaration_cannot_take_the_live_mcp_name` |
-| The family never receives the `Agent`; binding alone activates and mounts nothing | `src/lingtai/tools/mcp/__init__.py` (`_bind`, `_reconcile`) | `retired-test:test_tool_plugin_declaration::test_host_facade_and_bound_plugin_never_expose_the_agent`, `::test_bind_alone_activates_nothing_and_mounts_nothing` |
-| Identity is attached only when present and secrets are stripped | `src/lingtai/tools/mcp/__init__.py` (`_registered_entry`) / service | `tests/test_mcp_identity_discovery.py::test_show_action_includes_identity_when_present`, `::test_secret_fields_are_stripped_from_accounts` |
-
-## Verification matrix
-
-| Invariant | Automated test | Manual check | Risk if broken |
-|---|---|---|---|
-| Registry renders into the prompt | `retired-test:test_mcp_capability::test_mcp_capability_renders_registry_into_prompt` | Add a registry line, inspect the `mcp` prompt section | Registered MCPs invisible to the model |
-| Tool is read-only (no mutation) | `retired-test:test_mcp_capability::test_mcp_show_action_returns_health_snapshot` | Call `info`, confirm `mcp_registry.jsonl` unchanged | Signpost promise violated; surprise mutations |
-| Unknown actions handled | `retired-test:test_mcp_capability::test_mcp_show_unknown_action_returns_error` | Call `mcp(action="foo")` | Silent mis-dispatch |
-| Public action order is exact | `retired-test:test_tool_family_mcp_migration_parity::test_real_agent_registers_exactly_one_public_mcp_tool` | Inspect the composed `mcp` schema's `action.enum` | Duplicate, misplaced, or renamed model-facing actions |
-| Invalid input fails before any registry/manual I/O | `retired-test:test_tool_family_mcp_migration_parity::test_extra_input_field_is_rejected_before_any_io` | Call `mcp` with a bogus `input` field, confirm no registry read | Signpost promise violated; wasted or surprising I/O |
-| Settings is five-field SHOW only | `retired-test:test_mcp_settings` | Call settings twice around an authorized init edit; verify ordered rows and redaction | Secret/config leakage or a hidden writer |
-| Addon decompression is idempotent | `retired-test:test_mcp_capability::test_decompress_is_idempotent` | Boot twice with the same `addons`, diff the registry | Duplicate registry growth |
-| Secrets never reach the prompt | `tests/test_mcp_identity_discovery.py::test_secret_fields_are_stripped_from_accounts` | Add an identity with a secret field, inspect `info` output | Credential leakage into the prompt |
-
-Run before merging:
-
-```text
-Automated recipe retired by test pruning (2026-10-12).
-No replacement conformance claimed for: test_mcp_capability, test_mcp_identity_discovery, test_mcp_settings, test_signpost_tool_descriptions, test_tool_family_mcp_migration_parity, test_tool_plugin_declaration.
-```
-
-## Schema and glossary ownership
-
-- **Canonical identifiers:** function names, JSON property names, action/enum
-  values, required fields, defaults, and bounds are canonical English literals.
-  The schema (`get_schema()`) and description (`get_description()`) are
-  language-independent; the optional `lang` argument is accepted for source
-  compatibility but ignored.
-- **Provider wire:** provider adapters resolve the top-level tool description
-  through `wire_tool_description`: the global `WIRE_TOOL_DESCRIPTION` pointer
-  while the resident `## tools` section is opted in via
-  `LINGTAI_TOOL_PROSE_SECTION_ENABLED`, otherwise the full
-  `FunctionSchema.description` prose (that section is off by default, so the
-  wire is where the canonical prose lands). Nested parameter descriptions are
-  unchanged either way.
-- **Glossary resources:** this package owns `glossary-en.md`, `glossary-zh.md`,
-  and `glossary-wen.md`. Each has strict YAML frontmatter
-  (`kind: tool-glossary`, `schema_version: 1`, `tool_package: tools.<pkg>`,
-  `language: <lang>`). English body is empty; zh/wen bodies contain concise
-  terminology mappings that quote immutable English identifiers and never offer
-  localized aliases.
-- **Fallback:** exact normalized language lookup, then English, then no
-  appendix. Fail-closed for localized text; fail-open for tool availability.
-- **Update triggers:** changing a function name, action/enum value, property
-  name, or user-visible concept requires reviewing all three glossary files in
-  the same PR.
-- **Validation:** `python -m lingtai.tools.glossary_validator --check`.
+`tests/test_plugin_mcp_mode.py` guards single-root/default preservation, schema,
+strict validation before I/O, distinct fixed prompt writers, fresh read-only
+registry/settings, redaction/65KB atomic failure, degraded/installed manual,
+SDK retirement and hermetic real Agent/full-prompt/manual installation.
+`tests/test_mcp_identity_discovery.py` uses the actual Plugin mcp mode and
+retains the service/producer identity assertions. Runtime/protocol owners are
+not changed by this interface consolidation. See the
+[Plugin contract](../plugin/CONTRACT.md) and [manual](skills/mcp-manual/SKILL.md).

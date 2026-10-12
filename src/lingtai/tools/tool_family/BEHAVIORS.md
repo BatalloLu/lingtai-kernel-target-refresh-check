@@ -324,14 +324,14 @@ state.
    2, "contact_count": 5, "last_verified_at": "2026-06-24T09:59:00+00:00",
    "bot_token": "123:SUPERSECRET"}]}` — deliberately including a
    secret-shaped key.
-2. Call `mcp(action="info", input={}, reasoning="...")` and inspect the
+2. Call `plugin(mode="mcp", action="info", input={}, reasoning="...")` and inspect the
    `registered` list and `registry_path`.
 3. Read the `<mcp>` section of your own current system prompt (the protected
    section the tool maintains) and look for `<registered_mcp>`, `<identity>`,
    `my_agent_bot`, `last_verified_at`, and `SUPERSECRET`.
 4. Write `<wd>/system/mcp_identities/ghost.json` (same schema, `mcp`:
    `"ghost"`, one account) and `<wd>/system/mcp_identities/bad.json` with
-   `schema: "something.else.v9"`; call `mcp(action="info", ...)` again. Then
+   `schema: "something.else.v9"`; call `plugin(mode="mcp", action="info", ...)` again. Then
    delete `<wd>/system/mcp_identities/telegram.json` and call `info` again.
 
 ### Expected evidence

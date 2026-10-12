@@ -1,8 +1,9 @@
 ---
 name: declared-host-tool-plugin
-contract_version: 7
+contract_version: 8
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_plugin_mcp_mode.py
   - src/lingtai/kernel/tool_plugin/ANATOMY.md
   - src/lingtai/kernel/tool_plugin/BEHAVIORS.md
   - src/lingtai/kernel/tool_plugin/__init__.py
@@ -111,7 +112,13 @@ It owns exactly four things:
 4. `register_official_tool_plugins` — the fail-fast registrar and its ordering
    promise.
 
-**contract_version 6** is a breaking Port-contract change: the `file_io`
+**contract_version 8** retires the independent official `mcp` name and adds
+`mcp_prompt_section`, a second grant of the existing `PromptSectionPort`, earned
+only by Plugin's read-only mcp mode. Its production adapter is fixed to the
+protected `mcp` section; `prompt_section` remains fixed to `plugin`. No generic
+section-selection or management operation is added.
+
+**contract_version 6** was a breaking Port-contract change: the `file_io`
 grant name, `FileIOPort`, and the `FileGrepMatch`/`FileTraversalStats` result
 Protocols were removed together with the `file` family and its
 `AgentFileIOAdapter`, so a declaration that names `file_io` now fails at
@@ -156,7 +163,7 @@ Coding agents and LingTai agents MUST observe the following.
   mounting are the registrar's steps, in that order, and `tool_mount` is never
   grantable to a declaration.
 - **Do not claim blanket conformance.** A family conforms only once its own
-  vertical slice lands with its own evidence. Today `mcp`, `avatar`, `context`,
+  vertical slice lands with its own evidence. Today `avatar`, `context`,
   `daemon`, `email`, `plugin`, `psyche`, `notification`, `shell`,
   `system`, `task_card`, `vision`, and `web` are declared, in that official
   order; the former later-family target register is now empty. Task Card is a
@@ -211,7 +218,7 @@ capability.
 | Port | Operation | Promise |
 |---|---|---|
 | `WorkdirPort` | `path -> Path` | The agent working directory, read through on every access so a holder never renders a stale directory after a refresh. Grants no read, write, listing, or lease operation. |
-| `PromptSectionPort` | `write_protected_section(body) -> None` | Replace **this plugin's own** protected system-prompt section. There is no section argument and no `protected` flag: the granted port is bound to the declaring plugin's name, so a plugin can neither address another's section nor write an unprotected one. |
+| `PromptSectionPort` | `write_protected_section(body) -> None` | Replace only the **fixed protected destination granted by the host**. There is no section argument and no `protected` flag. The ordinary grant targets the declaring plugin's section; Plugin's separately earned `mcp_prompt_section` targets only MCP. Neither grant can choose another destination or write an unprotected section. |
 | `AvatarParentPort` | `parent_name`, `venv_path` | Avatar-only parent context: the identity placed in a newborn prompt and optional runtime location inherited into its init. It grants no mutable admin/configuration surface or Agent reference. Avatar owns no rules-distribution action, so this port no longer carries an authorization-bit method for one (**contract_version 4**, breaking: `has_rule_privilege()` removed). |
 | `ContextRuntimePort` | `molt(args)`, `summarize(args)`, `rebuild(args)` | Context-only lifecycle-operation boundary. It preserves the live molt, record-only summary, and reconstruction/replay engines without granting Context the Agent or unrelated private state. |
 | `DaemonRuntimePort` | named model/tool/preset-policy/notification/log operations | Daemon-only host-runtime boundary: optional inherited service and regular tool snapshots, explicit-preset requirement + authorization, preset sandbox/load, notification route, time, Task Card, logging, and resolved manager options. Agent composition authorizes through its allowlist; standalone composition requires and directly loads caller-supplied preset paths. It never grants an Agent or a mount operation. |
@@ -232,17 +239,16 @@ capability.
 | `ToolMountPort` | `mount_tool(transaction) -> None` | Publish the registrar-created one-use transaction carrying one declaration and its exact `BoundToolPlugin` on the live model-facing tool surface. **Host-only** — it is absent from `GRANTABLE_HOST_PORTS` and is held solely by the registrar. |
 
 `GRANTABLE_HOST_PORTS` is the closed set a declaration may name. It contains
-exactly twenty grantable names: `workdir`, `prompt_section`, `avatar_parent`,
+exactly twenty grantable names: `workdir`, `prompt_section`, `mcp_prompt_section`, `avatar_parent`,
 `context_runtime`,
 `daemon_runtime`, `email_runtime`, `plugin_catalog`,
 `psyche_settings`, `notification_state`, `notifications`, `configuration`,
 `system_runtime`, `identity`, `shutdown`, `task_card_lifecycle`,
 `task_card_notifications`, `active_provider`, `web_runtime`, and
-`provider_identity` (`file_io` is no longer grantable): `mcp`
-consumes the first two as its base reference; Avatar, Context, and Daemon
+`provider_identity` (`file_io` is no longer grantable): Avatar, Context, and Daemon
 consume their respective narrow runtime ports; Email consumes `workdir` plus its
 Email-owned `email_runtime`; and Plugin consumes `workdir`, its own
-`prompt_section`, and the
+`prompt_section`, fixed `mcp_prompt_section`, and the
 read-only `plugin_catalog` projection; Psyche consumes `workdir` plus only the
 read-only `psyche_settings` snapshot; Shell consumes `workdir` plus
 `notifications` and `configuration` for its existing durable async execution
@@ -266,8 +272,7 @@ by a declaration that named it, because `ToolPluginHost.grant` copies exactly
 `requires`. `tool_mount` remains absent. Later families must earn a named
 capability-native port with implementation, adapter, declaration, and vertical
 evidence rather than pre-enumerating a dispatch escape hatch.
-`daemon_runtime`, `email_runtime`, and `notification_state`: `mcp` consumes the
-first two as the shared-C base reference; Avatar, Context, and Daemon consume
+`daemon_runtime`, `email_runtime`, and `notification_state`: Avatar, Context, and Daemon consume
 their respective narrow runtime ports; Email consumes `workdir` plus its
 Email-owned `email_runtime` boundary; and Notification consumes exactly
 `workdir` plus `notification_state`. `email_runtime` is a grant name, not a
@@ -459,7 +464,7 @@ protected-field projection, closed vanilla-skills namespace, and detached
 catalog-state proof:
 
 - declaration staticness and the
-  `mcp`/`avatar`/`context`/`daemon`/`email`/`plugin`
+  `avatar`/`context`/`daemon`/`email`/`plugin`
   declared-versus-composed surfaces, including the official Daemon binding
   manager's live notification-route retry regression, and the standard-table
   proof that `plugin_catalog`/`avatar_parent` stay unreachable for a
@@ -467,7 +472,7 @@ catalog-state proof:
 `retired-test:test_notification_delay_alarm` plus `tests/test_notification_store.py`
 preserve Notification Core delay/timer and Store behavior:
 
-- declaration staticness and the `mcp`/`avatar`/`context`/`daemon`/`email`/
+- declaration staticness and the `avatar`/`context`/`daemon`/`email`/
   `notification` declared-versus-composed surfaces, including the official
   Daemon binding manager's live notification-route retry regression;
 - construction-time validation, including the reserved `manual` action,
@@ -485,8 +490,8 @@ preserve Notification Core delay/timer and Store behavior:
   `capability_skipped`;
 - declared-versus-shipped agreement — a plugin advertising undeclared actions
   or no action enum is refused at `bind()` with nothing mounted or claimed, and
-  `mcp`'s manual destination and per-action `input` schemas follow its
-  declaration;
+  Plugin's default manual destination and per-action `input` schemas follow its
+  declaration; its explicit mcp mode reuses the installed MCP manual;
 - registrar ordering and issuance — `bind()` alone activates and mounts nothing;
   each successful member runs bind, activate, mount, then claim; re-registering
   the same declaration object repeats that controlled sequence; and only the
@@ -496,12 +501,12 @@ preserve Notification Core delay/timer and Store behavior:
 - claim lifecycle across refresh — the deep-refresh owner proves that removing
   and re-adding opt-in Web keeps its public claim, schema, and handler surface
   synchronized.
-- the live slices — boot claims and mounts exactly one `mcp`, one `vision`,
+- the live slices — boot claims and mounts exactly one `plugin`, no independent `mcp`, one `vision`,
   and one `web` tool; a post-seal mount raises, a foreign declaration cannot take a live
   name, and
   neither a foreign `BoundToolPlugin` nor a directly constructed transaction
   can replace the official handler/schema/claim; the prompt-section port writes
-  only this plugin's protected section;
+  only its fixed protected section, with Plugin's two separate fixed writers;
 - kernel isolation — no file under `src/lingtai/kernel/` imports
   `lingtai.tools`, with relative imports resolved so the kernel's own
   `base_agent.tools` module is not mistaken for it;

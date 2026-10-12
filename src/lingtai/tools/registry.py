@@ -108,17 +108,16 @@ BUILTIN_TOOLS: dict[str, str] = {
     "shell": "lingtai.tools.bash",
     "avatar": "lingtai.tools.avatar",
     "daemon": "lingtai.tools.daemon",
-    "mcp": "lingtai.tools.mcp",
     # Notification is always-on like the former intrinsic, but now mounts only
     # through its declared official host-plugin route.
     "notification": "lingtai.tools.notification",
-    # Agent Plugins (agent-plugins.org v1.0.0) catalog. The *tool* is a twin of
-    # ``mcp``: pure presentation, zero side effects — it renders the catalog and
+    # Agent Plugins (agent-plugins.org v1.0.0) catalog, plus explicit mcp mode.
+    # One read-only model-query root renders the two distinct protected fields and
     # reports the boot registration snapshot, and no action it exposes mounts
     # anything. Mounting itself happens once per boot/refresh, outside this tool,
     # in ``services.plugin_registry.register_plugins``: a plugin declared in
     # ``init.json`` ``manifest.plugins`` has its validated skill directories
-    # composed into the skills catalog and its ``mcp.json`` servers written to
+    # projected only into the protected Plugin field and its ``mcp.json`` servers written to
     # ``mcp_registry.jsonl`` as ``source="plugin:<name>"`` records. Registry-level
     # only — nothing is executed, and activating a server still needs an
     # ``init.json`` top-level ``mcp`` entry. A plugin merely *discovered* on an
@@ -152,11 +151,10 @@ CORE_DEFAULTS: dict[str, dict] = {
     "shell": {},
     "avatar": {},
     "daemon": {},
-    "mcp": {},
     # Notification keeps its former mandatory availability, now through the
     # declared official-plugin registrar rather than direct intrinsic wiring.
     "notification": {},
-    # Default-on for the same reason ``mcp`` is: the capability is pure
+    # Default-on for both Plugin and MCP queries: the capability is pure
     # presentation. It renders a read-only catalog and writes nothing at all,
     # so booting it on every agent costs one directory scan and risks nothing.
     "plugin": {},

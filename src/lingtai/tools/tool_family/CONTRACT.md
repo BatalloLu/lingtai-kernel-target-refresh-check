@@ -15,7 +15,7 @@ related_files:
   - src/lingtai/tools/web_search/CONTRACT.md
   - src/lingtai/tools/web_search/__init__.py
   - src/lingtai/tools/mcp/CONTRACT.md
-  - src/lingtai/tools/mcp/__init__.py
+  - src/lingtai/tools/plugin/_mcp.py
   - src/lingtai/tools/plugin/CONTRACT.md
   - src/lingtai/tools/plugin/__init__.py
   - src/lingtai/tools/avatar/CONTRACT.md
@@ -248,24 +248,13 @@ it. `WebManager.handle()` also stamps `current_setting` onto any
 envelope-level failure result (search/browse/unknown-action) before
 returning, unchanged from before.
 
-`mcp/__init__.py` (`../mcp/CONTRACT.md`) is the second production Adapter and
-the minimal shape of one: a two-child family (`info`, `manual`) keeping its
-exact public tool name and action values, where both children declare the
-canonical strict-empty `input`. It registers `build_manual_child(agent,
-"mcp")` directly and unwrapped, and flattens the canonical child result to
-`mcp`'s own `status`/`mcp_manual`/`manual_path` public shape post-dispatch in
-`_flatten_manual_result`. It also establishes how a consumer keeps a
-pre-migration public *error* envelope that this package's dispatcher does not
-reproduce: `handle_mcp` renders `mcp`'s exact unknown-action envelope itself,
-before delegating, covering the missing-action empty-string default and
-unhashable `action` values (`[]`/`{}` from invalid JSON) that
-`ToolFamily.handle`'s `action not in self._children` dict lookup would raise
-`TypeError` on. It routes on `child_names`, the public ordered tuple, whose
-`in` compares by `==` and never hashes — so the unhashable case is handled by
-construction, with no exception handler needed. Per "Implementation
-independence", the fix belongs in the consumer; this package's canonical
-`ACTION_REQUIRED` shape is never widened to accommodate one family's legacy
-envelope.
+`plugin/_mcp.py` (see `../plugin/ANATOMY.md` and
+`../mcp/CONTRACT.md`) is the private MCP-mode consumer. Its family keeps
+`info`, `settings`, and `manual` with strict-empty child inputs and the exact
+historical MCP result/error envelopes. Plugin's public root selects this owner
+with `mode="mcp"`; there is no separately mounted MCP declaration or schema.
+The installed MCP manual and separately granted fixed protected MCP writer
+remain reachable. Generic dispatch does not acquire MCP-specific policy.
 
 `knowledge/__init__.py` is the third production Adapter/consumer:
 one `_build_family(agent | None)` registers `info` and `manual` children from a
