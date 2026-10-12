@@ -257,9 +257,8 @@ class SessionManager:
         # runtime state — not persisted, since a fresh/restored session has
         # fresh pressure. The streak state machine, warn decision, and reminder
         # prose all live in the unified ``ContextPressureReminder`` abstraction
-        # (``reminders/context_pressure.py``); SessionManager delegates to it and
-        # keeps the legacy ``context_pressure_streak`` / ``note_context_pressure_round``
-        # surface as thin compatibility shims for meta_block and existing tests.
+        # (``reminders/context_pressure.py``), exposed through
+        # ``context_pressure_reminder`` for runtime consumers.
         self._context_pressure = ContextPressureReminder()
 
         # Streaming state
@@ -587,43 +586,13 @@ class SessionManager:
     # Sustained context-pressure / molt reminder (channel B)
     #
     # The state machine, warn decision, and reminder prose live in
-    # ``ContextPressureReminder``. These are thin compatibility shims: meta_block
-    # (``build_molt_context`` / ``build_reconstruction_tool_meta``) and the
-    # streak tests still read ``context_pressure_streak`` /
-    # ``context_pressure_warning_active`` and call ``note_context_pressure_round``.
+    # ``ContextPressureReminder``; consumers use the owned reminder directly.
     # ------------------------------------------------------------------
 
     @property
     def context_pressure_reminder(self) -> ContextPressureReminder:
         """The unified molt/context-pressure reminder for this session."""
         return self._context_pressure
-
-    @property
-    def context_pressure_streak(self) -> int:
-        """Consecutive fresh provider rounds at/above the reconstruction ratio."""
-        return self._context_pressure.streak
-
-    @property
-    def context_pressure_warning_active(self) -> bool:
-        """True once context has been high for >= WARN_AFTER_ROUNDS fresh rounds.
-
-        This drives the ``_meta.agent_meta.agent_state.context.molt`` warning. It
-        is *current state*, not a one-shot event: it stays True as long as the
-        streak remains at/above the warn count and drops the moment context
-        relaxes below the threshold (which resets the streak).
-        """
-        return self._context_pressure.active
-
-    def note_context_pressure_round(self, usage: float, *, round_id: int) -> None:
-        """Record one *fresh provider round*'s context usage for the streak.
-
-        Delegates to :meth:`ContextPressureReminder.note_round`; retained as the
-        SessionManager-level entry point that ``_track_usage`` and existing tests
-        call.  ``round_id`` (the ``_api_calls`` counter) dedups multiple
-        observations of one provider round; usage semantics are documented on
-        the reminder.
-        """
-        self._context_pressure.note_round(usage, round_id=round_id)
 
     # ------------------------------------------------------------------
     # Token tracking
@@ -767,7 +736,7 @@ class SessionManager:
                     latest_context_usage = provider_usage
                 else:
                     provider_usage = -1.0  # window unknown -> sentinel (no change)
-                self.note_context_pressure_round(
+                self.context_pressure_reminder.note_round(
                     provider_usage, round_id=self._api_calls
                 )
             except Exception:

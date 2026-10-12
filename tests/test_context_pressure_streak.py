@@ -10,9 +10,11 @@ advance the streak, and a drop below threshold resets it.
 """
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 from lingtai.kernel.config import AgentConfig
+from lingtai.kernel.meta_block import build_molt_context
 from lingtai.kernel.session import (
     SessionManager,
     CONTEXT_PRESSURE_HIGH_RATIO,
@@ -84,17 +86,28 @@ def test_track_usage_advances_streak_on_fresh_high_rounds():
 
     The streak uses the PROVIDER-reported input tokens, not the local estimate:
     estimate_context_tokens is pinned LOW (30000 -> 0.30) yet the provider's
-    80000 -> 0.80 still drives the streak."""
+    90000 -> 0.90 still drives the streak."""
     sm, _, mock_session = make_session_manager()
     sm.ensure_session()
     mock_session.context_window.return_value = 100000
     mock_session.interface.estimate_context_tokens.return_value = 30000  # ignored
 
+    agent = SimpleNamespace(_intrinsics={"context"}, _session=sm)
+    reminder = sm.context_pressure_reminder
     for i in range(3):
         sm._track_usage(_response(90000, f"call-{i}"))
+        assert reminder.streak == i + 1
+        assert reminder.last_round_id == i + 1
+        assert reminder.last_usage == 0.90
+        assert reminder.active is (i == 2)
+        before = reminder.snapshot()
+        for _ in range(2):
+            molt = build_molt_context(agent, 0.90)
+            assert molt == reminder.current_molt_context(0.90)
+            assert (molt is not None) is (i == 2)
+        assert reminder.snapshot() == before
 
-    assert sm.context_pressure_streak == 3
-    assert sm.context_pressure_warning_active is True
+    assert "3 consecutive fresh model calls" in molt
 
 
 def test_track_usage_uses_provider_input_not_local_estimate():
@@ -108,8 +121,8 @@ def test_track_usage_uses_provider_input_not_local_estimate():
     for i in range(4):
         sm._track_usage(_response(20000, f"low-{i}"))  # provider 0.20 -> not high
 
-    assert sm.context_pressure_streak == 0
-    assert sm.context_pressure_warning_active is False
+    assert sm.context_pressure_reminder.streak == 0
+    assert sm.context_pressure_reminder.active is False
 
 
 def test_track_usage_resets_streak_when_pressure_relieved():
@@ -119,8 +132,29 @@ def test_track_usage_resets_streak_when_pressure_relieved():
 
     sm._track_usage(_response(90000, "c1"))  # provider 0.90
     sm._track_usage(_response(90000, "c2"))
-    assert sm.context_pressure_streak == 2
+    assert sm.context_pressure_reminder.streak == 2
 
     sm._track_usage(_response(30000, "c3"))  # provider 0.30 -> relieved
-    assert sm.context_pressure_streak == 0
-    assert sm.context_pressure_warning_active is False
+    assert sm.context_pressure_reminder.streak == 0
+    assert sm.context_pressure_reminder.active is False
+
+
+def test_track_usage_unknown_window_preserves_pressure_state():
+    sm, _, mock_session = make_session_manager()
+    sm.ensure_session()
+    sm._track_usage(_response(90000, "high-1"))
+    sm._track_usage(_response(90000, "high-2"))
+    reminder = sm.context_pressure_reminder
+    assert reminder.streak == 2
+
+    mock_session.context_window.return_value = 0
+    sm._track_usage(_response(90000, "unknown-window"))
+    assert reminder.streak == 2
+    assert reminder.last_round_id == 2
+    assert reminder.last_transition_reason == "unknown_usage"
+
+    mock_session.context_window.return_value = 100000
+    sm._track_usage(_response(85000, "threshold-high"))
+    assert reminder.streak == 3
+    assert reminder.last_round_id == 4
+    assert reminder.active is True
