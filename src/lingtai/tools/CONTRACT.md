@@ -131,6 +131,13 @@ ToolExecutor removes public `reasoning` before handler dispatch and may preserve
 it as internal `_reasoning` metadata. `_reasoning` must never appear in the
 model-facing schema or nested `input`.
 
+The retired `secondary` argument has no executor meaning: it is neither stripped
+nor interpreted as a nested tool call. It reaches the ordinary dispatch boundary,
+where an unexpected key follows the tool's normal validation or function-error
+path. A handler that legitimately accepts that name receives ordinary data, not
+a dispatch instruction. No deprecated-ignore event or normalization-log field
+is emitted. Guarded by [LP001](BEHAVIORS.md#behavior-lp001).
+
 ## Contract rules
 
 ### Envelope
