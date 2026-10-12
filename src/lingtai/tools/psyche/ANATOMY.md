@@ -22,7 +22,6 @@ related_files:
   - src/lingtai/tools/psyche/glossary-wen.md
   - src/lingtai/intrinsic_skills/psyche-manual/SKILL.md
   - src/lingtai/intrinsic_skills/psyche-manual/reference/settings/SKILL.md
-  - src/lingtai/intrinsic_skills/psyche-manual/reference/network-rules/SKILL.md
   - tests/test_project_creation.py
 maintenance: |
   Keep paths real, repo-relative, duplicate-free, and reciprocal with the paired

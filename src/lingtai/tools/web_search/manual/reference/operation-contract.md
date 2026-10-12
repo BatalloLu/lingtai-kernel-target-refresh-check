@@ -4,8 +4,8 @@ description: >
   Exact web action contract for unfamiliar or consequential calls: references and
   cursors, strict settings, complete delivery, provider routing, and public URL
   boundaries.
-version: 2.0.0
-last_changed_at: "2026-09-09T10:53:00Z"
+version: 2.1.0
+last_changed_at: "2026-10-12T00:00:00Z"
 related_files:
   - src/lingtai/tools/web_search/manual/SKILL.md
   - src/lingtai/tools/web_search/__init__.py
@@ -216,10 +216,10 @@ retry.
 ## One explicit recovery route and public boundary
 
 If static browse reports typed unsupported content or `NO_TEXT_BLOCKS`, choose
-one named, authorized procedure: Tier 0 for a PDF, a source-specific API for
-structured data, or the documented Playwright/academic route. Use the compact
-[tier index](tier-quick-refs/SKILL.md) and do not silently chain routes or
-advertise them as `web` actions.
+one separately authorized procedure using its current upstream documentation,
+for example a public PDF extractor or a source-specific API. The kernel no
+longer bundles external tier recipes or helper scripts. Do not silently chain
+routes or advertise them as `web` actions.
 
 For a documented public HTTP fallback only, if `curl` is empty or clearly
 incomplete, retry once with a crawler User-Agent such as `OAI-SearchBot`,

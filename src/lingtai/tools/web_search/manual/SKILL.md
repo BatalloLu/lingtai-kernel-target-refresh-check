@@ -4,8 +4,8 @@ description: >
   First-call search→browse route for the single web capability; exact settings,
   complete-output, provider, and public-URL hazards are retained here or routed
   to one focused reference.
-version: 9.0.0
-last_changed_at: "2026-09-09T10:53:00Z"
+version: 9.1.0
+last_changed_at: "2026-10-12T00:00:00Z"
 related_files:
   - src/lingtai/tools/web_search/__init__.py
   - src/lingtai/tools/web_search/settings.py
@@ -13,10 +13,7 @@ related_files:
   - src/lingtai/tools/web_search/ANATOMY.md
   - src/lingtai/tools/web_search/CONTRACT.md
   - src/lingtai/tools/web_search/manual/reference/operation-contract.md
-  - src/lingtai/tools/web_search/manual/reference/tier-quick-refs/SKILL.md
-  - src/lingtai/tools/web_search/manual/reference/routing-and-sites/SKILL.md
   - src/lingtai/tools/web_search/manual/reference/agent-native-browser.md
-  - src/lingtai/tools/web_search/manual/scripts/extract_page.py
   - src/lingtai/tools/browser/core.py
 maintenance: |
   This is the sole installed web-manual entry. Keep its first-call route,
@@ -94,39 +91,28 @@ timing and authorized changes; then SHOW again. No set/reset action exists.
 installed bundle without provider construction, network or settings I/O, even
 when settings are malformed. Missing installation is reported as degraded.
 
-## Routing table
-
-Choose one needed reference, not every route. External procedures are not Web
-actions and grant no install, credential, paid-use or access-control authority.
+## Focused references
 
 | Need | Read |
 |---|---|
 | Exact calls, settings, delivery or provider failures | [Operation contract](reference/operation-contract.md) |
-| Unsupported static content / `NO_TEXT_BLOCKS` | [Tier index](reference/tier-quick-refs/SKILL.md) |
-| Site-specific choice | [Routing and sites](reference/routing-and-sites/SKILL.md) |
 | Forms, login, SPA, upload or human verification | [Interactive browser](reference/agent-native-browser.md) |
-| Papers, feeds, social or current facts | [Academic](reference/academic-pipeline.md), [news/RSS](reference/news-and-rss.md), [social](reference/social-media.md), [real-time](reference/realtime-data.md) |
-| Queries or explicit external search vendor | [Search strategy](reference/search-strategies.md) |
-| Detection/rate/CAPTCHA boundary | [Stealth](reference/stealth.md) |
-| Retained scripts/assets and known limitations | [Bundle maintenance](reference/maintenance-bundles/SKILL.md) |
 
-## Nested reference catalog
-
-```yaml
-- name: web-manual-tier-quick-refs
-  location: reference/tier-quick-refs/SKILL.md
-  description: Nested web-manual reference for choosing one recovery tier.
-- name: web-manual-routing-and-sites
-  location: reference/routing-and-sites/SKILL.md
-  description: Nested web-manual reference for site-specific procedure selection.
-- name: web-manual-maintenance-bundles
-  location: reference/maintenance-bundles/SKILL.md
-  description: Nested web-manual reference for retained helpers, assets and footprint.
-```
+Unsupported content is a limitation to report, not permission to run an
+extraction chain. Choose one separately authorized procedure using its current
+upstream documentation. External procedures are not Web actions and grant no
+install, credential, paid-use or access-control authority. Respect rate limits
+and `Retry-After`; never impersonate a user, rotate identities, solve CAPTCHA,
+or bypass login, paywall, robots directives, or other access controls.
 
 ## Cleanup / Footprint
 
 Web writes complete artifacts under `tmp/tool-results/`; references and snapshots
-are process-local. Legacy helpers can leave separate caches/downloads/output.
-Use [the exact footprint and consent route](reference/maintenance-bundles/SKILL.md#cleanup--footprint)
-after a large retrieval session or before retiring its files. No implicit cleanup.
+are bounded process-local state. No implicit cleanup. Preserve live referenced
+results, evidence, user data, configuration and secrets. Before any deletion,
+use `skills-manual` → `reference/cleanup-footprint-contract.md#shared-footprint-check-recipe`
+to inspect only this Agent's selected `tmp/tool-results/web-*` and exact
+task-created outputs. Present a dry-run, obtain explicit human consent, then
+perform only the approved cleanup and record timestamp, mode, count/bytes,
+path summary and approval. An old helper cache or installed copy is not
+implicitly disposable merely because its source bundle was retired.
