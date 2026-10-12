@@ -4,11 +4,11 @@ The curated addon servers (telegram, feishu, wechat, whatsapp) each persist a
 non-secret identity document to ``system/mcp_identities/<name>.json`` using the
 shared ``lingtai.mcp.identity.v1`` schema. Before this change those documents
 were only reachable via each addon's own ``accounts`` action — invisible from
-the generic ``mcp(action="info")`` surface that agents use to discover which
+the generic ``plugin(mode="mcp", action="info")`` surface that agents use to discover which
 MCP servers they have.
 
 These tests cover the generic reader (``read_identities``) and its surfacing
-through ``mcp(action="info")`` and the system-prompt registry XML, and — most
+through ``plugin(mode="mcp", action="info")`` and the system-prompt registry XML, and — most
 importantly — prove that NO secret-shaped fields are ever propagated, even when
 a (hypothetical) malformed identity file on disk contains them.
 """
@@ -71,7 +71,7 @@ def _mk_agent(tmp_path: Path, *, addons=None):
         service=make_mock_service(),
         agent_name="test",
         working_dir=workdir,
-        capabilities={"mcp": {}},
+        capabilities={"plugin": {}},
         addons=addons,
     ), workdir
 
@@ -303,15 +303,15 @@ def test_unknown_account_fields_are_dropped_by_default(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# mcp(action="info") surfacing
+# plugin(mode="mcp", action="info") surfacing
 # ---------------------------------------------------------------------------
 
 def test_show_action_includes_identity_when_present(tmp_path):
     agent, workdir = _mk_agent(tmp_path, addons=["telegram"])
     _write_identity(workdir, "telegram", _telegram_identity())
 
-    handler = agent._tool_handlers.get("mcp")
-    result = handler({"action": "info", "input": {}, "reasoning": "check registry health"})
+    handler = agent._tool_handlers.get("plugin")
+    result = handler({"mode": "mcp", "action": "info", "input": {}, "reasoning": "check registry health"})
 
     registered = {r["name"]: r for r in result["registered"]}
     assert "telegram" in registered
@@ -327,8 +327,8 @@ def test_show_action_includes_identity_when_present(tmp_path):
 def test_show_action_omits_identity_when_absent(tmp_path):
     agent, workdir = _mk_agent(tmp_path, addons=["telegram"])
     # No identity file written.
-    handler = agent._tool_handlers.get("mcp")
-    result = handler({"action": "info", "input": {}, "reasoning": "check registry health"})
+    handler = agent._tool_handlers.get("plugin")
+    result = handler({"mode": "mcp", "action": "info", "input": {}, "reasoning": "check registry health"})
     registered = {r["name"]: r for r in result["registered"]}
     assert "identity" not in registered["telegram"]
 
@@ -338,8 +338,8 @@ def test_show_action_ignores_identity_without_registry_match(tmp_path):
     registered entry."""
     agent, workdir = _mk_agent(tmp_path, addons=["telegram"])
     _write_identity(workdir, "ghost", _telegram_identity())
-    handler = agent._tool_handlers.get("mcp")
-    result = handler({"action": "info", "input": {}, "reasoning": "check registry health"})
+    handler = agent._tool_handlers.get("plugin")
+    result = handler({"mode": "mcp", "action": "info", "input": {}, "reasoning": "check registry health"})
     names = {r["name"] for r in result["registered"]}
     assert "ghost" not in names
 
@@ -353,8 +353,8 @@ def test_identity_rendered_into_prompt_xml(tmp_path):
     _write_identity(workdir, "telegram", _telegram_identity())
 
     # Re-render the registry now that the identity file exists.
-    handler = agent._tool_handlers.get("mcp")
-    handler({"action": "info", "input": {}, "reasoning": "check registry health"})
+    handler = agent._tool_handlers.get("plugin")
+    handler({"mode": "mcp", "action": "info", "input": {}, "reasoning": "check registry health"})
 
     section = agent._prompt_manager._sections.get("mcp")
     body = section.body if hasattr(section, "body") else str(section)
@@ -368,7 +368,7 @@ def test_last_verified_at_absent_from_prompt_xml_but_present_in_read_identities(
     """`last_verified_at` is a volatile re-verification timestamp that changes
     on plain refresh with no source/config change. It must remain visible in
     the underlying discovered identity state (`read_identities`) and the
-    `mcp(action="info")` diagnostic payload, but must be excluded from the
+    `plugin(mode="mcp", action="info")` diagnostic payload, but must be excluded from the
     model-facing `<registered_mcp>` prompt XML — at both the identity level
     (the old `<last_verified_at>` sibling of `<account>`) and the account
     level — so it never invalidates the prompt-cache prefix."""
@@ -382,9 +382,9 @@ def test_last_verified_at_absent_from_prompt_xml_but_present_in_read_identities(
         "2026-06-24T09:59:00+00:00"
     )
 
-    # Diagnostic payload (mcp(action="info")) still carries it too.
-    handler = agent._tool_handlers.get("mcp")
-    result = handler({"action": "info", "input": {}, "reasoning": "check registry health"})
+    # Diagnostic payload (plugin(mode="mcp", action="info")) still carries it too.
+    handler = agent._tool_handlers.get("plugin")
+    result = handler({"mode": "mcp", "action": "info", "input": {}, "reasoning": "check registry health"})
     registered = {r["name"]: r for r in result["registered"]}
     ident = registered["telegram"]["identity"]
     assert ident["last_verified_at"] == "2026-06-24T09:59:00+00:00"
@@ -413,8 +413,8 @@ def test_prompt_xml_has_no_secret_even_with_poisoned_file(tmp_path):
             ],
         },
     )
-    handler = agent._tool_handlers.get("mcp")
-    handler({"action": "info", "input": {}, "reasoning": "check registry health"})
+    handler = agent._tool_handlers.get("plugin")
+    handler({"mode": "mcp", "action": "info", "input": {}, "reasoning": "check registry health"})
     section = agent._prompt_manager._sections.get("mcp")
     body = section.body if hasattr(section, "body") else str(section)
     assert "SECRET" not in body

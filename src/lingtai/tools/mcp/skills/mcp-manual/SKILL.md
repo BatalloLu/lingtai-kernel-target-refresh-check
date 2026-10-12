@@ -8,6 +8,9 @@ description: >
 version: 3.6.0
 last_changed_at: 2026-09-09T03:20:00Z
 related_files:
+- src/lingtai/tools/plugin/ANATOMY.md
+- src/lingtai/tools/plugin/CONTRACT.md
+- src/lingtai/tools/plugin/__init__.py
 - src/lingtai/tools/skills/manual/reference/cleanup-footprint-contract.md
 - src/lingtai/tools/mcp/__init__.py
 - src/lingtai/tools/mcp/settings.py
@@ -22,15 +25,15 @@ maintenance: |
   Keep this short router aligned with the routed references, installed manual layout, and mcp description; update when MCP behavior, setup ownership, or safety boundaries change.
 ---
 
-# MCP capability
+# Plugin MCP mode
 
-`mcp` is a **read-only signpost**, not a server-management API. Every action
+`plugin` with explicit root `mode="mcp"` is a **read-only signpost**, not a server-management API. Every action
 uses strict `input={}`; routine inspection needs no prerequisite reading:
 
 ```text
-mcp(action="info", input={}, reasoning="inspect MCP registry health")
-mcp(action="settings", input={}, reasoning="show effective MCP settings")
-mcp(action="manual", input={}, reasoning="read MCP guidance")
+plugin(mode="mcp", action="info", input={}, reasoning="inspect MCP registry health")
+plugin(mode="mcp", action="settings", input={}, reasoning="show effective MCP settings")
+plugin(mode="mcp", action="manual", input={}, reasoning="read MCP guidance")
 ```
 
 - **info** re-reads registry/identity caches, reconciles the protected prompt

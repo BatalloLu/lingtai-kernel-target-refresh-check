@@ -1,8 +1,8 @@
 """MCP registry infrastructure — validation, I/O, identities, addon decompression.
 
 This is the non-tool MCP registry machinery — a *service*, not an agent-callable
-tool. The agent-facing ``mcp`` signpost tool (which renders this data into the
-system prompt) lives at ``lingtai/tools/mcp/`` and imports these helpers lazily. Other
+tool. Plugin's explicit ``mode="mcp"`` signpost (which renders this data into the
+system prompt) lives at ``lingtai/tools/plugin/_mcp.py`` and imports these helpers lazily. Other
 callers (the Agent initializer's addon decompression, the mcp inbox poller)
 import from here directly.
 
@@ -207,7 +207,7 @@ def _append_record(working_dir: Path, record: dict) -> None:
 # tell *which* configured account/bot/channel a registered MCP surface
 # represents — without reading private config or making network calls. Before
 # this reader they were only reachable through each addon's own ``accounts``
-# action, invisible from the generic ``mcp(action="info")`` surface.
+# action, invisible from the generic ``plugin(mode="mcp", action="info")`` surface.
 #
 # This reader is a strict projection, never a passthrough: it surfaces only an
 # explicit allowlist of non-secret keys. Even if an identity file on disk were
@@ -405,7 +405,7 @@ def _escape_xml(s: str) -> str:
 #: ``last_verified_at``: it is a volatile re-verification timestamp that
 #: changes on plain refresh with no source/config change, which would
 #: otherwise invalidate the prompt-cache prefix. It remains in the disk
-#: identity document, `read_identities()`, and the ``mcp(action="info")``
+#: identity document, `read_identities()`, and the ``plugin(mode="mcp", action="info")``
 #: diagnostic payload — only this prompt render omits it.
 _PROMPT_ACCOUNT_KEYS = tuple(
     k for k in IDENTITY_SAFE_ACCOUNT_KEYS if k != "last_verified_at"
@@ -444,14 +444,14 @@ def _build_registry_xml(
             "one by adding an entry under `mcp` in your init.json (or a record "
             "in mcp_registry.jsonl) and run system(action=\"refresh\"). MCPs "
             "bundled inside Agent Plugins are listed in the `plugins` field. "
-            "See the mcp-manual skill in .library/intrinsic/capabilities/mcp/ "
+            "Read plugin(mode=\"mcp\", action=\"manual\", input={}) or the mcp-manual skill in .library/intrinsic/capabilities/mcp/ "
             "for the full registration contract."
         )
     identities = identities or {}
     lines = [
         "The following MCP servers are registered for this agent. To activate "
         "one, add an entry under `mcp` in your init.json and run "
-        "system(action=\"refresh\"). See the mcp-manual skill in "
+        "system(action=\"refresh\"). Read plugin(mode=\"mcp\", action=\"manual\", input={}) or the mcp-manual skill in "
         ".library/intrinsic/capabilities/mcp/ for the full registration "
         "contract. When you need install or config instructions for a "
         "specific MCP, fetch its <homepage> README via web_read or "

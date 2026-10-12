@@ -1,5 +1,7 @@
 ---
 related_files:
+  - src/lingtai/tools/plugin/ANATOMY.md
+  - tests/test_plugin_mcp_mode.py
   - ENVIRONMENT_VARIABLES.md
   - ANATOMY.md
   - CONTRACT.md

@@ -15,10 +15,10 @@ This official model-facing ``plugin`` family reports third-party Agent Plugins
 
 The service owns validation, containment, registration, and pruning.  This
 family owns only the presentation adapter over those facts.  Its static
-:data:`DECLARATION` binds through exactly three narrow host ports: ``workdir``
-for service/manual paths, ``prompt_section`` for its own protected prompt
-section, and ``plugin_catalog`` for a read-only projection of the registration
-snapshot and discovery inputs.  It never receives a whole ``Agent`` and cannot
+:data:`DECLARATION` binds through four narrow host ports: ``workdir``
+for service/manual paths, ``prompt_section`` for its Plugin prompt section,
+``mcp_prompt_section`` for the separately protected MCP section, and
+``plugin_catalog`` for a read-only projection of registration and discovery.  It never receives a whole ``Agent`` and cannot
 register, prune, activate, launch, or mount itself.
 
 Usage: ``Agent(plugins=[...])`` or
@@ -33,6 +33,7 @@ from lingtai.kernel.tool_plugin import BoundToolPlugin, PluginCatalogState, Tool
 from ..tool_family import ChildTool, ToolFamily
 from ..tool_family.manual import MANUAL_INPUT_SCHEMA, build_manual_child
 from .settings import plugin_setting_rows
+from . import _mcp
 
 if TYPE_CHECKING:
     from lingtai.kernel.base_agent import BaseAgent
@@ -158,7 +159,13 @@ def _flatten_manual_result(plugin_result: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 _DESCRIPTION = (
-    "READ-ONLY: Agent Plugins v1.0.0 catalog (agent-plugins.org) in the "
+    "READ-ONLY: optional root mode=plugin (default) or mcp. MCP mode is a "
+    "SIGNPOST ONLY: info re-reads registry/identity health; settings shows "
+    "effective init.addons and redacted init.mcp; manual returns mcp-manual. "
+    "It never registers, activates, configures, or troubleshoots servers; "
+    "registration is not active proof. Before changes read manual + exact "
+    "README and obtain explicit human authorization. Never publish raw registry "
+    "problems or credentials. Default mode: Agent Plugins v1.0.0 catalog (agent-plugins.org) in the "
     "protected <registered_plugin> field. `info` reports registered, discovered, "
     "skipped, and problem facts; `settings` shows redacted roots; `manual` "
     "returns guidance. Canonical init.json `manifest.plugins` (or retained alias "
@@ -217,26 +224,46 @@ def get_description(lang: str = "en") -> str:
 def get_schema(lang: str = "en") -> dict:
     schema = _FAMILY.build_schema()
     schema["properties"]["action"]["description"] = _ACTION_DESCRIPTION
+    schema["properties"]["mode"] = {
+        "type": "string", "enum": ["plugin", "mcp"], "default": "plugin",
+        "description": "Read-only catalog selector; omitted preserves Agent Plugins. "
+        "mcp selects registry/identity info, effective settings, or mcp-manual. "
+        "Not an activation or configuration mode; input remains strictly empty.",
+    }
     return schema
 
 
 def _bind(host: "ToolPluginHost") -> BoundToolPlugin:
     """Compose Plugin against only its declared host ports; mount nothing."""
     family = _build_family(host)
+    mcp_family = _mcp.build_family(host)
 
     def handle_plugin(args: dict) -> dict:
         # Preserve Plugin's pre-declaration unknown-action result including its
         # unhashable-action behavior, before generic ToolFamily dict lookup.
         action = args.get("action", "") if isinstance(args, Mapping) else ""
-        if action not in family.child_names:
+        mode = args.get("mode", "plugin") if isinstance(args, Mapping) else "plugin"
+        if mode not in ("plugin", "mcp"):
+            return {"status": "failed", "error_code": "INVALID_ARGUMENT",
+                    "message": "mode must be 'plugin' or 'mcp'"}
+        selected = mcp_family if mode == "mcp" else family
+        if action not in selected.child_names:
+            if mode == "mcp":
+                return {"status": "error", "message": (
+                    f"unknown action: {action!r}, only 'info', 'settings', or 'manual' is supported"
+                )}
             supported = " or ".join(repr(name) for name in DECLARATION.public_actions)
             return {
                 "status": "error",
                 "message": f"unknown action: {action!r}, only {supported} is supported",
             }
-        result = family.handle(args)
+        routed = dict(args) if isinstance(args, Mapping) else args
+        if isinstance(routed, dict):
+            routed.pop("mode", None)
+        result = selected.handle(routed)
         if action == "manual" and "content" in result:
-            return _flatten_manual_result(result)
+            return (_mcp._flatten_manual_result(result) if mode == "mcp"
+                    else _flatten_manual_result(result))
         return result
 
     return BoundToolPlugin(
@@ -245,7 +272,7 @@ def _bind(host: "ToolPluginHost") -> BoundToolPlugin:
         handler=handle_plugin,
         description=DECLARATION.description,
         glossary_package=DECLARATION.glossary_package,
-        activate=lambda: _reconcile(host),
+        activate=lambda: (_reconcile(host), _mcp._reconcile(host)),
     )
 
 
@@ -261,7 +288,7 @@ DECLARATION = ToolPluginDeclaration(
     manual="plugin",
     description=_DESCRIPTION,
     binder=_bind,
-    requires=("workdir", "prompt_section", "plugin_catalog"),
+    requires=("workdir", "prompt_section", "mcp_prompt_section", "plugin_catalog"),
     glossary_package=__package__,
     settings=True,
 )

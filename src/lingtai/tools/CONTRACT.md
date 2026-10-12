@@ -62,9 +62,9 @@ maintenance: |
   route layered over a declaration, not the required form of every official
   tool; changing either choice is a normative change, so move
   `src/lingtai/mcp_servers/_plugin.py`, `telegram/plugin.py`, and
-  `src/lingtai/mcp_catalog.json` in related_files with it. `mcp`, `avatar`,
+  `src/lingtai/mcp_catalog.json` in related_files with it. `avatar`,
   `context`, `daemon`, `email`, `plugin`, `psyche`, `notification`,
-  `shell`, `system`, `task_card`, `vision`, and `web` are the thirteen
+  `shell`, `system`, `task_card`, `vision`, and `web` are the twelve
   static declared families today, in that official order; do not widen that claim
   without another family's evidence. The former `file` family was removed
   outright (no filesystem family exists; durable filesystem changes go through
@@ -299,20 +299,21 @@ Guarded by: [LP002](BEHAVIORS.md#behavior-lp002)
 
 **Status.** This section fixes the declaration, activation, dispatch, manual,
 host, identifier, and migration vocabulary that every official model-facing tool
-family shares. The accepted declared evidence is exactly the thirteen static
-official families `mcp`, `avatar`, `context`, `daemon`, `email`,
+family shares. The accepted declared evidence is exactly the twelve static
+official families `avatar`, `context`, `daemon`, `email`,
 `plugin`, `psyche`, `notification`, `shell`, `system`, `task_card`,
-`vision`, and `web`, in that order. `mcp` is the base reference; the remaining
-twelve are accepted vertical slices with their narrow earned ports. The
-kernel's closed `GRANTABLE_HOST_PORTS` inventory has nineteen grantable names:
-`workdir`, `prompt_section`, `avatar_parent`, `context_runtime`,
+`vision`, and `web`, in that order. Plugin owns MCP registry queries through
+explicit root mode, with no separate MCP mount or alias. These are accepted
+vertical slices with their narrow earned ports. The
+kernel's closed `GRANTABLE_HOST_PORTS` inventory has twenty grantable names:
+`workdir`, `prompt_section`, `mcp_prompt_section`, `avatar_parent`, `context_runtime`,
 `daemon_runtime`, `email_runtime`, `plugin_catalog`, `psyche_settings`,
 `notification_state`, `notifications`, `configuration`,
 `system_runtime`, `identity`, `shutdown`, `task_card_lifecycle`,
 `task_card_notifications`, `active_provider`, `web_runtime`, and
 `provider_identity` (the former `file_io` port left with the removed `file`
 family). Email retains its call-time manager port,
-Plugin retains its protected prompt section and
+Plugin retains two distinct fixed protected prompt writers and
 read-only `plugin_catalog` projection, and always-on Notification retains
 `workdir`/`notification_state` with Core-bound callbacks, and System retains
 `workdir` plus its `system_runtime` lifecycle vocabulary and durable naming

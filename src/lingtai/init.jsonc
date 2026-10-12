@@ -93,9 +93,11 @@
     // The kernel reader owns this classification; these comments are informative
     // shape guidance, not a migration registry or a runtime history file.
     // The kernel boots the `lingtai.core.*` floor by default on every
-    // agent: knowledge, skills, shell, avatar, daemon, and mcp — plus
+    // agent: knowledge, skills, shell, avatar, daemon, and plugin — plus
     // the always-on system, context, pad, lingtai, notification, and email
     // intrinsics.
+    // Plugin also owns read-only MCP inspection via plugin(mode="mcp", ...).
+    // No standalone mcp capability is accepted; top-level mcp activation stays.
     // You do NOT need to list those here unless you want to OVERRIDE
     // their default kwargs (e.g. give `shell` a deny-list policy file
     // instead of the default yolo mode).

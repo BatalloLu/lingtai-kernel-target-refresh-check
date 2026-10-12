@@ -14,7 +14,7 @@ This is diagnostic guidance, not a registration or server-management API.
 
 ## Identity projection
 
-`mcp(action="info", input={}, reasoning="inspect MCP identity")` reads the
+`plugin(mode="mcp", action="info", input={}, reasoning="inspect MCP identity")` reads the
 addon-published cache `system/mcp_identities/<name>.json` (schema
 `lingtai.mcp.identity.v1`); it makes no network request. It attaches an
 `identity` block only to a matching registry record whose `accounts` list is

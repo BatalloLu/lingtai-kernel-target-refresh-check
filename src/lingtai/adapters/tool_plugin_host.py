@@ -1326,9 +1326,12 @@ def agent_host_ports(
     # Construct only the declaration's earned standard adapter. Lightweight Core
     # test agents need not implement MCP or Avatar APIs when Notification is being
     # granted its own narrow ports.
-    if plugin_name in ("mcp", "plugin"):
+    if plugin_name == "plugin":
         ports["prompt_section"] = AgentPromptSectionAdapter(
             plugin_name, agent.update_system_prompt
+        )
+        ports["mcp_prompt_section"] = AgentPromptSectionAdapter(
+            "mcp", agent.update_system_prompt
         )
     if plugin_name == "avatar":
         ports["avatar_parent"] = AgentAvatarParentAdapter(

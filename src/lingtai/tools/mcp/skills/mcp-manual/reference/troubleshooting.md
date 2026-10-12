@@ -9,7 +9,7 @@ maintenance: |
 # MCP troubleshooting
 
 Before an update, deregistration, or diagnosis, read the applicable setup README,
-obtain explicit human authorization for edits, and call `mcp(action="info", input={}, reasoning="inspect registry and problems")`.
+obtain explicit human authorization for edits, and call `plugin(mode="mcp", action="info", input={}, reasoning="inspect registry and problems")`.
 The snapshot includes registry contents, invalid-line/config problems, path,
 counts, and status. `info` reads afresh without changing registry/config.
 Problems may include raw invalid lines or quoted input: disclose only line
@@ -57,7 +57,7 @@ with a fresh `info`. Never treat registry membership as active proof.
 
 1. Read the curated route or third-party README (local `find_readme.py`, then
    public `<homepage>` with Web `browse`).
-2. Call `mcp(action="info", input={}, reasoning="verify MCP registry health")`.
+2. Call `plugin(mode="mcp", action="info", input={}, reasoning="verify MCP registry health")`.
 3. Inspect the actual error in `logs/agent.log` without exposing secrets.
 4. If the remedy changes registry/config, stop until explicit authorization is
    present; then perform one edit, one refresh, and one verification.

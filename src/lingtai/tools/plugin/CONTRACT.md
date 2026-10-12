@@ -1,8 +1,12 @@
 ---
 name: plugin-contract
 tool: plugin
-contract_version: 1
+contract_version: 2
 related_files:
+  - src/lingtai/tools/mcp/skills/mcp-manual/SKILL.md
+  - tests/test_mcp_identity_discovery.py
+  - tests/test_plugin_mcp_mode.py
+  - src/lingtai/tools/plugin/_mcp.py
   - src/lingtai/tools/plugin/__init__.py
   - src/lingtai/tools/plugin/settings.py
   - src/lingtai/tools/plugin/ANATOMY.md
@@ -45,10 +49,10 @@ lazily). The code is the source of truth.
 
 This is an official declared host plugin. Its module-level `DECLARATION` is
 constructed before any Agent exists; the kernel reserves `plugin`, grants only
-`workdir`, `prompt_section`, and the read-only `plugin_catalog` projection, then
+`workdir`, `prompt_section`, `mcp_prompt_section`, and the read-only `plugin_catalog` projection, then
 activates the bound family and renders its protected prompt field. The tool never receives a whole Agent:
 its catalog snapshot and discovery inputs arrive through that projection, its
-manual is read through `workdir`, and it writes only its own protected section.
+manual is read through `workdir`, and its two fixed writers write only the distinct protected `plugin` and `mcp` sections.
 The declaration/adapter do not validate, register, prune, launch, or execute an
 Agent Plugin; those semantics remain with the existing host and service.
 
@@ -121,9 +125,9 @@ composition/dispatch infrastructure -> `src/lingtai/tools/tool_family/CONTRACT.m
 - Registered via `capabilities=["plugin"]` or via init.json. Default-on
   (`CORE_DEFAULTS`), which is safe precisely because the capability is pure
   presentation with zero side effects.
-- Symmetric to `mcp` as a per-agent presentation capability with a protected
-  prompt section; Plugin additionally opts into the generic reserved `settings`
-  action for its redacted registration roots.
+- The single Plugin root presents Agent Plugins by default and MCP registry
+  facts only with explicit root `mode="mcp"`; both are read-only. The protected
+  MCP field remains distinct from Plugin packaging/catalog facts.
 - `registered[].skills` and the protected `<registered_plugin>` field are the
   Plugin namespace. `skills_mounted` is a result flag: it is true only when
   validated plugin skills are present and the skills capability is enabled; it
@@ -160,7 +164,7 @@ dispatch to a per-Agent `ToolFamily`.
 
 **Envelope.** The model-facing schema is `get_schema()` =
 `ToolFamily.build_schema()` with a family-specific `action` description. Root
-properties are exactly `action`, `input`, `reasoning`, and `summarize`;
+properties are exactly `action`, `input`, `reasoning`, `summarize`, and optional `mode`;
 `required` is `[action, input, reasoning]` and the root is closed
 (`additionalProperties: false`). `reasoning` is required Host
 InvocationContext/audit metadata declared by the family itself, never action
@@ -211,6 +215,32 @@ inside a registered child. `manual` performs no scan.
 - Unknown action: `{"status": "error", "message": "unknown action: <action>, only 'info' or 'settings' or 'manual' is supported"}`. This envelope is Host-owned and rendered by `handle_plugin` *before* delegating, for the two reasons `mcp` established: a missing `action` key renders the empty-string default (not `None`), and an unhashable `action` (`[]` / `{}` from invalid JSON — issue #513) must not reach `ToolFamily.handle`'s dict lookup. Membership is tested against `child_names`, a tuple, whose `in` compares by `==` and never hashes. An unknown action is rejected before any input validation or filesystem I/O.
 - Invalid envelope/input (from the generic dispatcher, canonical and unwrapped): `{"status": "failed", "error_code": "INVALID_ARGUMENT", "message": ...}` for a non-object `input` (`input must be an object`), an unknown root field (`unsupported plugin argument`), a non-boolean `summarize` (`summarize must be a boolean`), or any action input key (`unsupported plugin input field`). Malformed calls fail **before** paths are re-scanned, settings are read, or the manual is loaded.
 - Provider unavailable/malformed/unserializable: the generic fixed `SETTINGS_UNAVAILABLE` failure, with no row or private detail. A complete response over 65,536 UTF-8 bytes becomes the fixed `SETTINGS_RESPONSE_TOO_LARGE` failure with no partial rows.
+
+## MCP mode and compatibility
+Guarded by: [PL002](BEHAVIORS.md#behavior-pl002).
+
+Root `mode` is optional `"plugin" | "mcp"`, default `"plugin"`. Omitted mode
+and explicit Plugin mode preserve all existing Plugin action results and
+errors; action input remains strict-empty. The selector is validated before
+I/O and removed only at this owner boundary before generic family dispatch;
+it does not widen the generic envelope or admit mode in `input`. Invalid mode
+returns `INVALID_ARGUMENT` with message `mode must be 'plugin' or 'mcp'`.
+MCP mode retains the exact MCP owner result/error/manual/settings shapes,
+fresh reads and no-action-mutation promises described in the
+[MCP resources contract](../mcp/CONTRACT.md), including manual-only file I/O,
+redacted settings and the strict 65,536-byte whole-action failure bound.
+The protected `mcp` section is a separate fixed writer, not merged XML.
+
+There is one static declaration, one public mount and no independent `mcp`
+tool/capability or setup/schema/declaration SDK compatibility alias. Use
+`manifest.capabilities.plugin` or `Agent(capabilities={"plugin": {}})` instead
+of the retired capability; keep top-level `addons` and `mcp` activation keys
+unchanged. Disabling Plugin removes both query modes; the existing explicit
+transport disable behavior is not reinterpreted as Plugin configuration.
+No server is converted into a Plugin manifest, launched or registered by this
+selector. `plugin(mode="mcp", action="manual", input={}, reasoning=...)`
+reads the existing installed MCP library, also routed from Plugin's default
+manual and model description.
 
 ## State & storage
 

@@ -16,8 +16,8 @@ TOP_OPTIONAL: dict[str, type | tuple[type, ...]] = {
     "env_file": str,
     "venv_path": str,
     # addons is a list of curated MCP names — looked up in the kernel
-    # catalog and decompressed into mcp_registry.jsonl by the `mcp`
-    # capability on agent boot.
+    # catalog and decompressed into mcp_registry.jsonl by Agent boot;
+    # Plugin mcp mode only presents the resulting registry.
     "addons": list,
     # mcp is the per-MCP activation map — see lingtai/tools/mcp/skills/mcp-manual/SKILL.md.
     # Keys must match registered names; values are subprocess specs.
