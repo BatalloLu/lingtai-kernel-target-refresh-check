@@ -1,7 +1,6 @@
 ---
 related_files:
 - src/lingtai/tools/context/manual/SKILL.md
-- tests/test_skills.py
 maintenance: |
   Optional consequential-molt handoff scaffold referenced by context-manual; keep its recovery fields aligned with the owner manual without making the scaffold mandatory.
 ---

@@ -15,6 +15,8 @@ maintenance: |
   detached-supervisor behavior clause changes, update the guarding LABT here in
   the same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Detached Daemon Supervisor Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -33,7 +35,7 @@ commands must run from the repo root with the project's Python.
 
 ### Steps
 1. From `<repo>`, run `python -m pytest tests/test_daemon_detached_supervisor.py -q` and capture the outcome.
-2. Run `python -m pytest tests/test_daemon.py -q` and capture the outcome.
+2. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 3. Inspect a real detached run's run directory: confirm the manifest/log files contain no resolved credentials and that exactly one terminal notification event is published for the run.
 
 ### Expected evidence

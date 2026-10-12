@@ -5,7 +5,7 @@ spawned supervisor subprocess, gated by the
 `LINGTAI_DAEMON_SUPERVISOR_TEST_FAKE_LLM` env var (see
 `lingtai.tools.daemon.supervisor_runtime.maybe_register_test_fake_llm`).
 A monkeypatch cannot cross the process boundary the way every other daemon
-test fakes an LLM (`tests/test_daemon.py`'s `FakeService`), so this registers
+test fakes an LLM (`retired-test:test_daemon`'s `FakeService`), so this registers
 a real (if trivial) `LLMAdapter`/`ChatSession` pair instead — the smallest
 deterministic stand-in that satisfies `LLMService.create_session` /
 `ChatSession.send` / `LLMService.make_tool_result`.

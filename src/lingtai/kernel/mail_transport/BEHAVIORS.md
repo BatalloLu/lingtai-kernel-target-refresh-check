@@ -15,6 +15,8 @@ maintenance: |
   mail-transport behavior clause changes, update the guarding LABT here in the
   same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Mail Transport Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -33,7 +35,7 @@ commands must run from the repo root with the project's Python.
 
 ### Steps
 1. From `<repo>`, run `python -m pytest tests/test_mail_transport.py -q` and capture the outcome.
-2. Run `python -m pytest tests/test_filesystem_mail.py -q` and capture the outcome.
+2. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 3. Send a peer message with an attachment to a live recipient in `<scratch>` and observe the recipient inbox: the listener never observes a dot-prefixed staging entry, and a failed send (e.g. missing attachment) leaves no partial inbox entry.
 
 ### Expected evidence

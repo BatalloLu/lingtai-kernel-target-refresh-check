@@ -9,13 +9,14 @@ related_files:
   - src/lingtai/tools/plugin/ANATOMY.md
   - src/lingtai/tools/plugin/__init__.py
   - src/lingtai/tools/plugin/settings.py
-  - tests/test_plugin_tool.py
 maintenance: |
   Created during the every-contract-needs-behaviors sweep. Keep this file
   reciprocal with CONTRACT.md and ANATOMY.md (tridirectional loop): when a
   plugin tool behavior clause changes, update the guarding LABT here in the same
   change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Plugin Capability Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -33,7 +34,7 @@ from the repo root with the project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_plugin_tool.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `plugin(action="info", input={}, reasoning="probe")` and record the result; confirm `registered`, `discovered`, `paths`, and `problems` are present and that no file was created or modified.
 3. Declare a plugin with an escaping path or a server name outside the registry grammar and re-run `info`; confirm the plugin lands in `skipped` with a `{component, reason}` entry.
 4. Call `plugin(action="settings", input={}, reasoning="probe policy")`; confirm the one `manifest.plugins` row has exactly `key`, `current`, `default`, `configurable`, and `comment`, both values are redacted, and the comment targets `plugin-manual#plugin-registration-roots`. Confirm non-empty input fails and a second `info` still returns the unchanged snapshot.

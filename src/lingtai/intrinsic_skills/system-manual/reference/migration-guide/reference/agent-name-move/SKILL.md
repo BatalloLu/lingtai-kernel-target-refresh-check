@@ -13,9 +13,7 @@ related_files:
 - src/lingtai/tools/system/CONTRACT.md
 - src/lingtai/tools/context/BEHAVIORS.md
 - src/lingtai/cli.py
-- tests/test_how_to_change_name.py
 - tests/test_how_to_change_name_e2e.py
-- tests/test_cli.py
 maintenance: |
   Keep this contract aligned with the directly runnable self-contained script,
   the CLI fence, L006, and the focused transactional tests introduced by #1722.

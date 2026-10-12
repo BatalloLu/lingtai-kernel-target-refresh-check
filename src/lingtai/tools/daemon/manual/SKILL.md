@@ -11,7 +11,6 @@ related_files:
 - src/lingtai/tools/daemon/ANATOMY.md
 - src/lingtai/services/daemon.py
 - src/lingtai/cli_daemon.py
-- tests/test_cli_daemon.py
 - src/lingtai/tools/daemon/system_prompt.py
 - src/lingtai/tools/daemon/settings.py
 - src/lingtai/tools/daemon/execution_host.py
@@ -21,7 +20,6 @@ related_files:
 - src/lingtai/tools/daemon/manual/reference/cleanup/SKILL.md
 - src/lingtai/tools/daemon/manual/reference/dispatch-ledger/SKILL.md
 - src/lingtai/tools/bash/manual/SKILL.md
-- tests/test_daemon_settings.py
 maintenance: |
   Keep this as the shortest Daemon router. Put backend recipes, artifact
   forensics, ledger diagnosis, and cleanup detail in nested references.

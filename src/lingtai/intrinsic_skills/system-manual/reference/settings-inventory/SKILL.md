@@ -24,7 +24,6 @@ related_files:
   - src/lingtai/tools/system/CONTRACT.md
   - src/lingtai/tools/system/settings.py
   - src/lingtai/intrinsic_skills/system-manual/SKILL.md
-  - tests/test_system_declared_plugin.py
 maintenance: |
   Keep this owner manual aligned with System's ordered SHOW inventory, the
   canonical init/environment readers, and the focused classification tests.

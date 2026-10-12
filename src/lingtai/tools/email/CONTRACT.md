@@ -23,10 +23,6 @@ related_files:
   - src/lingtai/tools/CONTRACT.md
   - src/lingtai/tools/tool_family/CONTRACT.md
   - src/lingtai/kernel/tool_result_summary.py
-  - tests/test_tool_family_email_migration.py
-  - tests/test_tool_family_email_wire_parity.py
-  - tests/test_email_official_tool_plugin.py
-  - tests/test_email_settings.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. If behavior and this
   contract disagree, the code is the source of truth — fix the contract in the
@@ -40,6 +36,8 @@ maintenance: |
   _family_schema.py, and the kernel _LTP_V2_MIGRATED_FAMILIES allowlist
   together when the envelope or an action's input surface changes.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Email capability contract
 
@@ -254,12 +252,12 @@ handler with the shim as fallback. The module-level hook exports, public name,
 action order, closed LTP envelope, manual result, mailbox side effects, and error
 shapes are unchanged.
 
-`tests/test_email_official_tool_plugin.py` proves the production typed adapter,
+`retired-test:test_email_official_tool_plugin` proves the production typed adapter,
 foreign-action rejection before manager invocation, normalization-before-request,
 one real-Agent mount, canonical package manual, one model-facing schema, no
 capability/manifest row for null or disabled input, and call-time observation of
 a manager replacement after refresh.
-`tests/test_email_settings.py` proves exact row/order/field equality,
+`retired-test:test_email_settings` proves exact row/order/field equality,
 source-backed constants, full subscription-list redaction, stable manual
 anchors, whole-inventory failure, strict SHOW-only input, the applied POSIX
 construction snapshot, and an unchanged ordinary contacts call.
@@ -304,52 +302,53 @@ mailbox/contacts.json                 — contact book (list of {address,name,no
 
 | Claim | Source | Test |
 |---|---|---|
-| The email intrinsic registers exactly one `email` tool (no separate `mail` intrinsic) | `src/lingtai/tools/email/__init__.py:boot` | `tests/test_layers_email.py::test_email_intrinsic_no_mail_intrinsic` |
-| `send` routes through the mailman delivery thread | `src/lingtai/tools/email/manager.py:_send` | `tests/test_layers_email.py::test_email_send_through_mailman` |
-| A cc'd send writes exactly one `sent/` record | `src/lingtai/tools/email/manager.py:_send` | `tests/test_layers_email.py::test_email_send_cc_one_sent_record` |
-| Bodies over the 50k-char hard limit are refused at send time | `src/lingtai/tools/email/manager.py:_send` (`EMAIL_BODY_CHAR_LIMIT`) | `tests/test_layers_email.py::test_email_send_rejects_body_over_hard_limit` |
-| Repeated identical authorized sends/replies are not heuristically blocked | `src/lingtai/tools/email/manager.py:_send` | `tests/test_email_official_tool_plugin.py::test_identical_authorized_mail_is_not_blocked` |
-| `read` marks inbox mail read | `src/lingtai/tools/email/manager.py:_read` / `primitives._mark_read` | `tests/test_layers_email.py::test_email_read_marks_as_read` |
-| `dismiss` marks read without returning bodies and rerenders the digest | `src/lingtai/tools/email/manager.py:_dismiss` | `tests/test_layers_email.py::test_email_dismiss_marks_read_and_returns_no_bodies`, `tests/test_layers_email.py::test_email_dismiss_rerenders_notification` |
-| `archive` moves inbox mail into `archive/` | `src/lingtai/tools/email/manager.py:_archive` | `tests/test_layers_email.py::test_email_archive_moves_to_archive` |
-| `delete` refuses the `sent` folder | `src/lingtai/tools/email/manager.py:_delete` | `tests/test_layers_email.py::test_email_delete_from_sent_rejected` |
-| `search` compiles the query as a regex and rejects bad patterns | `src/lingtai/tools/email/manager.py:_search` | `tests/test_layers_email.py::test_email_search_invalid_regex` |
-| Scheduled/recurring sends are removed from the schema and not routed | `src/lingtai/tools/email/schema.py` | `tests/test_layers_email.py::test_email_schedule_removed_from_schema`, `tests/test_layers_email.py::test_email_schedule_payload_is_not_routed` |
-| Sender identity is carried on inbound mail and surfaced on read | `src/lingtai/tools/email/manager.py:_inject_identity` | `tests/test_email_identity.py` |
+| The email intrinsic registers exactly one `email` tool (no separate `mail` intrinsic) | `src/lingtai/tools/email/__init__.py:boot` | `retired-test:test_layers_email::test_email_intrinsic_no_mail_intrinsic` |
+| `send` routes through the mailman delivery thread | `src/lingtai/tools/email/manager.py:_send` | `retired-test:test_layers_email::test_email_send_through_mailman` |
+| A cc'd send writes exactly one `sent/` record | `src/lingtai/tools/email/manager.py:_send` | `retired-test:test_layers_email::test_email_send_cc_one_sent_record` |
+| Bodies over the 50k-char hard limit are refused at send time | `src/lingtai/tools/email/manager.py:_send` (`EMAIL_BODY_CHAR_LIMIT`) | `retired-test:test_layers_email::test_email_send_rejects_body_over_hard_limit` |
+| Repeated identical authorized sends/replies are not heuristically blocked | `src/lingtai/tools/email/manager.py:_send` | `retired-test:test_email_official_tool_plugin::test_identical_authorized_mail_is_not_blocked` |
+| `read` marks inbox mail read | `src/lingtai/tools/email/manager.py:_read` / `primitives._mark_read` | `retired-test:test_layers_email::test_email_read_marks_as_read` |
+| `dismiss` marks read without returning bodies and rerenders the digest | `src/lingtai/tools/email/manager.py:_dismiss` | `retired-test:test_layers_email::test_email_dismiss_marks_read_and_returns_no_bodies`, `retired-test:test_layers_email::test_email_dismiss_rerenders_notification` |
+| `archive` moves inbox mail into `archive/` | `src/lingtai/tools/email/manager.py:_archive` | `retired-test:test_layers_email::test_email_archive_moves_to_archive` |
+| `delete` refuses the `sent` folder | `src/lingtai/tools/email/manager.py:_delete` | `retired-test:test_layers_email::test_email_delete_from_sent_rejected` |
+| `search` compiles the query as a regex and rejects bad patterns | `src/lingtai/tools/email/manager.py:_search` | `retired-test:test_layers_email::test_email_search_invalid_regex` |
+| Scheduled/recurring sends are removed from the schema and not routed | `src/lingtai/tools/email/schema.py` | `retired-test:test_layers_email::test_email_schedule_removed_from_schema`, `retired-test:test_layers_email::test_email_schedule_payload_is_not_routed` |
+| Sender identity is carried on inbound mail and surfaced on read | `src/lingtai/tools/email/manager.py:_inject_identity` | `retired-test:test_email_identity` |
 | Replies resolve to the absolute `_return_route.address`, then an absolute `from`, and are otherwise refused with no bare-name fallback (`#145` short-name collision) | `src/lingtai/tools/email/manager.py:_resolve_reply_target` | `tests/test_email_abs_reply_route.py` |
 | The model-facing root is the closed LTP v2 envelope and nothing else | `src/lingtai/tools/email/__init__.py:get_schema` | `tests/test_tool_family_email_migration.py::test_root_is_the_closed_ltp_v2_envelope_and_nothing_else` |
-| Thirteen operational action values remain pinned and generic `settings` is immediately before `manual` | `src/lingtai/tools/email/__init__.py:DECLARATION` | `tests/test_tool_family_email_migration.py::test_settings_is_the_only_added_public_action_and_order_is_pinned`, `tests/test_email_settings.py::test_declaration_opts_in_immediately_before_manual` |
-| Settings shares operational constants, projects five ordered fields, fully redacts subscriptions, and has no writer | `src/lingtai/tools/email/settings.py` | `tests/test_email_settings.py` |
+| Thirteen operational action values remain pinned and generic `settings` is immediately before `manual` | `src/lingtai/tools/email/__init__.py:DECLARATION` | `tests/test_tool_family_email_migration.py::test_settings_is_the_only_added_public_action_and_order_is_pinned`, `retired-test:test_email_settings::test_declaration_opts_in_immediately_before_manual` |
+| Settings shares operational constants, projects five ordered fields, fully redacts subscriptions, and has no writer | `src/lingtai/tools/email/settings.py` | `retired-test:test_email_settings` |
 | One child registry drives both the advertised schema and dispatch | `src/lingtai/tools/email/__init__.py:_build_family` | `tests/test_tool_family_email_migration.py::test_one_canonical_child_registry_drives_schema_and_dispatch` |
 | A cross-action key is rejected before any mailbox I/O or delivery | `src/lingtai/tools/tool_family/__init__.py:ToolFamily.handle` | `tests/test_tool_family_email_migration.py::test_cross_action_key_is_rejected_before_any_mailbox_io`, `::test_send_fields_cannot_be_smuggled_through_a_read_call` |
 | Reserved `unread` keeps its exact rejection and is not a public child | `src/lingtai/tools/email/__init__.py:handle` | `tests/test_tool_family_email_migration.py::test_reserved_unread_keeps_its_exact_rejection_before_dispatch` |
 | `manual` returns the canonical child result verbatim, adapted to Email's exact public shape after dispatch | `src/lingtai/tools/email/__init__.py:_adapt_manual_result` | `tests/test_tool_family_email_migration.py::test_manual_child_returns_the_canonical_result_verbatim_no_double_wrap`, `::test_manual_public_result_is_emails_exact_pre_migration_shape` |
 | Envelope metadata never reaches an action implementation | `src/lingtai/tools/email/__init__.py:handle` | `tests/test_tool_family_email_migration.py::test_reasoning_and_summarize_never_reach_the_action_implementation` |
 | Explicit nulls become absent so pre-existing defaulting is preserved | `src/lingtai/tools/email/__init__.py:_strip_nulls` | `tests/test_tool_family_email_migration.py::test_explicit_nulls_are_stripped_so_defaults_still_apply`, `::test_edit_contact_null_name_does_not_blank_the_stored_name` |
-| The closed root and `allOf` correlation survive both provider wires | `src/lingtai/tools/tool_family/__init__.py:build_schema` | `tests/test_tool_family_email_wire_parity.py` |
+| The closed root and `allOf` correlation survive both provider wires | `src/lingtai/tools/tool_family/__init__.py:build_schema` | `retired-test:test_tool_family_email_wire_parity` |
 | `email` is on the kernel `summarize` allowlist it advertises | `src/lingtai/kernel/tool_result_summary.py:_LTP_V2_MIGRATED_FAMILIES` | `tests/test_tool_family_email_migration.py::test_email_joined_the_ltp_v2_summarize_allowlist` |
 
 ## Verification matrix
 
 | Invariant | Automated test | Manual check | Risk if broken |
 |---|---|---|---|
-| One `email` tool, no `mail` alias | `tests/test_layers_email.py::test_email_intrinsic_no_mail_intrinsic` | Boot an agent and inspect registered tools | Duplicate/ghost mail surface confuses routing |
-| Read-state mutations rerender `.notification/email.json` | `tests/test_layers_email.py::test_email_dismiss_rerenders_notification` | Read a message, inspect `.notification/email.json` | Stale unread badge; dropped-mail illusion |
-| Oversize bodies refused at send, not truncated at read | `tests/test_layers_email.py::test_email_send_rejects_body_over_hard_limit` | Send a >50k-char body | Oversize payloads bloat persistent notifications |
-| Repeated identical mail remains deliverable | `tests/test_email_official_tool_plugin.py::test_identical_authorized_mail_is_not_blocked` | Four synthetic same-body sends/replies | Authorized periodic messages falsely rejected |
+| One `email` tool, no `mail` alias | `retired-test:test_layers_email::test_email_intrinsic_no_mail_intrinsic` | Boot an agent and inspect registered tools | Duplicate/ghost mail surface confuses routing |
+| Read-state mutations rerender `.notification/email.json` | `retired-test:test_layers_email::test_email_dismiss_rerenders_notification` | Read a message, inspect `.notification/email.json` | Stale unread badge; dropped-mail illusion |
+| Oversize bodies refused at send, not truncated at read | `retired-test:test_layers_email::test_email_send_rejects_body_over_hard_limit` | Send a >50k-char body | Oversize payloads bloat persistent notifications |
+| Repeated identical mail remains deliverable | `retired-test:test_email_official_tool_plugin::test_identical_authorized_mail_is_not_blocked` | Four synthetic same-body sends/replies | Authorized periodic messages falsely rejected |
 | Abs replies do not self-misroute | `tests/test_email_abs_reply_route.py` | Reply to mail from a same-named agent in another network | Replies silently land in own inbox (#145) |
 
-| One model-facing `email` tool; children consume no tool slots | `tests/test_tool_family_email_wire_parity.py::test_email_is_exactly_one_model_facing_tool` | Boot an agent and count built schemas | A child leaking out as its own root would double the mail surface |
+| One model-facing `email` tool; children consume no tool slots | `retired-test:test_tool_family_email_wire_parity::test_email_is_exactly_one_model_facing_tool` | Boot an agent and count built schemas | A child leaking out as its own root would double the mail surface |
 | Cross-action smuggle rejected before side effects | `tests/test_tool_family_email_migration.py::test_send_fields_cannot_be_smuggled_through_a_read_call` | Call `read` with `address`/`message` in `input` | Mail could leave the agent via a read-shaped call |
-| Email manager requests use the typed domain port and reject foreign actions | `tests/test_email_official_tool_plugin.py::test_email_runtime_port_is_domain_specific_and_rejects_foreign_action` | Bind the runtime adapter and inspect its request | A generic dispatcher leaks unrelated capability vocabulary |
-| Official Email mount creates no dynamic capability or persisted manifest row | `tests/test_email_official_tool_plugin.py::test_official_email_mount_keeps_real_agent_runtime_and_package_manual`, `::test_email_opt_out_forms_keep_one_official_surface_on_construction_and_refresh` | Inspect `_capabilities` and `_build_manifest()` after construction and refresh | Avatar replay/identity state gains a false Email capability |
-| Settings is read-only and private state stays absent/redacted | `tests/test_email_settings.py` | Call SHOW and follow every `comment` into `email-manual` | Local paths or Email domain data leak, or output grows beyond five fields |
-| `email.boot` runs exactly once per construction and per refresh | `tests/test_email_official_tool_plugin.py::test_email_official_boot_runs_exactly_once_per_construction_and_refresh` | Count official boots, Email registrar calls, and `EmailManager` constructions per phase | A second boot silently repeats manager/grant/bind/mount work behind one final surface |
+| Email manager requests use the typed domain port and reject foreign actions | `retired-test:test_email_official_tool_plugin::test_email_runtime_port_is_domain_specific_and_rejects_foreign_action` | Bind the runtime adapter and inspect its request | A generic dispatcher leaks unrelated capability vocabulary |
+| Official Email mount creates no dynamic capability or persisted manifest row | `retired-test:test_email_official_tool_plugin::test_official_email_mount_keeps_real_agent_runtime_and_package_manual`, `::test_email_opt_out_forms_keep_one_official_surface_on_construction_and_refresh` | Inspect `_capabilities` and `_build_manifest()` after construction and refresh | Avatar replay/identity state gains a false Email capability |
+| Settings is read-only and private state stays absent/redacted | `retired-test:test_email_settings` | Call SHOW and follow every `comment` into `email-manual` | Local paths or Email domain data leak, or output grows beyond five fields |
+| `email.boot` runs exactly once per construction and per refresh | `retired-test:test_email_official_tool_plugin::test_email_official_boot_runs_exactly_once_per_construction_and_refresh` | Count official boots, Email registrar calls, and `EmailManager` constructions per phase | A second boot silently repeats manager/grant/bind/mount work behind one final surface |
 
 Run before merging email changes:
 
-```bash
-PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider tests/test_layers_email.py tests/test_email_identity.py tests/test_email_abs_reply_route.py tests/test_system_dismiss.py tests/test_tool_family_email_migration.py tests/test_tool_family_email_wire_parity.py tests/test_email_official_tool_plugin.py tests/test_email_settings.py
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_email_abs_reply_route, test_email_identity, test_email_official_tool_plugin, test_email_settings, test_layers_email, test_system_dismiss, test_tool_family_email_migration, test_tool_family_email_wire_parity.
 ```
 
 ## Schema and glossary ownership

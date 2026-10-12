@@ -16,12 +16,6 @@ related_files:
   - src/lingtai/tools/psyche/CONTRACT.md
   - src/lingtai/tools/mcp/CONTRACT.md
   - src/lingtai/tools/email/CONTRACT.md
-  - tests/test_tool_family_avatar_migration.py
-  - tests/test_tool_family_manual_contract.py
-  - tests/test_tool_settings_contract.py
-  - tests/test_psyche_family.py
-  - tests/test_mcp_identity_discovery.py
-  - tests/test_email_abs_reply_route.py
 maintenance: |
   Written by the tool-family CONVERT_BEHAVIOR migration (2026-08). Keep in
   sync with the CONTRACT.md clauses this file guards and the ANATOMY.md entries
@@ -33,6 +27,8 @@ maintenance: |
   routing), update the matching LABT here in the same change. Each LABT is self-contained: an agent executes
   it verbatim with only the tools it names, never by opening another file.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # ToolFamily Behavior Tests
 
 LABT v1. These are self-contained agent-executable behavioral tests for the
@@ -139,7 +135,7 @@ no avatar dir, no ledger record, and no live process.
   ([CONTRACT.md](../avatar/CONTRACT.md#tool-surface))
 - **supersedes**: `tests/test_avatar_rules.py::TestAvatarRulesActionRemoved`,
   `::TestSpawnNoAutoRulesDistribution`;
-  `tests/test_layers_avatar.py::TestUnifiedAvatarTool::test_rules_action_is_unknown_regardless_of_admin`
+  `retired-test:test_layers_avatar::TestUnifiedAvatarTool::test_rules_action_is_unknown_regardless_of_admin`
 - **runner**: an agent with the `avatar` capability whose `admin` block
   includes at least one truthy privilege (e.g. `admin: {"karma": true}`)
 - **prerequisites**: `<wd>` writable; no `<wd>/.rules` file before the run;
@@ -494,10 +490,10 @@ new snapshot/summary/session state.
 
 1. Run:
 
-   ```bash
-   PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$PWD/src" .venv/bin/python \
-     -m pytest -q -p no:cacheprovider tests/test_tool_settings_contract.py
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_tool_settings_contract.
+```
 
 ### Expected evidence
 

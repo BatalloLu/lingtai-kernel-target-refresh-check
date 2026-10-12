@@ -14,7 +14,6 @@ related_files:
   - src/lingtai/tools/browser/refstore.py
   - src/lingtai/adapters/browser_transport.py
   - src/lingtai/tools/web_search/CONTRACT.md
-  - tests/test_browser_capability.py
 maintenance: |
   This is the internal browse-subcomponent Contract owned by unified web.
   Keep its Anatomy reciprocal and preserve the Core Port, adapter, SSRF,

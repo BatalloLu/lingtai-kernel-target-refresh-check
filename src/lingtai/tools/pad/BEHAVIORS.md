@@ -15,6 +15,8 @@ maintenance: |
   tool behavior clause changes, update the guarding LABT here in the same
   change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Pad Capability Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -32,7 +34,7 @@ from the repo root with the project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_pad.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `pad(action="append", input={"files": ["<scratch>/a.txt"]}, reasoning="probe")` and record the receipt; confirm `system/pad_append.json` was written and `prompt_reload` is `false`.
 3. Call `pad(action="append", input={"files": ["<scratch>/missing.txt"]}, reasoning="probe")` and confirm the invalid path is rejected before persistence; call `pad(action="edit", input={...}, reasoning="probe")` and confirm it fails as an unknown action.
 

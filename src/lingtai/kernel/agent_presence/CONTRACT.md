@@ -18,7 +18,6 @@ related_files:
   - src/lingtai/tools/avatar/__init__.py
   - tests/_agent_presence_helpers.py
   - tests/test_agent_presence.py
-  - tests/test_handshake.py
   - tests/test_lifecycle_daemon_shutdown.py
   - tests/test_architecture_documents.py
 maintenance: |
@@ -35,6 +34,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Agent Presence Store Contract
 
 ## Purpose
@@ -153,7 +154,7 @@ a valid human), the strict freshness threshold, shared environment resolution
 with its 10-second default and invalid-value fallback, malformed/absent
 heartbeats as dead, the NaN/±inf/future characterization, exact
 `str(wall_seconds)`-no-newline heartbeat bytes, and best-effort idempotent
-withdrawal. `tests/test_handshake.py` locks removal of the former presence API;
+withdrawal. `retired-test:test_handshake` locks removal of the former presence API;
 `tests/test_lifecycle_daemon_shutdown.py` locks manifest-persist →
 heartbeat-withdraw → lease-release teardown order.
 `tests/test_architecture_documents.py` enforces the governed twin, heading order,

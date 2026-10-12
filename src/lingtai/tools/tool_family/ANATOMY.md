@@ -30,7 +30,6 @@ related_files:
   - src/lingtai/tools/tool_family/glossary-en.md
   - src/lingtai/tools/tool_family/glossary-wen.md
   - src/lingtai/tools/tool_family/glossary-zh.md
-  - tests/test_tool_settings_contract.py
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.
   Keep this component's ANATOMY.md and CONTRACT.md reciprocal and keep
@@ -42,6 +41,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # src/lingtai/tools/tool_family/ Anatomy
 
 This package owns the generic ToolFamily/ChildTool composition and dispatch
@@ -297,8 +298,8 @@ belongs to the consuming family, as `WebManager` demonstrates.
 
 ## Notes
 
-A fake `widget` family in `tests/test_tool_family_generic.py` and
-`tests/test_tool_family_wire_parity.py` proves this package is generic, not
+A fake `widget` family in `retired-test:test_tool_family_generic` and
+`retired-test:test_tool_family_wire_parity` proves this package is generic, not
 Web-specific; the intrinsic migrations (`system`, `notification`, `email`,
 `context`) prove it again against real intrinsics with a different composition
 shape. Building a family on

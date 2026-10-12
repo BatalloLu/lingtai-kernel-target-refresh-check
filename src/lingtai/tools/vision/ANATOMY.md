@@ -17,8 +17,6 @@ related_files:
   - src/lingtai/tools/vision/settings.py
   - src/lingtai/kernel/tool_plugin/ANATOMY.md
   - src/lingtai/adapters/tool_plugin_host.py
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_vision_settings.py
 maintenance: |
   Keep related_files as repo-relative paths to real files and keep anatomy links
   reciprocal. Update citations with structural code changes and run the document

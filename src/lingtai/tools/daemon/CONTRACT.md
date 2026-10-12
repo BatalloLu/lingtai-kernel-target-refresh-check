@@ -50,37 +50,17 @@ related_files:
   - src/lingtai/kernel/provider_admission.py
   - src/lingtai/tools/daemon/shell_prompt_events.py
   - src/lingtai/tools/bash/CONTRACT.md
-  - tests/test_daemon_shell_prompt_events.py
   - src/lingtai/kernel/session_stats/CONTRACT.md
   - src/lingtai/tools/daemon/manual/SKILL.md
   - ENVIRONMENT_VARIABLES.md
   - src/lingtai/cli_daemon.py
-  - tests/test_cli_daemon.py
   - src/lingtai/tools/daemon/manual/reference/cli-backends/SKILL.md
   - src/lingtai/mcp_servers/daemon_common/server.py
   - src/lingtai/llm/openai/ANATOMY.md
-  - tests/test_task_card_proactivity.py
-  - tests/test_tool_family_daemon_migration.py
-  - tests/test_daemon_settings.py
-  - tests/test_daemon.py
-  - tests/test_daemon_llm_defaults_forwarding.py
-  - tests/test_daemon_central_manager.py
-  - tests/test_daemon_empty_parity.py
-  - tests/test_daemon_missing_finish_guidance.py
-  - tests/test_apriori_summary_executor.py
-  - tests/test_daemon_backend_options.py
-  - tests/test_daemon_claude_p_background_guard.py
-  - tests/test_daemon_opencode_backend.py
-  - tests/test_daemon_cursor_backend.py
-  - tests/test_daemon_claude_interactive_backend.py
-  - tests/test_daemon_run_dir.py
-  - tests/test_daemon_codex_usage.py
-  - tests/test_codex_standalone_compaction.py
   - tests/test_daemon_windows_lock.py
   - tests/test_daemon_windows_process_port.py
   - tests/test_daemon_windows_supervisor.py
   - tests/test_daemon_detached_supervisor.py
-  - tests/test_mcp_v2_adapter_metadata.py
 review_triggers:
   - src/lingtai/tools/daemon/__init__.py
   - src/lingtai/tools/daemon/_tool_family.py
@@ -102,28 +82,17 @@ review_triggers:
   - src/lingtai/tools/daemon/ANATOMY.md
   - src/lingtai/services/daemon.py
   - src/lingtai/cli_daemon.py
-  - tests/test_cli_daemon.py
   - src/lingtai/tools/daemon/manual/
   - src/lingtai/mcp_servers/daemon_common/
-  - tests/test_daemon.py
   - tests/test_daemon_central_manager.py
-  - tests/test_daemon_settings.py
-  - tests/test_daemon_backend_options.py
-  - tests/test_daemon_claude_p_background_guard.py
-  - tests/test_daemon_missing_finish_guidance.py
-  - tests/test_daemon_opencode_backend.py
-  - tests/test_daemon_cursor_backend.py
-  - tests/test_daemon_claude_interactive_backend.py
-  - tests/test_daemon_run_dir.py
-  - tests/test_daemon_codex_usage.py
-  - tests/test_codex_standalone_compaction.py
-  - tests/test_mcp_v2_adapter_metadata.py
 maintenance: |
   Keep this unified daemon Contract in the same maintenance graph as the daemon
   ANATOMY.md and manual files listed under related_files. If behavior and this
   contract disagree, the code is the source of truth — fix the contract in the
   same change and bump contract_version on breaking contract edits.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Daemon Contract
 
@@ -285,7 +254,7 @@ vertical slice. `list` and `check` bind the engine's ledger-driven handlers
 without constructing a manager, preserving read-only inspection. The
 `lingtai-agent daemon` CLI is a thin required-`--state-root` driver over this
 API; it has no `--agent-dir`, init compatibility, preview/confirmation, or
-standalone `ask` policy. `tests/test_cli_daemon.py` is the acceptance proof for
+standalone `ask` policy. `retired-test:test_cli_daemon` is the acceptance proof for
 both seams.
 
 ### Daemon settings ownership
@@ -1124,7 +1093,7 @@ Re-check this contract when touching:
 - `src/lingtai/tools/daemon/settings.py` row ownership, defaults, or manual
   pointers.
 - `src/lingtai/services/daemon.py`, `src/lingtai/cli_daemon.py`, or
-  `tests/test_cli_daemon.py` standalone state-root, direct-preset, API, CLI, or
+  `retired-test:test_cli_daemon` standalone state-root, direct-preset, API, CLI, or
   readback semantics.
 - `src/lingtai/tools/daemon/run_dir.py` artifact paths, `daemon.json`
   `call_parameters`, checkpoint sequence/latest/inbox fields, redaction-sensitive
@@ -1137,33 +1106,33 @@ Re-check this contract when touching:
   daemon_common completion, OpenCode-family routing, Qwen settings, Claude print
   MCP config, run-dir artifacts, prompt redaction, selected-skill catalog
   preservation, prompt mapping, or compact context reset behavior.
-- `tests/test_codex_standalone_compaction.py` for per-task
+- `retired-test:test_codex_standalone_compaction` for per-task
   `context_token_limit` wiring/pre-flight validation.
 
 ## Anchored Claims
 
 | Claim | Source | Test |
 |---|---|---|
-| the parent dispatches seven actions; unknown actions error | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/tools/daemon/_tool_family.py` | `tests/test_tool_family_daemon_migration.py`, `tests/test_daemon_check.py::test_check_unknown_id_returns_error` |
-| Default `manager_pool_size` is 100 and the config reaches the manager/list output | `src/lingtai/tools/daemon/__init__.py` | `tests/test_daemon.py::test_daemon_default_manager_pool_size_is_100`, `::test_daemon_manager_pool_size_config_reaches_manager` |
+| the parent dispatches seven actions; unknown actions error | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/tools/daemon/_tool_family.py` | `retired-test:test_tool_family_daemon_migration`, `tests/test_daemon_check.py::test_check_unknown_id_returns_error` |
+| Default `manager_pool_size` is 100 and the config reaches the manager/list output | `src/lingtai/tools/daemon/__init__.py` | `retired-test:test_daemon::test_daemon_default_manager_pool_size_is_100`, `::test_daemon_manager_pool_size_config_reaches_manager` |
 | Concurrent submitters for one agent directory serialize manager observe/reserve/spawn under `manager.lock`; later callers re-read the persisted reservation instead of acting on the same absent state | `src/lingtai/adapters/posix/daemon_manager.py` | `tests/test_daemon_central_manager.py::test_concurrent_ensure_manager_callers_reserve_and_spawn_one_manager` |
 | A genuinely idle manager exits only after a non-blocking re-check of `manager.lock` loses to a mid-admission submitter or confirms the queue is empty and the record is still its own; it then unlinks its capsule socket and marks `manager.pid` dead so the next submitter lazily reserves and spawns a fresh manager instead of raising a live-identity mismatch | `src/lingtai/adapters/posix/daemon_manager.py` | `tests/test_daemon_central_manager.py::test_manager_idle_exit_backs_off_behind_a_held_manager_lock`, `::test_central_manager_lazy_restarts_after_idle_exit_without_identity_mismatch` |
-| `max_turns` precedence is valid `LINGTAI_DAEMON_MAX_TURNS`, explicit capability/setup, valid owner file, then 5000; invalid environment input retains the lower valid result | `src/lingtai/tools/daemon/__init__.py` | `tests/test_daemon.py::test_daemon_max_turns_env_beats_explicit_and_config`, `::test_daemon_invalid_max_turns_env_keeps_explicit_value` |
-| Per-agent `system_prompt_budget_chars` defaults to 20,000, accepts a positive `daemon/daemon.json` override, and safely falls back for malformed/non-positive values while retaining fail-loud/no-truncation rendering | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/tools/daemon/system_prompt.py` | `tests/test_daemon.py::test_daemon_default_system_prompt_budget_is_20000_without_config`, `::test_daemon_config_system_prompt_budget_allows_larger_complete_prompt`, `::test_daemon_invalid_system_prompt_budget_falls_back_to_default` |
+| `max_turns` precedence is valid `LINGTAI_DAEMON_MAX_TURNS`, explicit capability/setup, valid owner file, then 5000; invalid environment input retains the lower valid result | `src/lingtai/tools/daemon/__init__.py` | `retired-test:test_daemon::test_daemon_max_turns_env_beats_explicit_and_config`, `::test_daemon_invalid_max_turns_env_keeps_explicit_value` |
+| Per-agent `system_prompt_budget_chars` defaults to 20,000, accepts a positive `daemon/daemon.json` override, and safely falls back for malformed/non-positive values while retaining fail-loud/no-truncation rendering | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/tools/daemon/system_prompt.py` | `retired-test:test_daemon::test_daemon_default_system_prompt_budget_is_20000_without_config`, `::test_daemon_config_system_prompt_budget_allows_larger_complete_prompt`, `::test_daemon_invalid_system_prompt_budget_falls_back_to_default` |
 | `settings` returns exactly the four owner rows and five public fields, has no mutation route, and fails as one fixed response when current manager truth is unavailable | `src/lingtai/tools/daemon/settings.py`, `src/lingtai/tools/daemon/_tool_family.py` | `tests/test_daemon_settings.py` |
-| Budget precedence: a valid `LINGTAI_DAEMON_SYSTEM_PROMPT_BUDGET_CHARS` wins at manager construction (including `lingtai-agent daemon emanate` via the agent's `env_file`); invalid env or explicit capability values retain the file/default resolution and never drop the capability | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/cli_daemon.py` | `tests/test_daemon.py::test_daemon_system_prompt_budget_env_overrides_config`, `::test_daemon_invalid_system_prompt_budget_env_keeps_config_value`, `::test_daemon_invalid_explicit_system_prompt_budget_keeps_file_or_env`, `tests/test_cli_daemon.py::test_emanate_env_file_budget_overrides_daemon_json` |
-| Backend schema enum matches the ordered alias contract | `src/lingtai/tools/daemon/__init__.py` | `tests/test_daemon_backend_options.py::test_backend_schema_enum_matches_ordered_contract`, `::test_backend_metadata_consistency_keeps_hidden_legacy_claude` |
+| Budget precedence: a valid `LINGTAI_DAEMON_SYSTEM_PROMPT_BUDGET_CHARS` wins at manager construction (including `lingtai-agent daemon emanate` via the agent's `env_file`); invalid env or explicit capability values retain the file/default resolution and never drop the capability | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/cli_daemon.py` | `retired-test:test_daemon::test_daemon_system_prompt_budget_env_overrides_config`, `::test_daemon_invalid_system_prompt_budget_env_keeps_config_value`, `::test_daemon_invalid_explicit_system_prompt_budget_keeps_file_or_env`, `retired-test:test_cli_daemon::test_emanate_env_file_budget_overrides_daemon_json` |
+| Backend schema enum matches the ordered alias contract | `src/lingtai/tools/daemon/__init__.py` | `retired-test:test_daemon_backend_options::test_backend_schema_enum_matches_ordered_contract`, `::test_backend_metadata_consistency_keeps_hidden_legacy_claude` |
 | `check` returns state + events, honors `last`/`truncate`, validates inputs | `src/lingtai/tools/daemon/__init__.py` | `tests/test_daemon_check.py` |
-| CLI-backend terminal `ask` returns immediately and enforces its own timeout | `src/lingtai/tools/daemon/__init__.py` | `tests/test_daemon.py::test_ask_codex_returns_immediately_when_subprocess_hangs`, `::test_ask_codex_silent_subprocess_enforces_timeout` |
-| Active common-MCP CLI `ask` queues an ID-bound next-checkpoint message; checkpoint records/drains/wakes without terminal mutation and old live RunDirs backfill fields | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/tools/daemon/run_dir.py`, `src/lingtai/mcp_servers/daemon_common/server.py` | `tests/test_daemon_checkpoint.py`, `tests/test_daemon_run_dir.py::test_checkpoint_inbox_backfills_pre_checkpoint_live_state` |
-| Token rows are written to both the daemon and parent ledgers, tagged | `src/lingtai/tools/daemon/run_dir.py` | `tests/test_daemon_run_dir.py::test_append_tokens_writes_daemon_ledger`, `::test_append_tokens_writes_parent_ledger_tagged` |
-| `context_token_limit` is validated, reaches Codex, and is inert for every other provider and every external CLI backend | `src/lingtai/tools/daemon/__init__.py` | `tests/test_codex_standalone_compaction.py` |
-| A preset-driven daemon forwards the preset's generic provider knobs (`service_tier`, `wire_api`, `inject_reasoning_fallback`, `prompt_cache_namespace`, `default_headers`, `codex_*`, `base_url`, `max_rpm`) through the shared `build_provider_defaults_from_manifest_llm` safelist | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/llm/service.py` | `tests/test_daemon_llm_defaults_forwarding.py` |
-| `tasks[].plugin` renders the `## Parent-selected plugins` section into the durable `.prompt` the detached child reads; plugin skills and mcp.json servers are merged/mounted; missing plugin paths resolve to nothing; non-list fails preflight | `src/lingtai/tools/daemon/__init__.py` | `tests/test_daemon.py::test_task_plugin_context_renders_catalog_and_flattens_skills_mcp`, `::test_task_plugin_context_rejects_bad_plugin_path`, `::test_task_plugin_context_rejects_non_list`, `::test_handle_emanate_writes_plugin_section_to_prompt_before_detach` |
-| LingTai daemon tool results carry daemon-local `_meta.agent_meta`, omit parent notifications/guidance, and carry the exact warning only while current usage is >=90% | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/kernel/meta_block.py` | `tests/test_daemon.py::test_daemon_agent_meta_is_local_and_warning_tracks_current_usage` |
-| LingTai task-scoped MCP calls remove server-undeclared `_reasoning`, retain ordinary unknown business fields, and preserve strict LTP-v2 restoration | `src/lingtai/services/mcp.py`, `src/lingtai/tools/daemon/__init__.py` | `tests/test_mcp_v2_adapter_metadata.py::test_task_daemon_adapts_host_private_arguments_at_mcp_boundary` |
-| `_DaemonMetaState.snapshot` carries `agent_state.context.system_prompt` only while this daemon's own local rendered prompt is strictly above the effective `LINGTAI_SYSTEM_PROMPT_PRESSURE_RATIO` threshold (default 40%) of its own resolved window, never the parent's | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/kernel/meta_block.py` | `tests/test_daemon.py::test_daemon_meta_state_system_prompt_warning_is_local_not_parent` |
-| `compact.action` is required; `manual` is read-only, omission is refused, and explicit `run` resets with fresh post-compact metadata | `src/lingtai/tools/daemon/__init__.py` | `tests/test_daemon.py::test_compact_schema_requires_explicit_run_or_manual_action`, `::test_compact_missing_action_is_refused_without_reset`, `::test_compact_success_prunes_to_system_call_and_result` |
+| CLI-backend terminal `ask` returns immediately and enforces its own timeout | `src/lingtai/tools/daemon/__init__.py` | `retired-test:test_daemon::test_ask_codex_returns_immediately_when_subprocess_hangs`, `::test_ask_codex_silent_subprocess_enforces_timeout` |
+| Active common-MCP CLI `ask` queues an ID-bound next-checkpoint message; checkpoint records/drains/wakes without terminal mutation and old live RunDirs backfill fields | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/tools/daemon/run_dir.py`, `src/lingtai/mcp_servers/daemon_common/server.py` | `tests/test_daemon_checkpoint.py`, `retired-test:test_daemon_run_dir::test_checkpoint_inbox_backfills_pre_checkpoint_live_state` |
+| Token rows are written to both the daemon and parent ledgers, tagged | `src/lingtai/tools/daemon/run_dir.py` | `retired-test:test_daemon_run_dir::test_append_tokens_writes_daemon_ledger`, `::test_append_tokens_writes_parent_ledger_tagged` |
+| `context_token_limit` is validated, reaches Codex, and is inert for every other provider and every external CLI backend | `src/lingtai/tools/daemon/__init__.py` | `retired-test:test_codex_standalone_compaction` |
+| A preset-driven daemon forwards the preset's generic provider knobs (`service_tier`, `wire_api`, `inject_reasoning_fallback`, `prompt_cache_namespace`, `default_headers`, `codex_*`, `base_url`, `max_rpm`) through the shared `build_provider_defaults_from_manifest_llm` safelist | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/llm/service.py` | `retired-test:test_daemon_llm_defaults_forwarding` |
+| `tasks[].plugin` renders the `## Parent-selected plugins` section into the durable `.prompt` the detached child reads; plugin skills and mcp.json servers are merged/mounted; missing plugin paths resolve to nothing; non-list fails preflight | `src/lingtai/tools/daemon/__init__.py` | `retired-test:test_daemon::test_task_plugin_context_renders_catalog_and_flattens_skills_mcp`, `::test_task_plugin_context_rejects_bad_plugin_path`, `::test_task_plugin_context_rejects_non_list`, `::test_handle_emanate_writes_plugin_section_to_prompt_before_detach` |
+| LingTai daemon tool results carry daemon-local `_meta.agent_meta`, omit parent notifications/guidance, and carry the exact warning only while current usage is >=90% | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/kernel/meta_block.py` | `retired-test:test_daemon::test_daemon_agent_meta_is_local_and_warning_tracks_current_usage` |
+| LingTai task-scoped MCP calls remove server-undeclared `_reasoning`, retain ordinary unknown business fields, and preserve strict LTP-v2 restoration | `src/lingtai/services/mcp.py`, `src/lingtai/tools/daemon/__init__.py` | `retired-test:test_mcp_v2_adapter_metadata::test_task_daemon_adapts_host_private_arguments_at_mcp_boundary` |
+| `_DaemonMetaState.snapshot` carries `agent_state.context.system_prompt` only while this daemon's own local rendered prompt is strictly above the effective `LINGTAI_SYSTEM_PROMPT_PRESSURE_RATIO` threshold (default 40%) of its own resolved window, never the parent's | `src/lingtai/tools/daemon/__init__.py`, `src/lingtai/kernel/meta_block.py` | `retired-test:test_daemon::test_daemon_meta_state_system_prompt_warning_is_local_not_parent` |
+| `compact.action` is required; `manual` is read-only, omission is refused, and explicit `run` resets with fresh post-compact metadata | `src/lingtai/tools/daemon/__init__.py` | `retired-test:test_daemon::test_compact_schema_requires_explicit_run_or_manual_action`, `::test_compact_missing_action_is_refused_without_reset`, `::test_compact_success_prunes_to_system_call_and_result` |
 | `reclaim` cancels running emanations; agent stop shuts the daemon down first | `src/lingtai/tools/daemon/__init__.py` | `tests/test_lifecycle_daemon_shutdown.py::test_agent_stop_shuts_down_daemon_before_heartbeat_and_lock` |
 | `emanate`'s explicit `timeout` (schema: `minimum: 5`, no `maximum`) is an uncapped override reaching `daemon.json` and `supervisor_manifest.json` unchanged; omitting it (`null`) falls back to the manager's default. Unlike `timeout`, `max_turns` has a schema `maximum` and IS capped at the manager's ceiling. | `src/lingtai/tools/daemon/__init__.py` | `tests/test_daemon_per_batch_limits.py::test_emanate_honors_explicit_timeout_above_default_ceiling`, `::test_emanate_caps_max_turns_at_ceiling` |
 
@@ -1171,20 +1140,21 @@ Re-check this contract when touching:
 
 | Invariant | Automated test | Manual check | Risk if broken |
 |---|---|---|---|
-| Action dispatch + per-action shapes are stable | `tests/test_daemon.py`, `tests/test_daemon_check.py` | `emanate` a trivial task, then `check` its id | Agents cannot dispatch or inspect subagents |
-| Settings projection stays exact, owner-documented, and read-only | `tests/test_daemon_settings.py`, `tests/test_tool_settings_contract.py` | Call `settings`, inspect the five fields, use each `comment` to route to the manual, and confirm `list` is unchanged | Effective daemon settings drift or become falsely mutable |
-| Backend enum/alias contract stays consistent | `tests/test_daemon_backend_options.py::test_backend_schema_enum_matches_ordered_contract` | Pass an alias (`mimo`) and confirm it normalizes | Backend selection drifts from advertised names |
+| Action dispatch + per-action shapes are stable | `retired-test:test_daemon`, `tests/test_daemon_check.py` | `emanate` a trivial task, then `check` its id | Agents cannot dispatch or inspect subagents |
+| Settings projection stays exact, owner-documented, and read-only | `tests/test_daemon_settings.py`, `retired-test:test_tool_settings_contract` | Call `settings`, inspect the five fields, use each `comment` to route to the manual, and confirm `list` is unchanged | Effective daemon settings drift or become falsely mutable |
+| Backend enum/alias contract stays consistent | `retired-test:test_daemon_backend_options::test_backend_schema_enum_matches_ordered_contract` | Pass an alias (`mimo`) and confirm it normalizes | Backend selection drifts from advertised names |
 | Terminal state is classified from the recorded snapshot | `tests/test_daemon_check.py::test_check_includes_terminal_event_for_done_emanation` | Run to completion, confirm `state=done` in `check` | Parent mis-reads timeout/cancel as success |
-| CLI `ask` never blocks the caller's tool thread | `tests/test_daemon.py::test_ask_codex_returns_immediately_when_subprocess_hangs` | `ask` a hung CLI daemon, confirm immediate return | Parent loop stalls on a hung subprocess |
-| Reclaim kills every tracked CLI proc; each run's own detached supervisor kills only its own exact child on timeout | `tests/test_daemon_cli_watchdog_scope.py`, `tests/test_lifecycle_daemon_shutdown.py` | Emanate two runs, reclaim, confirm both are killed; let one run time out and confirm only its own child dies | Reclaim misses a tracked proc, or one run's timeout kills an unrelated run's child |
-| Dual-ledger token accounting stays correct | `tests/test_daemon_run_dir.py::test_append_tokens_writes_parent_ledger_tagged` | Inspect both token_ledger.jsonl files after a run | Daemon spend double-counted or lost in totals |
-| `context_token_limit` stays Codex-only and inert everywhere else | `tests/test_codex_standalone_compaction.py` | Emanate a `backend='lingtai'` Codex task with an explicit `context_token_limit`, then repeat with an `openai` preset | A bad value silently breaks unrelated providers/backends |
-| Task-scoped MCP host-private argument isolation preserves server schema authority | `tests/test_mcp_v2_adapter_metadata.py::test_task_daemon_adapts_host_private_arguments_at_mcp_boundary` | Mount a closed-schema MCP tool, invoke it with model reasoning, and inspect provider-bound arguments | Kernel rationale leaks to providers or business schema errors are silently masked |
+| CLI `ask` never blocks the caller's tool thread | `retired-test:test_daemon::test_ask_codex_returns_immediately_when_subprocess_hangs` | `ask` a hung CLI daemon, confirm immediate return | Parent loop stalls on a hung subprocess |
+| Reclaim kills every tracked CLI proc; each run's own detached supervisor kills only its own exact child on timeout | `retired-test:test_daemon_cli_watchdog_scope`, `tests/test_lifecycle_daemon_shutdown.py` | Emanate two runs, reclaim, confirm both are killed; let one run time out and confirm only its own child dies | Reclaim misses a tracked proc, or one run's timeout kills an unrelated run's child |
+| Dual-ledger token accounting stays correct | `retired-test:test_daemon_run_dir::test_append_tokens_writes_parent_ledger_tagged` | Inspect both token_ledger.jsonl files after a run | Daemon spend double-counted or lost in totals |
+| `context_token_limit` stays Codex-only and inert everywhere else | `retired-test:test_codex_standalone_compaction` | Emanate a `backend='lingtai'` Codex task with an explicit `context_token_limit`, then repeat with an `openai` preset | A bad value silently breaks unrelated providers/backends |
+| Task-scoped MCP host-private argument isolation preserves server schema authority | `retired-test:test_mcp_v2_adapter_metadata::test_task_daemon_adapts_host_private_arguments_at_mcp_boundary` | Mount a closed-schema MCP tool, invoke it with model reasoning, and inspect provider-bound arguments | Kernel rationale leaks to providers or business schema errors are silently masked |
 
 Run before merging daemon tool-surface changes:
 
-```bash
-python -m pytest tests/test_daemon_settings.py tests/test_tool_family_daemon_migration.py tests/test_tool_settings_contract.py tests/test_daemon.py tests/test_daemon_check.py tests/test_daemon_backend_options.py tests/test_daemon_run_dir.py tests/test_lifecycle_daemon_shutdown.py tests/test_codex_standalone_compaction.py -q
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_codex_standalone_compaction, test_daemon, test_daemon_backend_options, test_daemon_check, test_daemon_run_dir, test_daemon_settings, test_tool_family_daemon_migration, test_tool_settings_contract.
 ```
 
 ## Schema and Glossary Ownership

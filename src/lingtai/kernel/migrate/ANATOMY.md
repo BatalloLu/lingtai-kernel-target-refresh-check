@@ -14,8 +14,6 @@ related_files:
   - src/lingtai/adapters/posix/migration_workspace.py
   - src/lingtai/kernel/config_resolve.py
   - tests/_migration_workspace_helpers.py
-  - tests/test_cli.py
-  - tests/test_deep_refresh.py
   - tests/test_kernel_migrate.py
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.
@@ -28,6 +26,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # migrate
 
 > **Maintenance:** see the `lingtai-kernel-anatomy` skill. **Coding agents** update this file in the same commit as code changes. **LingTai agents** report drift as issues/mail/PR proposals; do not silently fix.
@@ -71,4 +71,4 @@ Retained historical/test-only migration machinery for older kernel-managed on-di
 - **This is the reminder:** if you are about to change an on-disk kernel-owned shape (preset JSON, agent `init.json`, or another durable kernel file), first inspect/extend this migration Core. Do not “just add a cleanup helper” in the boot path and call it a migration.
 - **Validation ordering:** agent migrations run before `validate_init()` so retired keys can be removed/archived before schema validation.
 - **Behavioral invariants** (forward-only, version-after-success, per-domain contiguity, PID-suffixed concurrency safety) are normative and live in [`CONTRACT.md`](CONTRACT.md).
-- **Tests:** runner/domain behavior and the shared fake/production seven-family conformance suite live in `tests/test_kernel_migrate.py` (with `tests/_migration_workspace_helpers.py`); boot/refresh integration lives in `tests/test_deep_refresh.py` and `tests/test_cli.py`.
+- **Tests:** runner/domain behavior and the shared fake/production seven-family conformance suite live in `tests/test_kernel_migrate.py` (with `tests/_migration_workspace_helpers.py`); boot/refresh integration lives in `retired-test:test_deep_refresh` and `retired-test:test_cli`.

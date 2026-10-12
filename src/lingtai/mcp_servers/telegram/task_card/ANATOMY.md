@@ -13,18 +13,11 @@ related_files:
   - src/lingtai/mcp_servers/ANATOMY.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
   - src/lingtai/tools/task_card/ANATOMY.md
-  - tests/test_telegram_task_card_programmable.py
-  - tests/test_telegram_task_card_toggle.py
-  - tests/test_telegram_task_card_event_tail.py
-  - tests/test_task_card_event_projection_shared.py
-  - tests/test_telegram_task_card_rows.py
-  - tests/test_telegram_task_card_display_expression.py
   - src/lingtai/mcp_servers/telegram/task_card/__init__.py
   - src/lingtai/mcp_servers/telegram/task_card/_family.py
   - src/lingtai/mcp_servers/telegram/task_card/controller.py
   - src/lingtai/mcp_servers/telegram/task_card/interface.py
   - src/lingtai/mcp_servers/telegram/task_card/api_cost.py
-  - tests/test_telegram_task_card_api_cost.py
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.
   Keep this Anatomy reciprocal with its paired CONTRACT.md and packaged manual.

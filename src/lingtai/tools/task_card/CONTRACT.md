@@ -20,20 +20,14 @@ related_files:
   - src/lingtai/mcp_servers/telegram/manager.py
   - src/lingtai/mcp_servers/feishu/task_card.py
   - src/lingtai/mcp_servers/feishu/manager.py
-  - tests/test_task_card_controller.py
-  - tests/test_task_card_notifications.py
-  - tests/test_task_card_proactivity.py
-  - tests/test_tool_settings_contract.py
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_telegram_toolfamily_ltpv2.py
-  - tests/test_telegram_task_card_programmable.py
-  - tests/test_feishu_programmable_task_cards.py
 maintenance: |
   This component contract is governed by the root CONTRACT.md. Keep related
   files complete and repo-relative, keep the paired Anatomy/manual reciprocal,
   and update tests plus consumer docs in the same change when this producer
   contract moves.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Intrinsic Task Card
 
 ## Purpose
@@ -295,12 +289,12 @@ itself; the kernel registrar binds, activates (resume), and mounts it.
 
 ## Tests
 
-- `tests/test_task_card_notifications.py` covers the typed error/recovered/limit
+- `retired-test:test_task_card_notifications` covers the typed error/recovered/limit
   operations through the production native-port adapter: fixed source/channel
   and bounded-extra parity, reminder operations, the five-operation port surface
   with no generic publisher, and foreign source/channel/field negatives at both
   the native port and the typed event forms.
-- `tests/test_task_card_controller.py` covers intrinsic registration,
+- `retired-test:test_task_card_controller` covers intrinsic registration,
   exact paths, atomic ordering, one-watch enforcement, failure/recovery, stop
   semantics, configured defaults/ceilings (including the omitted-value and
   lower-not-bypass cases), per-field config validation, the one-way
@@ -320,12 +314,12 @@ itself; the kernel registrar binds, activates (resume), and mounts it.
   resurrected. It also covers the exact ordered Task Card settings inventory,
   fresh effective file/default and legacy-preview truth, strict input, manual
   anchors, whole-action failure, projection exclusions, and no mutation.
-- `tests/test_tool_settings_contract.py` proves exact cumulative production
+- `retired-test:test_tool_settings_contract` proves exact cumulative production
   opt-in, private redaction, JSON-safe whole-inventory failure, and the
   65,536-byte complete-response bound.
-- `tests/test_telegram_toolfamily_ltpv2.py` covers the strict public family
+- `retired-test:test_telegram_toolfamily_ltpv2` covers the strict public family
   schema plus intrinsic refresh-limit behavior.
-- `tests/test_telegram_task_card_programmable.py` covers Telegram's read-only
+- `retired-test:test_telegram_task_card_programmable` covers Telegram's read-only
   consumer semantics against this producer contract.
-- `tests/test_feishu_programmable_task_cards.py` covers Feishu's read-only
+- `retired-test:test_feishu_programmable_task_cards` covers Feishu's read-only
   consumer semantics against this producer contract.

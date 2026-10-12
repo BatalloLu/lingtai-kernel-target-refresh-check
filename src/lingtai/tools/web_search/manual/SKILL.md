@@ -16,8 +16,6 @@ related_files:
   - src/lingtai/tools/web_search/manual/reference/tier-quick-refs/SKILL.md
   - src/lingtai/tools/web_search/manual/reference/routing-and-sites/SKILL.md
   - src/lingtai/tools/web_search/manual/reference/agent-native-browser.md
-  - tests/test_web_settings_action.py
-  - tests/test_web_output_spill.py
   - src/lingtai/tools/web_search/manual/scripts/extract_page.py
   - src/lingtai/tools/browser/core.py
 maintenance: |

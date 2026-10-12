@@ -10,14 +10,14 @@ related_files:
   - src/lingtai/tools/email/__init__.py
   - src/lingtai/tools/email/manager.py
   - src/lingtai/tools/email/settings.py
-  - tests/test_email_official_tool_plugin.py
-  - tests/test_email_settings.py
 maintenance: |
   Created during the every-contract-needs-behaviors sweep. Keep this file
   reciprocal with CONTRACT.md and ANATOMY.md (tridirectional loop): when an
   email tool behavior clause changes, update the guarding LABT here in the same
   change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Email Capability Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -37,7 +37,7 @@ pytest commands must run from the repo root with the project's Python.
 - **estimate**: ≈ 20 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_layers_email.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `email(action="send", input={"address": "peer@example", "message": "hi", "unknown_key": 1}, reasoning="probe")` and record the result; confirm no mailbox file was created or modified.
 3. Call `email(action="unread", input={}, reasoning="probe")` directly and record the result; then send a valid message and confirm the receipt contains `status: "sent"`.
 
@@ -59,7 +59,7 @@ Pass when the suite passes and the before-I/O rejection and exact receipt hold. 
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider tests/test_email_official_tool_plugin.py`.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Confirm `test_email_runtime_port_is_domain_specific_and_rejects_foreign_action`
    exercises `AgentEmailRuntimeAdapter`: it rejects a foreign action before its
    fake manager is called and flattens one valid normalized request into exactly
@@ -102,7 +102,7 @@ Pass when all four steps hold and the official Email surface is mandatory by int
 - **estimate**: ≈ 10 minutes
 
 ### Steps
-1. From `<repo>`, run `PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider tests/test_email_settings.py`.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Call `email(action="settings", input={}, reasoning="inventory Email policy")`; confirm four active public constants plus the redacted `manifest.pseudo_agent_subscriptions` row appear in exact order with exactly five fields.
 3. Follow every `comment` to its exact heading in `email-manual`; pass non-empty `input` and confirm refusal without mutation, then exercise the unavailable-source case and confirm one fixed whole-action failure with no rows.
 4. Confirm current/default subscription paths are both redacted, no mailbox/session/identity/content data appears, and an ordinary `contacts` call remains unchanged.

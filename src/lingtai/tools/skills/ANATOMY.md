@@ -12,8 +12,6 @@ related_files:
   - src/lingtai/tools/tool_family/CONTRACT.md
   - src/lingtai/tools/skills/CONTRACT.md
   - src/lingtai/tools/psyche/ANATOMY.md
-  - tests/test_skills.py
-  - tests/test_validate_skill.py
   - src/lingtai/tools/skills/glossary-en.md
   - src/lingtai/tools/skills/glossary-zh.md
   - src/lingtai/tools/skills/glossary-wen.md

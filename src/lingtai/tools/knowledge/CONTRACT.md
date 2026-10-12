@@ -8,12 +8,13 @@ related_files:
   - src/lingtai/tools/CONTRACT.md
   - src/lingtai/tools/psyche/CONTRACT.md
   - src/lingtai/tools/tool_family/CONTRACT.md
-  - tests/test_tool_family_knowledge_migration_parity.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. If behavior and this
   contract disagree, the code is the source of truth — fix the contract in the
   same change and bump contract_version on breaking contract edits.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Knowledge capability contract
 
@@ -214,38 +215,38 @@ skill -> private knowledge.
 
 | Claim | Source | Test |
 |---|---|---|
-| `knowledge` is the only private durable memory capability in the builtin registry | `src/lingtai/tools/registry.py` | `tests/test_check_caps.py::test_get_all_providers_includes_expected_capabilities` |
-| `knowledge` setup registers only the `knowledge` tool | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_knowledge.py::test_knowledge_setup_registers_only_knowledge_tool`, `tests/test_tool_family_knowledge_migration_parity.py::test_setup_registers_one_knowledge_tool_with_the_family_schema` |
-| The root envelope is the closed `action`/`input`/`reasoning`/`summarize` object with required `reasoning` | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_tool_family_knowledge_migration_parity.py::test_schema_root_is_closed_action_input_reasoning_summarize` |
-| Public action values are unchanged (`info`, `manual`) and no authoring/search/edit action exists | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_tool_family_knowledge_migration_parity.py::test_public_action_values_are_unchanged_by_the_migration`, `::test_family_has_no_authoring_search_or_edit_capability` |
-| Both child inputs are canonical strict-empty objects, correlated to their action const on both wires | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_tool_family_knowledge_migration_parity.py::test_child_inputs_are_canonical_strict_empty_objects`, `::test_root_allof_correlates_each_action_const_with_its_input_schema`, `::test_knowledge_family_schema_survives_chat_and_responses_wires` |
-| Missing or extra `input` fails before any handler I/O | `src/lingtai/tools/tool_family/__init__.py` | `tests/test_tool_family_knowledge_migration_parity.py::test_missing_input_is_rejected_before_any_io`, `::test_extra_input_field_is_rejected_before_any_io` |
-| `info` re-scans and returns exact count/problems without loading bodies or mutating entries | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_tool_family_knowledge_migration_parity.py::test_info_rescans_and_reports_exact_count_and_problems`, `::test_info_does_not_load_bodies_or_mutate_entries` |
-| `manual` returns the current body/path and never rescans or mutates | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_tool_family_knowledge_migration_parity.py::test_manual_returns_body_and_path_without_rescanning`, `::test_manual_missing_is_degraded_and_still_no_rescan` |
-| The exact pre-migration unknown-action envelope survives the migration | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_knowledge.py::test_unknown_action_returns_error` |
-| Legacy `knowledge/knowledge.json` and `codex/codex.json` entries migrate once into `KNOWLEDGE.md` folders; `supplementary` becomes `references/supplementary.md` | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_knowledge.py::test_legacy_knowledge_json_migrates_to_knowledge_md`, `tests/test_knowledge.py::test_legacy_codex_json_migrates_to_knowledge_md` |
-| Manager-style lookup is exact: `knowledge` resolves and former names do not | `src/lingtai/agent.py` | `tests/test_knowledge.py::test_former_alias_capabilities_do_not_register_knowledge` |
-| Catalog reads `<agent>/knowledge/<name>/KNOWLEDGE.md` and excludes `SKILL.md` entries | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_knowledge.py::test_knowledge_md_convention_distinct_from_skill_md` |
-| Prompt catalog includes only `name`/`description`/`path` from frontmatter | `src/lingtai/tools/knowledge/__init__.py` | `tests/test_knowledge.py::test_prompt_catalog_only_metadata_not_body` |
-| Entries may carry references, scripts, and assets | filesystem convention | `tests/test_knowledge.py::test_entries_may_have_scripts_and_assets` |
+| `knowledge` is the only private durable memory capability in the builtin registry | `src/lingtai/tools/registry.py` | `retired-test:test_check_caps::test_get_all_providers_includes_expected_capabilities` |
+| `knowledge` setup registers only the `knowledge` tool | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_knowledge::test_knowledge_setup_registers_only_knowledge_tool`, `retired-test:test_tool_family_knowledge_migration_parity::test_setup_registers_one_knowledge_tool_with_the_family_schema` |
+| The root envelope is the closed `action`/`input`/`reasoning`/`summarize` object with required `reasoning` | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_tool_family_knowledge_migration_parity::test_schema_root_is_closed_action_input_reasoning_summarize` |
+| Public action values are unchanged (`info`, `manual`) and no authoring/search/edit action exists | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_tool_family_knowledge_migration_parity::test_public_action_values_are_unchanged_by_the_migration`, `::test_family_has_no_authoring_search_or_edit_capability` |
+| Both child inputs are canonical strict-empty objects, correlated to their action const on both wires | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_tool_family_knowledge_migration_parity::test_child_inputs_are_canonical_strict_empty_objects`, `::test_root_allof_correlates_each_action_const_with_its_input_schema`, `::test_knowledge_family_schema_survives_chat_and_responses_wires` |
+| Missing or extra `input` fails before any handler I/O | `src/lingtai/tools/tool_family/__init__.py` | `retired-test:test_tool_family_knowledge_migration_parity::test_missing_input_is_rejected_before_any_io`, `::test_extra_input_field_is_rejected_before_any_io` |
+| `info` re-scans and returns exact count/problems without loading bodies or mutating entries | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_tool_family_knowledge_migration_parity::test_info_rescans_and_reports_exact_count_and_problems`, `::test_info_does_not_load_bodies_or_mutate_entries` |
+| `manual` returns the current body/path and never rescans or mutates | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_tool_family_knowledge_migration_parity::test_manual_returns_body_and_path_without_rescanning`, `::test_manual_missing_is_degraded_and_still_no_rescan` |
+| The exact pre-migration unknown-action envelope survives the migration | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_knowledge::test_unknown_action_returns_error` |
+| Legacy `knowledge/knowledge.json` and `codex/codex.json` entries migrate once into `KNOWLEDGE.md` folders; `supplementary` becomes `references/supplementary.md` | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_knowledge::test_legacy_knowledge_json_migrates_to_knowledge_md`, `retired-test:test_knowledge::test_legacy_codex_json_migrates_to_knowledge_md` |
+| Manager-style lookup is exact: `knowledge` resolves and former names do not | `src/lingtai/agent.py` | `retired-test:test_knowledge::test_former_alias_capabilities_do_not_register_knowledge` |
+| Catalog reads `<agent>/knowledge/<name>/KNOWLEDGE.md` and excludes `SKILL.md` entries | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_knowledge::test_knowledge_md_convention_distinct_from_skill_md` |
+| Prompt catalog includes only `name`/`description`/`path` from frontmatter | `src/lingtai/tools/knowledge/__init__.py` | `retired-test:test_knowledge::test_prompt_catalog_only_metadata_not_body` |
+| Entries may carry references, scripts, and assets | filesystem convention | `retired-test:test_knowledge::test_entries_may_have_scripts_and_assets` |
 
 ## Verification matrix
 
 | Invariant | Automated test | Manual check | Risk if broken |
 |---|---|---|---|
-| `knowledge(...)` is the only private-memory tool | `tests/test_knowledge.py` | Boot with `capabilities={"knowledge": {}}` and inspect tools | Old names linger and confuse the model |
-| Former `library`/`codex` names do not register | alias-removal tests in `tests/test_knowledge.py` / `tests/test_skills.py` | Boot old manifests and inspect capability skip logs | Breaking rename is only half-applied |
+| `knowledge(...)` is the only private-memory tool | `retired-test:test_knowledge` | Boot with `capabilities={"knowledge": {}}` and inspect tools | Old names linger and confuse the model |
+| Former `library`/`codex` names do not register | alias-removal tests in `retired-test:test_knowledge` / `retired-test:test_skills` | Boot old manifests and inspect capability skip logs | Breaking rename is only half-applied |
 | Skills do not depend on private knowledge | documented invariant; enforce by review | Check shared skill docs for private paths/ids | Shared skills become non-portable |
-| Knowledge and skills use distinct manifest filenames | `tests/test_knowledge.py::test_knowledge_md_convention_distinct_from_skill_md` | Drop a `SKILL.md` into `<agent>/knowledge/foo/` and confirm it is not picked up | Physical separation collapses; private/public boundary blurs |
-| Body content stays out of prompt catalog | `tests/test_knowledge.py::test_prompt_catalog_only_metadata_not_body` | Author an entry with a long body and inspect the prompt section | Prompt bloat / private detail leakage |
-| LTP v2 envelope: closed root, strict-empty child inputs, pre-I/O rejection | `tests/test_tool_family_knowledge_migration_parity.py` | Call with an extra `input` field and confirm no rescan happens | Invalid calls reach handlers; the signpost boundary weakens |
-| `manual` performs no catalog scan or mutation | `tests/test_tool_family_knowledge_migration_parity.py::test_manual_returns_body_and_path_without_rescanning` | Author an entry, call `manual`, confirm the prompt section is unchanged | Reading guidance silently rewrites prompt state |
+| Knowledge and skills use distinct manifest filenames | `retired-test:test_knowledge::test_knowledge_md_convention_distinct_from_skill_md` | Drop a `SKILL.md` into `<agent>/knowledge/foo/` and confirm it is not picked up | Physical separation collapses; private/public boundary blurs |
+| Body content stays out of prompt catalog | `retired-test:test_knowledge::test_prompt_catalog_only_metadata_not_body` | Author an entry with a long body and inspect the prompt section | Prompt bloat / private detail leakage |
+| LTP v2 envelope: closed root, strict-empty child inputs, pre-I/O rejection | `retired-test:test_tool_family_knowledge_migration_parity` | Call with an extra `input` field and confirm no rescan happens | Invalid calls reach handlers; the signpost boundary weakens |
+| `manual` performs no catalog scan or mutation | `retired-test:test_tool_family_knowledge_migration_parity::test_manual_returns_body_and_path_without_rescanning` | Author an entry, call `manual`, confirm the prompt section is unchanged | Reading guidance silently rewrites prompt state |
 
 Run before merging knowledge changes:
 
-```bash
-python -m pytest tests/test_knowledge.py tests/test_tool_family_knowledge_migration_parity.py \
-  tests/test_skills.py tests/test_check_caps.py tests/test_daemon_preset_capabilities.py -q
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_check_caps, test_daemon_preset_capabilities, test_knowledge, test_skills, test_tool_family_knowledge_migration_parity.
 ```
 
 ## Schema and glossary ownership

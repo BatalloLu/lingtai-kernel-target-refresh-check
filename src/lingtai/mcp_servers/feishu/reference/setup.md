@@ -6,7 +6,6 @@ related_files:
 - src/lingtai/mcp_servers/feishu/server.py
 - src/lingtai/mcp_servers/feishu/service.py
 - src/lingtai/mcp_servers/feishu/settings.py
-- tests/test_feishu_settings.py
 maintenance: |
   Keep this operator route aligned with Feishu app permissions/events, the
   protected account configuration, launcher environment, and rollout owner.

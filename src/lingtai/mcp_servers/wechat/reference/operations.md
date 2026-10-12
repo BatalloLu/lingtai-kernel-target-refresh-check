@@ -11,10 +11,6 @@ related_files:
 - src/lingtai/mcp_servers/wechat/manager.py
 - src/lingtai/mcp_servers/wechat/_family.py
 - src/lingtai/mcp_servers/wechat/api.py
-- tests/test_wechat_toolfamily_ltpv2.py
-- tests/test_wechat_history_index.py
-- tests/test_wechat_reply_read_state.py
-- tests/test_wechat_inbound_replay.py
 maintenance: |
   Tracks WeChat action/result semantics and replay-safe operation guidance; update
   when dispatch, history views, acknowledgement, or local side effects change.

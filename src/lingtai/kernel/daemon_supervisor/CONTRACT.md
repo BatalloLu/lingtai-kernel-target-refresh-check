@@ -23,7 +23,6 @@ related_files:
   - src/lingtai/tools/daemon/execution_host.py
   - src/lingtai/tools/daemon/shell_prompt_events.py
   - tests/test_daemon_detached_supervisor.py
-  - tests/test_daemon_central_manager.py
 maintenance: |
   Keep this Contract paired with its ANATOMY.md and preserve the repository
   Anatomy/Contract maintenance convention. Update the promise and focused tests

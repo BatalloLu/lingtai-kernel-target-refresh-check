@@ -26,14 +26,13 @@ related_files:
   - src/lingtai/tools/CONTRACT.md
   - src/lingtai/tools/tool_family/CONTRACT.md
   - src/lingtai/kernel/tool_result_summary.py
-  - tests/test_tool_family_avatar_migration.py
-  - tests/test_avatar_preset_inheritance.py
-  - tests/test_tool_plugin_declaration.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. If behavior and this
   contract disagree, the code is the source of truth — fix the contract in the
   same change and bump contract_version on breaking contract edits.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Avatar capability contract
 
@@ -393,45 +392,43 @@ Each spawn appends a ledger record (`event: "avatar"`, `name`, `working_dir`,
 
 | Claim | Source | Test |
 |---|---|---|
-| The POSIX launcher preserves exact detached launch, PID/exit truth, one-process termination, and non-killing release contracts; unrecognized platforms fail loudly | `src/lingtai/adapters/posix/avatar_launcher.py`, `src/lingtai/adapters/avatar_launcher.py` | `tests/test_avatar_launcher.py::test_posix_launch_contract_and_release`, `::test_selector_selects_posix_and_fails_loud_for_unsupported` |
+| The POSIX launcher preserves exact detached launch, PID/exit truth, one-process termination, and non-killing release contracts; unrecognized platforms fail loudly | `src/lingtai/adapters/posix/avatar_launcher.py`, `src/lingtai/adapters/avatar_launcher.py` | `retired-test:test_avatar_launcher::test_posix_launch_contract_and_release`, `::test_selector_selects_posix_and_fails_loud_for_unsupported` |
 | The Windows launcher uses `DETACHED_CREATIONFLAGS` + `close_fds` (no `start_new_session`), keeps the same disconnect/stderr/PID/exit/non-killing-release contracts, and maps both `terminate` and `force_terminate` to forceful `TerminateProcess`; the selector routes `os.name == "nt"` to it | `src/lingtai/adapters/windows/avatar_launcher.py`, `src/lingtai/adapters/avatar_launcher.py` | `tests/test_avatar_launcher_windows.py::test_selector_returns_windows_adapter_when_os_name_is_nt`, `::test_windows_launch_uses_detached_flags_and_disconnects_streams`, `::test_windows_terminate_and_force_terminate_both_forceful`, `::test_windows_release_never_raises_and_never_terminates` |
-| Boot policy keeps heartbeat-first precedence, exact early-exit truth, and a live-process slow path without termination | `src/lingtai/tools/avatar/__init__.py` | `tests/test_avatar_launcher.py::test_manager_boot_policy_uses_opaque_port_and_preserves_precedence`, `::test_manager_slow_observation_does_not_terminate_child` |
+| Boot policy keeps heartbeat-first precedence, exact early-exit truth, and a live-process slow path without termination | `src/lingtai/tools/avatar/__init__.py` | `retired-test:test_avatar_launcher::test_manager_boot_policy_uses_opaque_port_and_preserves_precedence`, `::test_manager_slow_observation_does_not_terminate_child` |
 | `setup` claims and mounts exactly one official `avatar` tool, preserving its manager capability object | `src/lingtai/tools/avatar/__init__.py`, `src/lingtai/kernel/tool_plugin/__init__.py` | `tests/test_tool_family_avatar_migration.py::test_agent_mounts_avatar_only_through_the_official_registrar` |
-| Each spawn appends a ledger record | `src/lingtai/tools/avatar/__init__.py` | `tests/test_layers_avatar.py::test_ledger_records_spawn` |
-| `dry_run` previews without spawning and does not require `confirm` | `src/lingtai/tools/avatar/__init__.py` | `tests/test_layers_avatar.py::test_dry_run_returns_preview_without_spawning`, `::test_dry_run_does_not_require_confirm` |
-| The mission-quality gate rejects empty/short/placeholder missions | `src/lingtai/tools/avatar/__init__.py` | `tests/test_layers_avatar.py::test_helper_rejects_empty`, `::test_helper_rejects_short`, `::test_helper_rejects_test_word`, `::test_helper_rejects_test_prefix` |
-| Unsafe / duplicate avatar names are rejected | `src/lingtai/tools/avatar/__init__.py` | `tests/test_layers_avatar.py::test_spawn_rejects_unsafe_name`, `::test_spawn_duplicate_name_error` |
-| Shallow spawn does not copy identity files | `src/lingtai/tools/avatar/__init__.py` | `tests/test_layers_avatar.py::test_spawn_does_not_copy_identity_files` |
-| `action="rules"` is a retired action: it now fails with the same unknown-action envelope as any other unrecognized value, for admin and non-admin callers alike, and writes no `.rules` file | `src/lingtai/tools/avatar/__init__.py` | `tests/test_avatar_rules.py::TestAvatarRulesActionRemoved::test_rules_is_an_unknown_action`; `tests/test_layers_avatar.py::TestUnifiedAvatarTool::test_rules_action_is_unknown_regardless_of_admin` |
-| `action="settings"` is immediately before `manual`, returns the exact 16 five-field fixed-policy rows, points to owner-manual anchors, excludes private/runtime/auth/handoff state, accepts no writer input or environment peer, and fails as one bounded result | `src/lingtai/tools/avatar/settings.py`, `src/lingtai/tools/avatar/__init__.py` | `tests/test_tool_family_avatar_migration.py::test_avatar_settings_inventory_is_exact_fresh_and_excludes_private_state`, `::test_avatar_settings_is_show_only_and_has_no_environment_peer`, `::test_avatar_settings_provider_failure_is_one_bounded_result`; `tests/test_tool_settings_contract.py` |
+| Each spawn appends a ledger record | `src/lingtai/tools/avatar/__init__.py` | `retired-test:test_layers_avatar::test_ledger_records_spawn` |
+| `dry_run` previews without spawning and does not require `confirm` | `src/lingtai/tools/avatar/__init__.py` | `retired-test:test_layers_avatar::test_dry_run_returns_preview_without_spawning`, `::test_dry_run_does_not_require_confirm` |
+| The mission-quality gate rejects empty/short/placeholder missions | `src/lingtai/tools/avatar/__init__.py` | `retired-test:test_layers_avatar::test_helper_rejects_empty`, `::test_helper_rejects_short`, `::test_helper_rejects_test_word`, `::test_helper_rejects_test_prefix` |
+| Unsafe / duplicate avatar names are rejected | `src/lingtai/tools/avatar/__init__.py` | `retired-test:test_layers_avatar::test_spawn_rejects_unsafe_name`, `::test_spawn_duplicate_name_error` |
+| Shallow spawn does not copy identity files | `src/lingtai/tools/avatar/__init__.py` | `retired-test:test_layers_avatar::test_spawn_does_not_copy_identity_files` |
+| `action="rules"` is a retired action: it now fails with the same unknown-action envelope as any other unrecognized value, for admin and non-admin callers alike, and writes no `.rules` file | `src/lingtai/tools/avatar/__init__.py` | `tests/test_avatar_rules.py::TestAvatarRulesActionRemoved::test_rules_is_an_unknown_action`; `retired-test:test_layers_avatar::TestUnifiedAvatarTool::test_rules_action_is_unknown_regardless_of_admin` |
+| `action="settings"` is immediately before `manual`, returns the exact 16 five-field fixed-policy rows, points to owner-manual anchors, excludes private/runtime/auth/handoff state, accepts no writer input or environment peer, and fails as one bounded result | `src/lingtai/tools/avatar/settings.py`, `src/lingtai/tools/avatar/__init__.py` | `tests/test_tool_family_avatar_migration.py::test_avatar_settings_inventory_is_exact_fresh_and_excludes_private_state`, `::test_avatar_settings_is_show_only_and_has_no_environment_peer`, `::test_avatar_settings_provider_failure_is_one_bounded_result`; `retired-test:test_tool_settings_contract` |
 | Spawn no longer performs an automatic rules-distribution side effect (shallow or deep); ordinary deep-copy of `system/` — including any `system/rules.md` it carries — is unaffected | `src/lingtai/tools/avatar/__init__.py` | `tests/test_avatar_rules.py::TestSpawnNoAutoRulesDistribution::test_shallow_spawn_no_longer_writes_a_rules_signal`, `::test_deep_spawn_still_copies_rules_md_but_writes_no_signal` |
-| `_prepare_deep` refuses a non-sibling destination | `src/lingtai/tools/avatar/__init__.py` | `tests/test_layers_avatar.py::test_prepare_deep_refuses_non_sibling_dst` |
-| `action="manual"` returns the exact packaged manual body and mutates nothing | `src/lingtai/tools/avatar/__init__.py` | `tests/test_tool_family_avatar_migration.py::test_avatar_manager_uses_only_granted_ports_for_local_manual`, `tests/test_layers_avatar.py::TestUnifiedAvatarTool::test_manual_returns_exact_body_and_performs_no_mutation` |
-| Invalid `action` fails deterministically without touching other actions | `src/lingtai/tools/avatar/__init__.py` | `tests/test_layers_avatar.py::TestUnifiedAvatarTool::test_invalid_action_fails_deterministically`, `::test_spawn_missing_name_fails_without_affecting_other_actions` |
-| `action` is schema-required (root `required: ["action", "input", "reasoning"]`) and runtime-required — a missing `action` never defaults to `spawn`, `settings`, or `manual`, regardless of which action's fields are present, and mutates nothing | `src/lingtai/tools/avatar/__init__.py` | `tests/test_layers_avatar.py::TestUnifiedAvatarTool::test_missing_action_fails_deterministically_regardless_of_payload_shape`; `tests/test_avatar_rules.py::TestAvatarRulesActionRemoved::test_explicit_spawn_action_required` |
-| The daemon blacklists the canonical `avatar` name (not the retired two-tool names) | `src/lingtai/tools/daemon/__init__.py` | `tests/test_daemon.py::test_build_tool_surface_blacklist`, `tests/test_layers_avatar.py::TestUnifiedAvatarTool::test_daemon_excludes_avatar_from_child_surface` |
+| `_prepare_deep` refuses a non-sibling destination | `src/lingtai/tools/avatar/__init__.py` | `retired-test:test_layers_avatar::test_prepare_deep_refuses_non_sibling_dst` |
+| `action="manual"` returns the exact packaged manual body and mutates nothing | `src/lingtai/tools/avatar/__init__.py` | `tests/test_tool_family_avatar_migration.py::test_avatar_manager_uses_only_granted_ports_for_local_manual`, `retired-test:test_layers_avatar::TestUnifiedAvatarTool::test_manual_returns_exact_body_and_performs_no_mutation` |
+| Invalid `action` fails deterministically without touching other actions | `src/lingtai/tools/avatar/__init__.py` | `retired-test:test_layers_avatar::TestUnifiedAvatarTool::test_invalid_action_fails_deterministically`, `::test_spawn_missing_name_fails_without_affecting_other_actions` |
+| `action` is schema-required (root `required: ["action", "input", "reasoning"]`) and runtime-required — a missing `action` never defaults to `spawn`, `settings`, or `manual`, regardless of which action's fields are present, and mutates nothing | `src/lingtai/tools/avatar/__init__.py` | `retired-test:test_layers_avatar::TestUnifiedAvatarTool::test_missing_action_fails_deterministically_regardless_of_payload_shape`; `tests/test_avatar_rules.py::TestAvatarRulesActionRemoved::test_explicit_spawn_action_required` |
+| The daemon blacklists the canonical `avatar` name (not the retired two-tool names) | `src/lingtai/tools/daemon/__init__.py` | `retired-test:test_daemon::test_build_tool_surface_blacklist`, `retired-test:test_layers_avatar::TestUnifiedAvatarTool::test_daemon_excludes_avatar_from_child_surface` |
 
 ## Verification matrix
 
 | Invariant | Automated test | Manual check | Risk if broken |
 |---|---|---|---|
 | Exactly one official tool mounts on setup | `tests/test_tool_family_avatar_migration.py::test_agent_mounts_avatar_only_through_the_official_registrar` | Boot with `capabilities={"avatar": {}}` and inspect tools | Spawning silently unavailable |
-| Spawn is ledgered with boot status | `tests/test_layers_avatar.py::test_ledger_records_spawn` | Spawn an avatar, inspect `delegates/ledger.jsonl` | No audit trail; duplicate/liveness checks break |
-| Mission gate stops accidental spawns | `tests/test_layers_avatar.py::test_helper_rejects_short` | `avatar(action="spawn", input={"name": "x"}, reasoning="short")` with a 5-char mission, confirm gate | Stray detached processes from batched calls |
-| Name validation / path-scope guard holds | `tests/test_layers_avatar.py::test_spawn_rejects_unsafe_name` | Spawn with `name="../x"`, confirm refusal | Avatar dir escapes the network root |
-| Boot verification catches early child exit | `tests/test_avatar_launcher.py::test_manager_boot_policy_uses_opaque_port_and_preserves_precedence` | Corrupt an avatar `init.json`, spawn, confirm `failed` + stderr | Parent thinks a crashed avatar is alive |
-| Omitted `action` never defaults to spawn | `tests/test_layers_avatar.py::TestUnifiedAvatarTool::test_missing_action_fails_deterministically_regardless_of_payload_shape` | Call `avatar(input={"name": "x", "confirm": true}, reasoning="...")` with no `action`, confirm error + no spawned process | A model omitting `action` could accidentally spawn an untracked process |
+| Spawn is ledgered with boot status | `retired-test:test_layers_avatar::test_ledger_records_spawn` | Spawn an avatar, inspect `delegates/ledger.jsonl` | No audit trail; duplicate/liveness checks break |
+| Mission gate stops accidental spawns | `retired-test:test_layers_avatar::test_helper_rejects_short` | `avatar(action="spawn", input={"name": "x"}, reasoning="short")` with a 5-char mission, confirm gate | Stray detached processes from batched calls |
+| Name validation / path-scope guard holds | `retired-test:test_layers_avatar::test_spawn_rejects_unsafe_name` | Spawn with `name="../x"`, confirm refusal | Avatar dir escapes the network root |
+| Boot verification catches early child exit | `retired-test:test_avatar_launcher::test_manager_boot_policy_uses_opaque_port_and_preserves_precedence` | Corrupt an avatar `init.json`, spawn, confirm `failed` + stderr | Parent thinks a crashed avatar is alive |
+| Omitted `action` never defaults to spawn | `retired-test:test_layers_avatar::TestUnifiedAvatarTool::test_missing_action_fails_deterministically_regardless_of_payload_shape` | Call `avatar(input={"name": "x", "confirm": true}, reasoning="...")` with no `action`, confirm error + no spawned process | A model omitting `action` could accidentally spawn an untracked process |
 | `action="rules"` and its automatic post-spawn fan-out are gone; no `.rules` is ever written by Avatar | `tests/test_avatar_rules.py::TestAvatarRulesActionRemoved::test_rules_is_an_unknown_action`, `tests/test_avatar_rules.py::TestSpawnNoAutoRulesDistribution::test_shallow_spawn_no_longer_writes_a_rules_signal` | Spawn a child from a parent with `system/rules.md`, confirm no `.rules` appears | Reintroducing a broadcast without the removed authorization gate would silently widen exposure |
-| `manual` action is read-only | `tests/test_layers_avatar.py::TestUnifiedAvatarTool::test_manual_returns_exact_body_and_performs_no_mutation` | Call `avatar(action="manual", input={}, reasoning="...")`, confirm no new files | A "manual" call could accidentally spawn |
-| Settings SHOW is exact, fresh, bounded, read-only, and excludes private state | `tests/test_tool_family_avatar_migration.py` settings tests plus `tests/test_tool_settings_contract.py` | Call settings with `{}` and a set-shaped input; inspect exact fields/order/manual targets and no source mutation | A writer, stale result, partial inventory, or host-state leak could drift from the owner contract |
+| `manual` action is read-only | `retired-test:test_layers_avatar::TestUnifiedAvatarTool::test_manual_returns_exact_body_and_performs_no_mutation` | Call `avatar(action="manual", input={}, reasoning="...")`, confirm no new files | A "manual" call could accidentally spawn |
+| Settings SHOW is exact, fresh, bounded, read-only, and excludes private state | `tests/test_tool_family_avatar_migration.py` settings tests plus `retired-test:test_tool_settings_contract` | Call settings with `{}` and a set-shaped input; inspect exact fields/order/manual targets and no source mutation | A writer, stale result, partial inventory, or host-state leak could drift from the owner contract |
 
 Run before merging avatar changes:
 
-```bash
-python -m pytest tests/test_avatar_launcher.py tests/test_layers_avatar.py \
-  tests/test_avatar_rules.py tests/test_avatar_preset_inheritance.py \
-  tests/test_avatar_timezone_inheritance.py \
-  tests/test_tool_family_avatar_migration.py tests/test_tool_settings_contract.py -q
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_avatar_launcher, test_avatar_preset_inheritance, test_avatar_rules, test_avatar_timezone_inheritance, test_layers_avatar, test_tool_family_avatar_migration, test_tool_settings_contract.
 ```
 
 ## Schema and glossary ownership

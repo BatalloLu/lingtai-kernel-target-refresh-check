@@ -17,13 +17,7 @@ related_files:
   - src/lingtai/tools/psyche/__init__.py
   - src/lingtai/kernel/base_agent/turn.py
   - src/lingtai/kernel/llm/base.py
-  - tests/test_shell_sandbox_containment.py
-  - tests/test_shell_tool_plugin_declaration.py
-  - tests/test_shell_settings.py
   - tests/contracts/llm_conversation_input/test_send_str.py
-  - tests/test_context_ownership_redesign.py
-  - tests/test_repeated_tool_error_continue.py
-  - tests/test_daemon_check_historical.py
   - src/lingtai/tools/daemon/BEHAVIORS.md
 maintenance: |
   Written by the shell/sandbox CONVERT_BEHAVIOR migration (2026-08). The
@@ -36,6 +30,8 @@ maintenance: |
   any of those changes in a way that affects agent-observable behavior, update
   the matching LABT here in the same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Shell / Sandbox Behavior Tests
 
 LABT v1. These are self-contained agent-executable behavioral tests for the
@@ -89,7 +85,7 @@ expected pass counts are pinned and platform notes are given per LABT.
    absolute directory NOT under `<agent>` (e.g. the parent of `<agent>`, `/tmp`
    on POSIX, or `C:\Windows` on Windows).
 6. (POSIX-only pinned check — skip on native Windows) From `<repo>`, run
-   `python -m pytest tests/test_shell_sandbox_containment.py -q`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 
 ### Expected evidence
 - [ ] Step 1: `{status: "ok", ...}` and `stdout` contains your working dir
@@ -256,7 +252,7 @@ conforming regime drops or rewrites the user text, returns no concrete
    result fields. Read `<agent>/system/system.md` again and record whether it
    now contains `DURABLE-ONE`.
 7. (Pinned check) From `<repo>`, run
-   `python -m pytest tests/test_context_ownership_redesign.py -q`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 
 ### Expected evidence
 - [ ] Step 1: `psyche` action enum == `["pad", "lingtai", "knowledge",
@@ -311,7 +307,7 @@ sources.
    notification workaround.
 3. Check whether `<agent>/.notification/repeated_tool_error.json` exists.
 4. (Pinned check) From `<repo>`, run
-   `python -m pytest tests/test_repeated_tool_error_continue.py -q`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 
 ### Expected evidence
 - [ ] Steps 1–2: each failure came back as an ordinary tool result with its

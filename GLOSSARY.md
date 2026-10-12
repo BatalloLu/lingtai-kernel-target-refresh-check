@@ -7,11 +7,10 @@ related_files:
   - docs.yaml
   - src/lingtai/kernel/tool_glossary.py
   - src/lingtai/tools/glossary_validator.py
-  - tests/test_tool_glossary.py
 maintenance: |
   This file is the repository-root glossary governance document: the glossary
   of glossaries / 词汇表之词汇表 for distributed tool-glossary resources. Keep
-  it aligned with src/lingtai/kernel/tool_glossary.py and tests/test_tool_glossary.py
+  it aligned with src/lingtai/kernel/tool_glossary.py and retired-test:test_tool_glossary
   whenever glossary frontmatter schema, body policy, language ownership, or
   templates change.
 ---

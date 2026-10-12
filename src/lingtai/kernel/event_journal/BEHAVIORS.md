@@ -15,6 +15,8 @@ maintenance: |
   event-journal behavior clause changes, update the guarding LABT here in the
   same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Structured Event Journal Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -32,7 +34,7 @@ Pinned pytest commands must run from the repo root with the project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_event_journal.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Append a structured event carrying a secret-shaped field through the production adapter bound to `<scratch>` and read back the JSONL line; note the byte offset reported by the append result.
 3. Confirm the SQLite sidecar (derived index) received the same redacted event with JSONL provenance, and that a primary append failure created no sidecar-only fact.
 

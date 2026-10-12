@@ -4,12 +4,13 @@ related_files:
   - src/lingtai/kernel/base_agent/CONTRACT.md
   - src/lingtai/kernel/base_agent/BEHAVIORS.md
   - src/lingtai/kernel/provider_admission.py
-  - tests/test_provider_admission.py
 maintenance: |
   Manual for the Core provider-admission boundary. Keep it reachable from both
   base_agent owner twins and align its one-hop and fail-closed guidance with the
   Port, Contract, LABT, and focused tests.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Provider admission
 
@@ -51,8 +52,9 @@ ACP connection closes; no turn-start grant is cached.
 
 Run:
 
-```bash
-python -m pytest -q tests/test_provider_admission.py
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_provider_admission.
 ```
 
 Read [BA005](../../src/lingtai/kernel/base_agent/BEHAVIORS.md#behavior-ba005)

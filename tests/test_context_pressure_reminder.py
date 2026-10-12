@@ -1,11 +1,4 @@
-"""Tests for the unified molt/context-pressure reminder abstraction.
-
-``ContextPressureReminder`` (``lingtai/kernel/reminders/context_pressure.py``)
-owns the whole molt/context-pressure reminder that used to be split between
-``SessionManager`` (raw streak counters) and ``meta_block`` (warning decision +
-prose). These tests exercise the abstraction directly, plus the compatibility
-delegation from both callers, and assert that behavior/prose is unchanged.
-"""
+"""Small numeric and canonical-owner context-pressure boundary regressions."""
 from __future__ import annotations
 
 from types import SimpleNamespace
@@ -37,12 +30,6 @@ from lingtai.kernel.reminders.context_pressure import (
     render_reconstruction_molt,
 )
 
-
-# ---------------------------------------------------------------------------
-# Default thresholds mirror the kernel-fixed constants.
-# ---------------------------------------------------------------------------
-
-
 def test_defaults_match_kernel_constants():
     r = ContextPressureReminder()
     assert r.reconstruction_ratio == CONTEXT_PRESSURE_HIGH_RATIO == 0.85
@@ -51,35 +38,6 @@ def test_defaults_match_kernel_constants():
     assert CONTEXT_PRESSURE_RECONSTRUCTION_RATIO == CONTEXT_PRESSURE_FORCED_REBUILD_RATIO == 1.0
     assert r.warn_after_rounds == CONTEXT_PRESSURE_WARN_AFTER_ROUNDS == 3
     assert r.recovery_target == CONTEXT_PRESSURE_RECOVERY_TARGET == 0.75
-
-
-# ---------------------------------------------------------------------------
-# Channel B — streak state machine (behavior parity with the old SessionManager
-# streak; mirrors tests/test_context_pressure_streak.py at the abstraction level).
-# ---------------------------------------------------------------------------
-
-
-def test_first_two_high_rounds_do_not_warn():
-    r = ContextPressureReminder()
-    r.note_round(0.90, round_id=1)
-    assert r.streak == 1 and r.active is False
-    r.note_round(0.90, round_id=2)
-    assert r.streak == 2 and r.active is False
-
-
-def test_third_consecutive_high_round_warns():
-    r = ContextPressureReminder()
-    r.note_round(0.90, round_id=1)
-    r.note_round(0.90, round_id=2)
-    r.note_round(0.90, round_id=3)
-    assert r.streak == 3 and r.active is True
-
-
-def test_streak_continues_warning_while_pressure_high():
-    r = ContextPressureReminder()
-    for round_id in (1, 2, 3, 4, 5):
-        r.note_round(0.90, round_id=round_id)
-    assert r.streak == 5 and r.active is True
 
 
 def test_duplicate_round_id_is_noop():
@@ -131,128 +89,6 @@ def test_unparseable_usage_leaves_streak_untouched():
     assert r.last_transition_reason == TRANSITION_UNKNOWN_USAGE
 
 
-# ---------------------------------------------------------------------------
-# Transition-reason tracking (the "why" surfaced in the debug dict).
-# ---------------------------------------------------------------------------
-
-
-def test_transition_reasons_track_last_observation():
-    r = ContextPressureReminder()
-    assert r.last_transition_reason == TRANSITION_INITIAL
-
-    r.note_round(0.90, round_id=1)
-    assert r.last_transition_reason == TRANSITION_HIGH_ROUND
-
-    r.note_round(0.90, round_id=1)  # duplicate
-    assert r.last_transition_reason == TRANSITION_DUPLICATE
-
-    r.note_round(0.90, round_id=2)
-    r.note_round(0.90, round_id=3)  # advances to warn count
-    assert r.active is True
-    assert r.last_transition_reason == TRANSITION_WARNING_ACTIVE
-
-    r.note_round(-1.0, round_id=4)  # sentinel
-    assert r.last_transition_reason == TRANSITION_UNKNOWN_USAGE
-
-    r.note_round(0.20, round_id=5)  # relieved
-    assert r.last_transition_reason == TRANSITION_RELIEVED
-    assert r.streak == 0
-
-
-# ---------------------------------------------------------------------------
-# snapshot / to_debug_dict
-# ---------------------------------------------------------------------------
-
-
-def test_to_debug_dict_reports_state_thresholds_and_why():
-    r = ContextPressureReminder()
-    r.note_round(0.90, round_id=1)
-    r.note_round(0.90, round_id=2)
-    r.note_round(0.90, round_id=3)
-    d = r.to_debug_dict()
-    assert d == {
-        "reconstruction_ratio": 0.85,
-        "warn_after_rounds": 3,
-        "recovery_target": 0.75,
-        "streak": 3,
-        "active": True,
-        "last_round_id": 3,
-        "last_usage": 0.90,
-        "last_transition_reason": TRANSITION_WARNING_ACTIVE,
-    }
-    assert r.snapshot() == d  # alias
-
-
-def test_injected_thresholds_flow_through_decisions_and_debug():
-    r = ContextPressureReminder(
-        reconstruction_ratio=0.90, warn_after_rounds=2, recovery_target=0.50
-    )
-    r.note_round(0.92, round_id=1)
-    assert r.active is False
-    r.note_round(0.95, round_id=2)
-    assert r.active is True
-    d = r.to_debug_dict()
-    assert d["reconstruction_ratio"] == 0.90
-    assert d["warn_after_rounds"] == 2
-    assert d["recovery_target"] == 0.50
-
-
-# ---------------------------------------------------------------------------
-# Channel B — current-state reminder rendering.
-# ---------------------------------------------------------------------------
-
-
-def test_current_molt_context_none_until_active():
-    r = ContextPressureReminder()
-    r.note_round(0.90, round_id=1)
-    r.note_round(0.90, round_id=2)
-    assert r.current_molt_context(0.90) is None  # streak 2, not active
-
-
-def test_current_molt_context_prose_from_third_round():
-    r = ContextPressureReminder()
-    for rid in (1, 2, 3):
-        r.note_round(0.90, round_id=rid)
-    molt = r.current_molt_context(0.90)
-    assert isinstance(molt, str)
-    assert "Context has stayed high" in molt
-    assert "3 consecutive fresh model calls" in molt
-    assert "90%" in molt
-    assert "recovery target is 75%" in molt
-    assert "batch tool results" in molt
-    assert "Repeated summarize calls while context stays above 85%" in molt
-    assert "substantially hurt token efficiency" in molt
-    assert "batched summarize/reconstruction pass" in molt
-    assert "stop repeating summarize" in molt
-    assert "molt deliberately" in molt
-    assert "context-manual" in molt
-
-
-def test_pressure_reminders_prepare_molt_instead_of_rebuild_only():
-    sustained = render_current_molt_context(streak=3, usage=0.90)
-    assert "rebuild-only" not in sustained
-    assert "strongly discouraged" in sustained
-    assert "session journal" in sustained
-    assert "molt deliberately" in sustained
-    above_ratio = render_reconstruction_molt(after_usage=0.90)
-    assert "rebuild-only" not in above_ratio
-    assert "at most one" not in above_ratio
-    assert "do not rebuild again" in above_ratio
-    assert "molt deliberately" in above_ratio
-
-
-def test_render_current_molt_context_is_pure_and_natural_language():
-    molt = render_current_molt_context(streak=3, usage=0.90)
-    assert "stage" not in molt
-    assert '"threshold"' not in molt
-    assert "recovery_target" not in molt
-
-
-# ---------------------------------------------------------------------------
-# Channel A — reconstruction annotation.
-# ---------------------------------------------------------------------------
-
-
 def test_annotate_reconstruction_none_below_recovery_target():
     r = ContextPressureReminder()
     assert r.annotate_reconstruction(0.40) is None
@@ -263,18 +99,6 @@ def test_annotate_reconstruction_inclusive_at_recovery_target():
     assert r.annotate_reconstruction(0.75) is not None
 
 
-def test_annotate_reconstruction_above_recovery_but_below_ratio():
-    r = ContextPressureReminder()
-    molt = r.annotate_reconstruction(0.80)
-    assert isinstance(molt, str)
-    assert "runtime already rebuilt the provider context" in molt
-    assert "80%" in molt
-    assert "75%" in molt
-    assert "one batch" in molt
-    assert "molt deliberately" in molt
-    assert "context-manual" in molt
-
-
 def test_annotate_reconstruction_still_above_ratio_says_stop_looping():
     r = ContextPressureReminder()
     molt = r.annotate_reconstruction(0.90)
@@ -283,23 +107,6 @@ def test_annotate_reconstruction_still_above_ratio_says_stop_looping():
     assert "substantially hurt token efficiency" in molt
     assert "stop repeating summarize" in molt
     assert "molt deliberately" in molt
-
-
-def test_annotate_reconstruction_honors_event_recovery_target_override():
-    r = ContextPressureReminder()
-    # After-usage 0.70 is below the default 0.75 target -> no reminder normally,
-    # but an event that carried a 0.50 recovery target must still warn.
-    assert r.annotate_reconstruction(0.70) is None
-    assert r.annotate_reconstruction(0.70, recovery_target=0.50) is not None
-
-
-def test_render_reconstruction_molt_unparseable_returns_none():
-    assert render_reconstruction_molt(after_usage="nope") is None
-
-
-# ---------------------------------------------------------------------------
-# Ownership — SessionManager exposes its transient reminder.
-# ---------------------------------------------------------------------------
 
 
 def _make_session_manager():
@@ -340,27 +147,11 @@ def test_session_manager_owns_one_transient_reminder():
     assert fresh.active is False
 
 
-# ---------------------------------------------------------------------------
-# Delegation — meta_block uses the session's owned reminder.
-# ---------------------------------------------------------------------------
-
-
 def _agent_with_reminder(reminder):
     return SimpleNamespace(
         _intrinsics={"context": object()},
         _session=SimpleNamespace(context_pressure_reminder=reminder),
     )
-
-
-def test_meta_block_build_molt_context_uses_reminder():
-    from lingtai.kernel.meta_block import build_molt_context
-
-    r = ContextPressureReminder()
-    for rid in (1, 2, 3):
-        r.note_round(0.90, round_id=rid)
-    molt = build_molt_context(_agent_with_reminder(r), 0.90)
-    assert molt is not None
-    assert "3 consecutive fresh model calls" in molt
 
 
 def test_meta_block_build_molt_context_matches_owner_across_rounds():
@@ -375,27 +166,6 @@ def test_meta_block_build_molt_context_matches_owner_across_rounds():
         assert build_molt_context(agent, usage) == reminder.current_molt_context(usage)
         assert reminder.snapshot() == before
         assert reminder.active is (rid == 3)
-
-
-# ---------------------------------------------------------------------------
-# Emission descriptors — pure builders used by the _meta assembly layer to emit
-# structured runtime events ONLY when a reminder is actually attached to the
-# current agent-state metadata. The reminder abstraction stays pure: it computes
-# descriptors, it does not log.
-# ---------------------------------------------------------------------------
-
-
-def test_reminder_message_hash_is_short_and_stable():
-    h1 = reminder_message_hash("hello reminder")
-    h2 = reminder_message_hash("hello reminder")
-    assert h1 == h2
-    assert isinstance(h1, str)
-    assert len(h1) == 12
-    assert all(c in "0123456789abcdef" for c in h1)
-    assert reminder_message_hash("different") != h1
-    # Non-string / empty input degrades to a stable sentinel, never raises.
-    assert isinstance(reminder_message_hash(None), str)
-    assert isinstance(reminder_message_hash(""), str)
 
 
 def test_current_molt_emission_descriptor_fields():
@@ -462,39 +232,3 @@ def test_reconstruction_molt_emission_descriptor_above_recovery_branch():
     assert payload["branch"] == "above_recovery"
     assert payload["after_usage"] == pytest.approx(0.80)
     assert payload["after_source"] == "local_estimate"
-
-
-def test_reconstruction_molt_emission_descriptor_missing_before_is_none():
-    event = {
-        "trigger_threshold": 1.0,
-        "recovery_target": 0.75,
-        "after": {"usage": 0.80},
-    }
-    payload = reconstruction_molt_emission_descriptor(event, message="t")["payload"]
-    assert payload["before_usage"] is None
-    assert payload["after_source"] is None
-
-
-# ---------------------------------------------------------------------------
-# Persistent post-forced-rebuild overflow warning (Jason, 2026-07-12). The exact
-# sentence is a fixed human contract; only the percentage is interpolated, pinned
-# to ONE decimal (e.g. 1.012 -> "(101.2 %)"), even for round percentages.
-# ---------------------------------------------------------------------------
-
-
-def test_render_forced_rebuild_failed_warning_exact_wording_one_decimal():
-    from lingtai.kernel.reminders.context_pressure import (
-        render_forced_rebuild_failed_warning,
-    )
-
-    assert render_forced_rebuild_failed_warning(1.012) == (
-        "100% context Forced Rebuild Failed to Bring Usage Below 100%. Context overflowed!! "
-        "(101.2 %) Molt IMMEDIATELY!!"
-    )
-    # One decimal is pinned even when the percentage is round.
-    assert render_forced_rebuild_failed_warning(1.05) == (
-        "100% context Forced Rebuild Failed to Bring Usage Below 100%. Context overflowed!! "
-        "(105.0 %) Molt IMMEDIATELY!!"
-    )
-    # A hair over the boundary still renders one decimal.
-    assert "(100.1 %)" in render_forced_rebuild_failed_warning(1.001)

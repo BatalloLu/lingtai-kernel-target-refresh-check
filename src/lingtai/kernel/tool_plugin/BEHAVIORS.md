@@ -27,24 +27,7 @@ related_files:
   - src/lingtai/tools/web_search/__init__.py
   - src/lingtai/tools/web_search/manual/SKILL.md
   - src/lingtai/kernel/notifications.py
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_deep_refresh.py
-  - tests/test_tool_family_avatar_migration.py
-  - tests/test_context_declared_tool_plugin.py
-  - tests/test_daemon.py
-  - tests/test_email_official_tool_plugin.py
-  - tests/test_plugin_tool.py
-  - tests/test_notification_settings.py
-  - tests/test_notification_delay_alarm.py
   - tests/test_notification_store.py
-  - tests/test_shell_tool_plugin_declaration.py
-  - tests/test_system_declared_plugin.py
-  - tests/test_task_card_controller.py
-  - tests/test_task_card_notifications.py
-  - tests/test_tool_family_vision_migration.py
-  - tests/test_web_official_plugin.py
-  - tests/test_web_composition_port.py
-  - tests/test_intrinsic_manual_actions.py
 maintenance: |
   Created with the declared host-plugin primitive. Keep this file reciprocal
   with CONTRACT.md and ANATOMY.md (tridirectional loop): when a behavior clause
@@ -62,6 +45,8 @@ maintenance: |
   mounts are runtime-bound rather
   than per-call Agent dispatch.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Declared Host Tool Plugin Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -160,10 +145,10 @@ environment (`uv venv --python 3.11 && uv pip install -e . pytest`, per
    covers the ports `agent_host_ports` always builds — `avatar_parent` and
    `plugin_catalog` — so run:
 
-   ```bash
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider \
-     tests/test_tool_plugin_declaration.py::test_standard_port_table_grants_each_declaration_only_its_requires
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_tool_plugin_declaration.
+```
 
    Expect `1 passed`: Plugin reaches exactly
    `('workdir', 'prompt_section', 'plugin_catalog')` while MCP reaches neither
@@ -186,10 +171,10 @@ environment (`uv venv --python 3.11 && uv pip install -e . pytest`, per
    Web's typed composition is never in the standard table, and its bind fails
    closed without it:
 
-   ```bash
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider \
-     tests/test_web_composition_port.py tests/test_web_official_plugin.py
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_web_composition_port, test_web_official_plugin.
+```
 
    Expect all passed: a bare standard grant for `web` raises `HostPortError`
    because `web_runtime` is absent, `_bind` refuses a missing, legacy-carrier,
@@ -232,32 +217,20 @@ environment (`uv venv --python 3.11 && uv pip install -e . pytest`, per
 6. Prove the declared surface and the shipped surface are the same surface,
    not two literals that happen to match:
 
-   ```bash
-   grep -n "DECLARATION.manual\|DECLARATION.name\|DECLARATION.input_schemas\|DECLARATION.manual_input_schema" src/lingtai/tools/mcp/__init__.py src/lingtai/tools/bash/_tool_family.py
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider \
-     tests/test_tool_plugin_declaration.py::test_official_mcp_mount_uses_controlled_host_and_real_dispatch \
-     tests/test_shell_tool_plugin_declaration.py::test_shell_declaration_is_static_and_derives_its_shipped_surface \
-     tests/test_shell_tool_plugin_declaration.py::test_shell_bind_uses_only_its_narrow_ports_and_defers_rehydration \
-     tests/test_shell_tool_plugin_declaration.py::test_official_shell_mount_uses_only_narrow_ports_and_keeps_real_dispatch
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_shell_tool_plugin_declaration, test_tool_plugin_declaration.
+```
 
    Expect both families' builders/binds to read name, per-action schemas, and
    installed-manual destination back out of `DECLARATION`, then `4 passed`.
 
 7. Run the contract suite:
 
-   ```bash
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider \
-     tests/test_tool_plugin_declaration.py tests/test_tool_family_avatar_migration.py \
-     tests/test_context_declared_tool_plugin.py tests/test_daemon.py \
-     tests/test_email_official_tool_plugin.py \
-     tests/test_shell_tool_plugin_declaration.py tests/test_plugin_tool.py \
-     tests/test_notification_delay_alarm.py tests/test_notification_store.py \
-     tests/test_task_card_controller.py tests/test_task_card_notifications.py \
-     tests/test_tool_family_vision_migration.py tests/test_intrinsic_manual_actions.py \
-     tests/test_web_official_plugin.py tests/test_web_composition_port.py \
-     tests/test_web_canonical_provider_routing.py tests/test_unified_web_capability.py
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_context_declared_tool_plugin, test_daemon, test_email_official_tool_plugin, test_intrinsic_manual_actions, test_notification_delay_alarm, test_plugin_tool, test_shell_tool_plugin_declaration, test_task_card_controller, test_task_card_notifications, test_tool_family_avatar_migration, test_tool_family_vision_migration, test_tool_plugin_declaration, test_unified_web_capability, test_web_canonical_provider_routing, test_web_composition_port, test_web_official_plugin.
+```
 
    Task Card's focused pair proves one retained manager bound only to its four
    ports, exact error/recovered/limit wire parity through the production
@@ -267,7 +240,7 @@ environment (`uv venv --python 3.11 && uv pip install -e . pytest`, per
    schema/dispatch surface, allowed-preset own-credential routing with no
    automatic fallback, `check`/`list`/`manual` no-request boundaries
    (VN001–VN006), and — through the strict controlled official host in
-   `tests/test_intrinsic_manual_actions.py` — that its `manual` returns the
+   `retired-test:test_intrinsic_manual_actions` — that its `manual` returns the
    installed `capabilities/vision/SKILL.md` body and path after a real
    registrar claim/mount.
    Web's focused suites prove its exact three-port grant, the
@@ -275,7 +248,7 @@ environment (`uv venv --python 3.11 && uv pip install -e . pytest`, per
    bind, the standard-table `provider_identity` label, exact-match canonical
    provider gating for the backend-gated OpenAI/Anthropic engines, and — through the
    same strict controlled official host in
-   `tests/test_intrinsic_manual_actions.py` — that its `manual` returns the
+   `retired-test:test_intrinsic_manual_actions` — that its `manual` returns the
    installed `capabilities/web/SKILL.md` body and path after a real registrar
    claim/mount.
 
@@ -365,10 +338,10 @@ writes.
 
 2. Run the direct preflight regression:
 
-   ```bash
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider \
-     tests/test_tool_plugin_declaration.py::test_registrar_refuses_unreserved_duplicate_and_claimed_names_before_any_bind_or_mount
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_tool_plugin_declaration.
+```
 
    Expect the selected test to pass. It refuses an unreserved name, an in-batch
    duplicate, and a different declaration against a live claim while preserving
@@ -377,10 +350,10 @@ writes.
 3. Run the direct ordering, issuance, idempotency, and limited-atomicity
    regression:
 
-   ```bash
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider \
-     tests/test_tool_plugin_declaration.py::test_registrar_binds_then_activates_then_mounts_and_scopes_atomicity_to_names
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_tool_plugin_declaration.
+```
 
    Expect the selected test to pass. `bind()` alone is side-effect-free; a
    successful member runs bind → activate → mount → claim; the same declaration
@@ -391,10 +364,10 @@ writes.
 
 4. Run the refresh-owner regression for the opt-in Web surface:
 
-   ```bash
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider \
-     tests/test_deep_refresh.py::test_deep_refresh_drops_and_reclaims_web_official_surface
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_deep_refresh.
+```
 
    Expect the selected test to pass. Removing Web from `init.json` removes its
    claim, schema, and handler; re-adding the capability restores the static

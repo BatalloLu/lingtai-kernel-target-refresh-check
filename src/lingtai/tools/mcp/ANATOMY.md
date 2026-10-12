@@ -15,15 +15,9 @@ related_files:
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
   - src/lingtai/kernel/tool_plugin/__init__.py
   - src/lingtai/adapters/tool_plugin_host.py
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_mcp_builtin_plugin_package.py
   - src/lingtai/tools/tool_family/ANATOMY.md
   - src/lingtai/tools/plugin/ANATOMY.md
   - src/lingtai/mcp_servers/ANATOMY.md
-  - tests/test_mcp_capability.py
-  - tests/test_mcp_settings.py
-  - tests/test_mcp_inbox.py
-  - tests/test_tool_family_mcp_migration_parity.py
   - src/lingtai/tools/mcp/glossary-en.md
   - src/lingtai/tools/mcp/glossary-zh.md
   - src/lingtai/tools/mcp/glossary-wen.md
@@ -43,6 +37,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # lingtai/tools/mcp + lingtai/services/mcp_* (split)
 
 MCP capability — per-agent registry of MCP (Model Context Protocol) servers.
@@ -131,8 +127,8 @@ mounts — in that order, so a name conflict is refused before the live tool
 surface is touched. Settings is the sole additive public action; the tool name,
 existing strict-empty inputs, and existing result shapes including the
 tool-specific `mcp_manual` body key stay unchanged
-(`tests/test_tool_family_mcp_migration_parity.py`, `tests/test_mcp_capability.py`,
-`tests/test_mcp_settings.py`).
+(`retired-test:test_tool_family_mcp_migration_parity`, `retired-test:test_mcp_capability`,
+`retired-test:test_mcp_settings`).
 - `mcp/plugin.json` + `mcp/skills/mcp-manual/` — the built-in Agent Plugins v1.0.0 documentation package. `Agent._install_intrinsic_manuals` validates this one-skill package through `services.plugin_registry.read_plugin` and mounts the skill as `intrinsic/capabilities/mcp/`; it does not register a plugin or an MCP server. `mcp/skills/mcp-manual/` is the only manual source; there is no separate `mcp/manual/` compatibility copy.
 
 ## Public API

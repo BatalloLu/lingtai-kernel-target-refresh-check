@@ -12,11 +12,9 @@ related_files:
   - src/lingtai/tools/daemon/ANATOMY.md
   - src/lingtai/kernel/tool_plugin/ANATOMY.md
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
-  - tests/test_cli_daemon.py
   - src/lingtai/services/mcp_registry.py
   - src/lingtai/services/mcp_inbox.py
   - src/lingtai/services/mcp_licc.py
-  - tests/test_session_mcp.py
   - src/lingtai/services/plugin_registry.py
   - src/lingtai/tools/plugin/ANATOMY.md
   - src/lingtai/tools/plugin/settings.py
@@ -26,12 +24,8 @@ related_files:
   - src/lingtai/adapters/posix/ANATOMY.md
   - src/lingtai/kernel/mail_transport/ANATOMY.md
   - src/lingtai/kernel/services/ANATOMY.md
-  - tests/test_mcp_closed_resource_restart.py
   - ENVIRONMENT_VARIABLES.md
-  - tests/test_mcp_structured_result.py
   - tests/test_mcp_sdk_v2_contract.py
-  - tests/test_mcp_capability.py
-  - tests/test_mcp_v2_adapter_metadata.py
   - src/lingtai/intrinsic_skills/lingtai-kernel-anatomy/reference/mcp-protocol.md
 maintenance: |
   Keep related_files as repo-relative paths to real files. Include neighboring
@@ -42,6 +36,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # src/lingtai/services/
 
 Root services package — pluggable backends for intrinsic tools and MCP clients.
@@ -94,9 +90,9 @@ There is no file-I/O service here any more: `file_io.py`, `file_io_sidecar.py`, 
 - **Negotiation is the SDK's, not LingTai's.** Both clients use the default `mode="auto"`: the SDK probes `server/discover` and falls back to the pre-2026 `initialize` handshake, so one client speaks to 2026 and legacy servers alike. The negotiated facts are re-exposed read-only as `protocol_version`, `server_info`, `server_capabilities`, and `instructions` rather than being discarded at connect. LingTai owns no version constant, comparison, or gate.
 - Lazy start: both clients auto-connect on first `call_tool()`.
 - **Complete tool catalog:** `_list_all_tools` pages `tools/list` with `cursor=` until `next_cursor is None`, so a paging server's full surface is returned. `_tool_record` keeps the v2 `input_schema` under the historical `schema` key and carries the remaining advertised metadata (`title`, `output_schema`, `annotations`, `icons`, `_meta`) on the record instead of dropping it.
-- **Host-private arguments:** `prepare_mcp_tool_arguments` always copies caller arguments. It restores `_reasoning` to public `reasoning` only for the exact strict LTP-v2 family schema, preserves `_reasoning` only when the server explicitly declares it, and otherwise removes that kernel-owned field. Ordinary unknown business fields are not filtered and remain the server validator's responsibility. Tests: `tests/test_mcp_capability.py`, `tests/test_mcp_v2_adapter_metadata.py`.
-- **Rich results vs. the compatibility projection:** `preserve_tool_result` keeps the full ordered content union (text/image/audio/resource-link/embedded-resource), `structured_content` at any JSON type, `is_error`, `result_type`, and `_meta`; it is reachable per call through `last_tool_result`. `_decode_tool_result` remains the explicit **compatibility projection** to the single legacy value every kernel tool handler expects: dictionary `structured_content` first, then JSON-object text, preserving structured error fields at top level while forcing protocol-authoritative `status="error"`; plain-text errors retain the legacy `status`/`message` envelope. The projection is a deliberate reduction, not the only copy. Tests: `tests/test_mcp_structured_result.py`, `tests/test_mcp_sdk_v2_contract.py`.
-- **Stale-resource recovery (issue #104):** `MCPClient` detects a dead stdio transport in `call_tool` and recovers. `_format_exception` renders `ClassName: message` (class-only when `str(e)` is empty) so an empty `ClosedResourceError` never surfaces as a blank `{"status":"error","message":""}`. `_is_stale_resource_error` flags closed/broken transports by class name + message substrings. On a stale error `call_tool` calls `restart()` (which `close()`s, clears `_ready`/`_error`, resets `_closed`/`_session`/`_loop`/`_thread`/`*_cm` so `start()` cannot lie) to make a future independent call possible. The default `retry_policy="never"` then returns an ambiguous, non-retryable error **without replaying** the submitted tool call because its remote commit point is unknowable. Exactly one replay occurs only when the caller explicitly attests `retry_policy="safe"`; a failed safe replay returns a helpful error naming the original class and retry failure. Non-stale errors surface the class name without churning the subprocess. `HTTPMCPClient` reuses `MCPClient._format_exception` / `_is_stale_resource_error` / `_ambiguous_call_error` and, since issue #740, has its own `restart()` and the same call_tool recovery flow — except it never replays (HTTP non-retry is contractual, below). Tests: `tests/test_mcp_closed_resource_restart.py`, `tests/test_mcp_sdk_v2_contract.py`.
-- **HTTP non-retry is contractual.** `HTTPMCPClient.call_tool` deliberately takes no `retry_policy`: an HTTP tool call has the same unknowable remote commit point as stdio, so it never replays. The client still `restart()`s a stale HTTP/SSE transport on a stale error (issue #740) so a future independent call can succeed — recovery of the connection, not replay of the call. This asymmetry is a stated policy, not an unfinished feature, and `tests/test_mcp_closed_resource_restart.py` asserts the parameter's absence.
+- **Host-private arguments:** `prepare_mcp_tool_arguments` always copies caller arguments. It restores `_reasoning` to public `reasoning` only for the exact strict LTP-v2 family schema, preserves `_reasoning` only when the server explicitly declares it, and otherwise removes that kernel-owned field. Ordinary unknown business fields are not filtered and remain the server validator's responsibility. Tests: `retired-test:test_mcp_capability`, `retired-test:test_mcp_v2_adapter_metadata`.
+- **Rich results vs. the compatibility projection:** `preserve_tool_result` keeps the full ordered content union (text/image/audio/resource-link/embedded-resource), `structured_content` at any JSON type, `is_error`, `result_type`, and `_meta`; it is reachable per call through `last_tool_result`. `_decode_tool_result` remains the explicit **compatibility projection** to the single legacy value every kernel tool handler expects: dictionary `structured_content` first, then JSON-object text, preserving structured error fields at top level while forcing protocol-authoritative `status="error"`; plain-text errors retain the legacy `status`/`message` envelope. The projection is a deliberate reduction, not the only copy. Tests: `retired-test:test_mcp_structured_result`, `tests/test_mcp_sdk_v2_contract.py`.
+- **Stale-resource recovery (issue #104):** `MCPClient` detects a dead stdio transport in `call_tool` and recovers. `_format_exception` renders `ClassName: message` (class-only when `str(e)` is empty) so an empty `ClosedResourceError` never surfaces as a blank `{"status":"error","message":""}`. `_is_stale_resource_error` flags closed/broken transports by class name + message substrings. On a stale error `call_tool` calls `restart()` (which `close()`s, clears `_ready`/`_error`, resets `_closed`/`_session`/`_loop`/`_thread`/`*_cm` so `start()` cannot lie) to make a future independent call possible. The default `retry_policy="never"` then returns an ambiguous, non-retryable error **without replaying** the submitted tool call because its remote commit point is unknowable. Exactly one replay occurs only when the caller explicitly attests `retry_policy="safe"`; a failed safe replay returns a helpful error naming the original class and retry failure. Non-stale errors surface the class name without churning the subprocess. `HTTPMCPClient` reuses `MCPClient._format_exception` / `_is_stale_resource_error` / `_ambiguous_call_error` and, since issue #740, has its own `restart()` and the same call_tool recovery flow — except it never replays (HTTP non-retry is contractual, below). Tests: `retired-test:test_mcp_closed_resource_restart`, `tests/test_mcp_sdk_v2_contract.py`.
+- **HTTP non-retry is contractual.** `HTTPMCPClient.call_tool` deliberately takes no `retry_policy`: an HTTP tool call has the same unknowable remote commit point as stdio, so it never replays. The client still `restart()`s a stale HTTP/SSE transport on a stale error (issue #740) so a future independent call can succeed — recovery of the connection, not replay of the call. This asymmetry is a stated policy, not an unfinished feature, and `retired-test:test_mcp_closed_resource_restart` asserts the parameter's absence.
 - The transport lifecycle, `list_tools()`, `_run_loop()`, and `_async_cleanup()` patterns remain duplicated between the two clients; result normalization is deliberately shared.
 - `mail.py` is a compatibility-only alias surface. The normative boundary is `lingtai.kernel.mail_transport.MailTransportPort`; the production implementation is `lingtai.adapters.posix.mail.PosixFilesystemMailAdapter`. The legacy public names remain aliases, not a second implementation or a Core shim.

@@ -24,16 +24,8 @@ related_files:
   - src/lingtai/intrinsic_skills/system-manual/reference/migration-guide/reference/agent-name-move/SKILL.md
   - src/lingtai/intrinsic_skills/system-manual/reference/migration-guide/scripts/change_name.py
   - src/lingtai/cli.py
-  - tests/test_cli.py
-  - tests/test_how_to_change_name.py
   - tests/test_cli_integration.py
-  - tests/test_molt_notification_persistence.py
-  - tests/test_post_molt_notification.py
-  - tests/test_notification_one_shot.py
-  - tests/test_preset_context_guard.py
   - tests/test_how_to_change_name_e2e.py
-  - tests/test_goal_notification.py
-  - tests/test_context_declared_tool_plugin.py
 maintenance: |
   Written by the lifecycle/state behavior audit. Keep in sync with the clauses
   these LABTs guard and with the paired ANATOMY.md files: when CONTRACT.md
@@ -42,6 +34,8 @@ maintenance: |
   naming semantics, goal reminders), update the matching LABT here in the same
   change and re-verify the tridirectional loop.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Context Behavior Tests — lifecycle and state
 
 LABT v1. These are self-contained agent-executable behavioral tests for the
@@ -203,7 +197,7 @@ if process exit + file consumption are observed.
 
 ### Expected evidence
 - [ ] Molt result `status == "ok"` and `molt_count` is an integer ≥ 1.
-- [ ] `.notification/email.json` survived with unchanged content. Already-delivered event identity remains retained in the same process; no-carrier/failed attempts remain retryable, and new post-molt/new producer events still deliver. Focused executable coverage: `tests/test_notification_one_shot.py::test_real_molt_retains_delivery_identity_and_retries_undelivered`.
+- [ ] `.notification/email.json` survived with unchanged content. Already-delivered event identity remains retained in the same process; no-carrier/failed attempts remain retryable, and new post-molt/new producer events still deliver. Focused executable coverage: `retired-test:test_notification_one_shot::test_real_molt_retains_delivery_identity_and_retries_undelivered`.
 - [ ] `system/pad.md` survived with unchanged content.
 - [ ] The session-journal sub-entry survived.
 - [ ] The summary file exists at `<WD>/system/summaries/molt_<count>_<ts>.md` and

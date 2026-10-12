@@ -25,6 +25,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Mail Transport
 
 ## Purpose
@@ -132,7 +134,7 @@ public `MailService`/`FilesystemMailService` names resolve to the Port and
 adapter, and proves the CLI composition root injects `PosixFilesystemMailAdapter`.
 The POSIX mechanism itself (handshake strings, attachments, atomic write,
 pseudo-outbox claim/rollback, probe ack, seen-skip, phase isolation) is
-characterized in `tests/test_filesystem_mail.py` and `tests/test_services_mail.py`.
+characterized in `retired-test:test_filesystem_mail` and `retired-test:test_services_mail`.
 
 ## Maintenance
 

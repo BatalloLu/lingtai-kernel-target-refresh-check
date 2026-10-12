@@ -11,7 +11,6 @@ related_files:
   - src/lingtai/mcp_servers/telegram/SKILL.md
   - src/lingtai/mcp_servers/telegram/account.py
   - src/lingtai/mcp_servers/telegram/manager.py
-  - tests/test_telegram_rate_limit.py
 maintenance: |
   Re-check the two official Telegram sources before changing any quoted quota or
   retry semantics. Keep provider facts distinct from LingTai product policy and

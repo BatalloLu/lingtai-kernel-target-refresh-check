@@ -22,10 +22,8 @@ related_files:
   - src/lingtai/tools/daemon/__init__.py
   - src/lingtai/services/ANATOMY.md
   - src/lingtai/services/daemon.py
-  - tests/test_cli_daemon.py
   - src/lingtai/tools/daemon/execution_host.py
   - src/lingtai/tools/daemon/shell_prompt_events.py
-  - tests/test_daemon_shell_prompt_events.py
   - src/lingtai/tools/daemon/manual/SKILL.md
   - src/lingtai/tools/email/ANATOMY.md
   - src/lingtai/tools/email/__init__.py
@@ -63,24 +61,7 @@ related_files:
   - src/lingtai/tools/tool_family/ANATOMY.md
   - src/lingtai/tools/_manual.py
   - src/lingtai/agent.py
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_tool_settings_contract.py
-  - tests/test_tool_family_avatar_migration.py
-  - tests/test_context_declared_tool_plugin.py
-  - tests/test_daemon.py
-  - tests/test_email_official_tool_plugin.py
-  - tests/test_plugin_tool.py
-  - tests/test_notification_settings.py
-  - tests/test_notification_delay_alarm.py
   - tests/test_notification_store.py
-  - tests/test_shell_tool_plugin_declaration.py
-  - tests/test_system_declared_plugin.py
-  - tests/test_task_card_controller.py
-  - tests/test_task_card_notifications.py
-  - tests/test_tool_family_vision_migration.py
-  - tests/test_web_official_plugin.py
-  - tests/test_web_composition_port.py
-  - tests/test_intrinsic_manual_actions.py
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.
   Keep this component's ANATOMY.md, CONTRACT.md, and BEHAVIORS.md reciprocal and
@@ -101,6 +82,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Declared Host Tool Plugin Anatomy
 
 Where the kernel-owned declared host-plugin primitive lives, and how each official
@@ -337,7 +320,7 @@ is in [`BEHAVIORS.md`](BEHAVIORS.md).
   `lingtai.tools.notification` import `lingtai.kernel.tool_plugin`
   (declarations depend on the shape). The kernel
   imports nothing from `lingtai.tools`; that edge is
-  swept by `tests/test_tool_plugin_declaration.py`.
+  swept by `retired-test:test_tool_plugin_declaration`.
 - `lingtai.tools.bash._tool_family` imports `lingtai.kernel.tool_plugin`; its
   lazy `_bind` sees a `ToolPluginHost`, never an Agent. The retained Shell
   manager receives only the granted workdir/notification ports, while copied

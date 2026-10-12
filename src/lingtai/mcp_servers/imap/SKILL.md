@@ -17,9 +17,6 @@ related_files:
 - src/lingtai/mcp_servers/imap/plugin.py
 - src/lingtai/mcp_servers/imap/settings.py
 - src/lingtai/mcp_servers/imap/reference/operation-contract.md
-- tests/test_imap_settings.py
-- tests/test_imap_toolfamily_ltpv2.py
-- tests/test_imap_curated_mcp_plugin_package.py
 maintenance: |
   Keep this first-call router, safety gates, action inventory, account/ID rules,
   settings anchors, and reference route aligned with the IMAP family schema,

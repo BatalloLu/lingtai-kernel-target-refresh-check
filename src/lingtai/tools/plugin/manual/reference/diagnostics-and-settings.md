@@ -6,7 +6,6 @@ related_files:
 - src/lingtai/tools/plugin/settings.py
 - src/lingtai/tools/plugin/CONTRACT.md
 - src/lingtai/services/plugin_registry.py
-- tests/test_plugin_tool.py
 maintenance: |
   Keep result fields, redaction, and generic envelope errors aligned with the
   plugin family. Diagnostics remain read-only and must not expose private paths,

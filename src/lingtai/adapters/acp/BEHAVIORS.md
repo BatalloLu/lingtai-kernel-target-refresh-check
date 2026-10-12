@@ -21,21 +21,14 @@ related_files:
   - src/lingtai/kernel/tool_executor.py
   - src/lingtai/services/session_mcp.py
   - src/lingtai/kernel/base_agent/lifecycle.py
-  - tests/test_acp_stdio.py
-  - tests/test_resident_acp_socket.py
-  - tests/test_driver_authority_adapter.py
-  - tests/test_correlated_turns.py
-  - tests/test_execution_workspace.py
-  - tests/test_turn_events.py
-  - tests/test_turn_permissions.py
-  - tests/test_tool_executor.py
-  - tests/test_session_mcp.py
   - tests/test_lifecycle_daemon_shutdown.py
 maintenance: |
   Keep this LABT reciprocal with the ACP Contract and Anatomy. Update exact wire
   evidence, supported scope, commands, and pass criteria whenever the v1 stdio
   behavior changes; do not turn an omitted capability into an implied promise.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # ACP Local Driving Adapter Behavior Tests
 
 ## Behavior ACP004 — resident attach binds Driver authority to one connection
@@ -49,7 +42,7 @@ maintenance: |
 - **estimate**: ≈ 1 minute
 
 ### Steps
-1. Run `python -m pytest -q -x tests/test_resident_acp_socket.py tests/test_provider_admission.py`.
+1. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Confirm the attach first frame carries one Driver FD, registry identity matches the running directory, and the Driver hello launch id matches the first frame before any ACP request is accepted.
 3. Confirm a granted connection Port permits a provider call and records that Port's decision; a denied or missing connection Port prevents the underlying provider call despite the resident local path remaining permissive.
 4. Confirm a valid fixed Puffo Core descriptor creates only a connection-owned MCP view, and an attached correlated turn sees its tools while ordinary ingress does not. Invalid non-empty descriptors, duplicate/colliding catalogs, and a closed lease fail closed.
@@ -79,7 +72,7 @@ denial.
 - **estimate**: ≈ 1 minute
 
 ### Steps
-1. Run `python -m pytest -q -x tests/test_resident_acp_socket.py`.
+1. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Confirm the socket is owner-only, same-UID clients can initialize and create one empty-MCP session, and disconnect/reconnect keeps the Agent alive.
 3. Confirm non-empty MCP is rejected without mounting, a second listener cannot replace the live socket, stale refused sockets recover, and a non-socket collision remains untouched.
 4. Confirm `acp-socket-path` is read-only and `run --acp-socket` carries its opt-in across the refresh environment.
@@ -105,7 +98,7 @@ started, or the generic socket admits Puffo session MCP.
 - **estimate**: ≈ 5 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest -q -x tests/test_turn_events.py tests/test_turn_permissions.py tests/test_tool_executor.py tests/test_correlated_turns.py tests/test_execution_workspace.py tests/test_session_mcp.py tests/test_acp_stdio.py tests/test_venv_resolve.py` with the project Python.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** with the project Python.
 2. Inspect the captured normal-turn frames in the passing wire test: initialize result, session/new result, one `session/update` with `sessionUpdate=agent_message_chunk` and Text content, then the original prompt result with `stopReason=end_turn`; inspect the ResourceLink case and confirm validated link metadata reaches the Core text boundary.
 3. Inspect lifecycle tests: serial, parallel, denied, and failed tools emit minimal ordered `tool_call`/`tool_call_update` status frames before terminal response; collector-owned future exceptions, timeout boundaries after worker return, and cancellation each produce one FAILED terminal with no late completion; arguments/results/raw payloads are absent; observer exceptions, late terminal events, and close do not leak or alter Core execution.
 4. Inspect permission tests: every otherwise-allowed known tool emits pending and
@@ -166,7 +159,7 @@ the evidence trail in the task report.
 
 ### Steps
 
-1. Run `python -m pytest -q -x tests/test_puffo_v0_profile.py`.
+1. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Inspect the registry and discovery cases: only an active, entry-digest-valid opaque id
   with its original directory identity resolves; tampered, retargeted, or
   revoked entries, including a missing required revocation log, fail before

@@ -78,17 +78,8 @@ related_files:
   - src/lingtai/kernel/workdir.py
   - src/lingtai/kernel/session_stats/ANATOMY.md
   - src/lingtai/kernel/session_stats/CONTRACT.md
-  - tests/test_agent_preset_manifest.py
-  - tests/test_agent_config_hydration.py
-  - tests/test_cli.py
-  - tests/test_cli_daemon.py
-  - tests/test_deep_refresh.py
   - tests/test_kernel_migrate.py
-  - tests/test_init_schema.py
   - tests/test_lingtai_facade.py
-  - tests/test_preset_materialization.py
-  - tests/test_presets.py
-  - tests/test_venv_resolve.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. Include neighboring
   ANATOMY.md files so the anatomy graph stays connected rather than isolated;
@@ -98,6 +89,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # lingtai
 
 PyPI wrapper package — `Agent(BaseAgent)` with composable capabilities, preset materialization, CLI, and public re-exports.
@@ -225,7 +218,7 @@ Parent: `src/lingtai/` under `lingtai-kernel/src/` alongside `lingtai/kernel/` (
 - **`materialize_active_preset` is pure dict mutation** — disk write only in `_activate_preset` :1261 (atomic `.tmp` → replace).
 - **Preset implementation moved to kernel** — wrapper `presets.py` re-exports `lingtai.kernel.presets`; production preset reads validate authored data without invoking the retained migration registry.
 - **Sensitive key stripping (capabilities):** `_setup_capability` stores a sanitized configuration copy, while runtime setup receives the original kwargs; `_build_manifest` re-applies the same recursive sanitizer at the serialization boundary. Both passes strip `api_key`, `api_key_env`, `api_secret`, `token`, `password` (`_SENSITIVE_KEYS`) and omit opaque values from capability kwargs before writing `.agent.json`.
-- **LLM / preset safelists (issue #78):** `_build_manifest` :262 also re-applies `_LLM_PUBLIC_KEYS = ("provider", "model", "base_url", "context_limit", "service_tier")` to the kernel-supplied `llm` block as defense-in-depth, and reads `manifest.preset` from init.json via `_read_preset_from_init` :300 filtered to `_PRESET_PUBLIC_KEYS = ("active", "default", "allowed")`. Anything outside the safelists never reaches `.agent.json` or the identity prompt section. This is the central safety claim of #78 — see `tests/test_agent_preset_manifest.py::test_manifest_never_contains_api_key`.
+- **LLM / preset safelists (issue #78):** `_build_manifest` :262 also re-applies `_LLM_PUBLIC_KEYS = ("provider", "model", "base_url", "context_limit", "service_tier")` to the kernel-supplied `llm` block as defense-in-depth, and reads `manifest.preset` from init.json via `_read_preset_from_init` :300 filtered to `_PRESET_PUBLIC_KEYS = ("active", "default", "allowed")`. Anything outside the safelists never reaches `.agent.json` or the identity prompt section. This is the central safety claim of #78 — see `retired-test:test_agent_preset_manifest::test_manifest_never_contains_api_key`.
 - **AgentConfig hydration:** `_setup_from_init` rebuilds runtime config through `build_agent_config`. Ordinary runtime fields (`context_limit`, `max_rpm`, `streaming`, `aed_timeout`, `max_aed_attempts`, `snapshot_interval`, `activeness`) come only from System runtime policy (valid env > valid v2 settings > fixed defaults); legacy init values are ignored. Cache-miss budget is no longer an AgentConfig field or manifest overlay: `tools/system/settings.py` owns live env/file/default resolution and `Agent.resolve_cache_miss_budget()` lazily projects its positive scalar to kernel metadata. Legacy `max_turns` (in `MANIFEST_LEGACY_IGNORED`), `manifest.cache_miss_budget`, and `molt_*` manifest values remain deliberately ignored. `manifest.llm.thinking` hydrates verbatim when present (schema values `none`/`minimal`/`low`/`medium`/`high`/`xhigh`/`max`) for every provider family. When omitted, `_OMITTED_THINKING_DEFAULT_SENTINEL_PROVIDERS` (`codex`, `openai`) keep the `"default"` sentinel — the Codex adapter sends its own explicit `reasoning.effort = "xhigh"` and the `openai` adapter sends no reasoning field — while `anthropic` and `claude-code` keep the legacy cross-provider `"high"` main-session default.
 - **Addon decompression** runs BEFORE capability setup so `mcp` capability sees populated `mcp_registry.jsonl` on first reconcile (`Agent.__init__` :33, `_setup_from_init` :1338).
 - **MCP retry contract (issue #34):** `_load_mcp_from_workdir` :376 records every registered init.json mcp entry into `self._mcp_init_specs` (name → `{cfg, source, client}`). `_retry_failed_mcps` :524 walks this dict, closes any dead client (`is_connected()` False), respawns with the original config, and reports `{retried, recovered, still_failed, healthy}`. `system(action="refresh")` calls it via `lingtai/tools/system/preset.py:_refresh` before `_perform_refresh` so the documented "fix config → refresh" recovery path works without full process restart.
@@ -238,7 +231,7 @@ Parent: `src/lingtai/` under `lingtai-kernel/src/` alongside `lingtai/kernel/` (
 `llm/service.py` to the native Codex factory. The default-off admission policy
 and its billing limits are taught by the
 [LLM adapter manual](intrinsic_skills/system-manual/reference/llm-adapters/SKILL.md)
-and guarded by `tests/test_codex_credits.py`.
+and guarded by `retired-test:test_codex_credits`.
 
 ## Unified fixed projection
 

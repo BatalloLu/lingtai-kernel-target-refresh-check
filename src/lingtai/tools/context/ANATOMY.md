@@ -16,7 +16,6 @@ related_files:
   - src/lingtai/tools/system/ANATOMY.md
   - src/lingtai/tools/system/summarize.py
   - src/lingtai/tools/context/__init__.py
-  - tests/test_context_declared_tool_plugin.py
   - src/lingtai/tools/context/_molt.py
   - src/lingtai/tools/context/_session_journal.py
   - src/lingtai/tools/context/_snapshots.py

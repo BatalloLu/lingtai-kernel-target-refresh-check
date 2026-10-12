@@ -12,14 +12,14 @@ related_files:
   - src/lingtai/tools/psyche/prompt.py
   - src/lingtai/tools/psyche/glossary-en.md
   - src/lingtai/agent.py
-  - tests/test_psyche_family.py
-  - tests/test_psyche_prompt_settings.py
 maintenance: |
   Created during the every-contract-needs-behaviors sweep. Keep this file
   reciprocal with CONTRACT.md and ANATOMY.md (tridirectional loop): when a
   psyche behavior clause changes, update the guarding LABT here in the same
   change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Psyche Tool Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -37,7 +37,7 @@ Pinned pytest commands must run from the repo root with the project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest -q tests/test_psyche_family.py tests/test_psyche_prompt_settings.py` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `pad | lingtai | knowledge | skills | manual` with strict empty input;
    confirm each returns its intended manual.
 3. Call `settings` with strict empty input and record the six rows. Edit the

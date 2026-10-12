@@ -15,7 +15,6 @@ related_files:
 - src/lingtai/llm/openai/adapter.py
 - src/lingtai/llm/openai/codex_ws.py
 - src/lingtai/llm/openai/codex_usage.py
-- tests/test_codex_credits.py
 - src/lingtai/llm/anthropic/adapter.py
 - src/lingtai/llm/claude_code/adapter.py
 - src/lingtai/init_schema.py
@@ -23,7 +22,7 @@ related_files:
 - ENVIRONMENT_VARIABLES.md
 maintenance: |
   Keep one entry per registered provider family and keep the inventory table
-  in parity with `LLMService._adapter_registry` (tests/test_llm_adapters_manual.py).
+  in parity with `LLMService._adapter_registry` (retired-test:test_llm_adapters_manual).
   Keep each section to the adapter's concrete operating facts (dispatch, wire,
   standard parameters, env vars) and point to source rather than restating
   code. The removed-provider list mirrors `init_schema.REMOVED_LLM_PROVIDERS`.

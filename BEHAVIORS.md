@@ -33,6 +33,8 @@ maintenance: |
   bump labt_version when the LABT specification itself changes (fields,
   self-containment rules, version semantics).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Behavior Test Convention (BEHAVIORS.md)
 
 ## Purpose

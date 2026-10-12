@@ -11,9 +11,6 @@ related_files:
   - src/lingtai/mcp_servers/feishu/control_cards.py
   - src/lingtai/mcp_servers/feishu/manager.py
   - src/lingtai/mcp_servers/feishu/service.py
-  - tests/test_local_command_core.py
-  - tests/test_telegram_slash_commands.py
-  - tests/test_feishu_control_cards.py
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.
   Update this Anatomy with changes to command ownership, workdir reads, signal

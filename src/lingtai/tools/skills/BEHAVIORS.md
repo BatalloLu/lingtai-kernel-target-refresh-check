@@ -15,6 +15,8 @@ maintenance: |
   skills tool behavior clause changes, update the guarding LABT here in the
   same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Skills Capability Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -32,7 +34,7 @@ from the repo root with the project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_skills.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `skills(action="info", input={}, reasoning="probe")` and record the result; confirm it reconciles the catalog and re-injects the prompt without authoring, pinning, publishing, installing, or executing a skill.
 3. Call `skills(action="manual", input={}, reasoning="probe")` and record the result; confirm no catalogue scan or prompt injection occurred, and that an extra `input` key fails with `INVALID_ARGUMENT` before any handler I/O.
 

@@ -18,6 +18,8 @@ maintenance: |
   certifies, or withdraws a platform capability, and keep each row's evidence
   column pointing at real test suites/CI lanes.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Windows support — capability matrix
 
@@ -43,11 +45,11 @@ The normative composition rule is `agent-runtime.compat.v1` in
 |---|---|---|---|---|
 | Workdir lease | `kernel/workdir_lease/CONTRACT.md` | implemented / native-CI-gated | `msvcrt` byte 0/length 1 on `.agent.lock` (TUI-probe interop range) | `tests/test_workdir_lease.py` shared suite + exact-argument pin everywhere; native contention/crash/probe tier in `kernel-windows-pr.yml` |
 | Agent construction (`build_agent`) | `kernel/base_agent/CONTRACT.md` | implemented / native-CI-gated | platform selectors; portable transports | `tests/test_agent.py`, `tests/test_workdir_lease.py` CLI-root pins; native run in `kernel-windows-pr.yml` |
-| Launch/stop lifecycle (CLI host) | `kernel/base_agent/CONTRACT.md` | implemented / native-CI-gated | SIGINT/SIGBREAK → `.suspend`; CIM duplicate scan | `tests/test_process_scan.py`, `tests/test_cli.py`; native lifecycle smoke in `kernel-windows-pr.yml` |
+| Launch/stop lifecycle (CLI host) | `kernel/base_agent/CONTRACT.md` | implemented / native-CI-gated | SIGINT/SIGBREAK → `.suspend`; CIM duplicate scan | `tests/test_process_scan.py`, `retired-test:test_cli`; native lifecycle smoke in `kernel-windows-pr.yml` |
 | Agent presence / heartbeat | `kernel/agent_presence/CONTRACT.md` | implemented / native-CI-gated | portable filesystem transport | `tests/test_agent_presence.py` on both platforms via CI |
 | Notification store | `kernel/notification_store/CONTRACT.md` | implemented / native-CI-gated | portable atomic-replace transport | `tests/test_notification_store*.py` via CI |
-| Event journal | `kernel/event_journal/CONTRACT.md` | implemented / native-CI-gated | portable append + SQLite sidecar | `tests/test_services_logging.py` et al. via CI |
-| Mail transport | `kernel/mail_transport/CONTRACT.md` | implemented / native-CI-gated | portable filesystem protocol (UTF-8 writes pinned) | `tests/test_mail_transport.py`, `tests/test_filesystem_mail.py`, `tests/test_portable_adapter_encoding.py` via CI |
+| Event journal | `kernel/event_journal/CONTRACT.md` | implemented / native-CI-gated | portable append + SQLite sidecar | `retired-test:test_services_logging` et al. via CI |
+| Mail transport | `kernel/mail_transport/CONTRACT.md` | implemented / native-CI-gated | portable filesystem protocol (UTF-8 writes pinned) | `tests/test_mail_transport.py`, `retired-test:test_filesystem_mail`, `tests/test_portable_adapter_encoding.py` via CI |
 | Migration workspace | `kernel/migrate/CONTRACT.md` | implemented / native-CI-gated | portable PID-suffixed atomic replace | `tests/test_kernel_migrate.py` via CI |
 | Git snapshot / source revision | `kernel/snapshot/CONTRACT.md` | implemented / native-CI-gated | portable `git` argv subprocess | `tests/test_snapshot.py`, `tests/test_git_init.py` via CI |
 | Lifecycle clock | `kernel/lifecycle_clock/CONTRACT.md` | supported | portable `time` adapters | shared contract tests on both platforms |

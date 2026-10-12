@@ -9,7 +9,6 @@ related_files:
   - src/lingtai/tools/mcp/ANATOMY.md
   - src/lingtai/tools/mcp/__init__.py
   - src/lingtai/tools/mcp/settings.py
-  - tests/test_mcp_settings.py
   - src/lingtai/mcp_catalog.json
 maintenance: |
   Created during the every-contract-needs-behaviors sweep. Keep this file
@@ -17,6 +16,8 @@ maintenance: |
   tool behavior clause changes, update the guarding LABT here in the same
   change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # MCP Capability Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -34,7 +35,7 @@ commands must run from the repo root with the project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_mcp_settings.py tests/test_mcp_capability.py tests/test_mcp_skill_manuals.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `mcp(action="info", input={}, reasoning="probe")` and record the result; confirm it reconciles the registry, re-injects prompt XML, and returns `{status, registry_path, registered_count, registered, problems}`.
 3. Call `mcp(action="info", input={"extra": 1}, reasoning="probe")` and confirm rejection happens before the registry is re-read or the manual is loaded.
 4. Call `mcp(action="settings", input={}, reasoning="probe")`; confirm exact row order `init.addons`, `init.mcp`, exact five-field order, and full current/default redaction for `init.mcp`. Confirm the init file bytes are unchanged.

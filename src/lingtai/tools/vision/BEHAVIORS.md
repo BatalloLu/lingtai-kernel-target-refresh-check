@@ -11,17 +11,14 @@ related_files:
   - src/lingtai/tools/vision/manual/SKILL.md
   - src/lingtai/tools/vision/settings.py
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_tool_family_vision_migration.py
-  - tests/test_vision_capability.py
-  - tests/test_vision_settings.py
-  - tests/test_inherit_fallback.py
 maintenance: |
   Keep this file reciprocal with CONTRACT.md and ANATOMY.md (tridirectional
   loop): when a Vision behavior clause changes, update the guarding LABT here
   and its family-specific executable evidence in the same change. Shared host
   fixture evidence is integration-owned and must not be copied into this file.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Vision Capability Behavior Tests
 
 These self-contained LingTai Agent Behavior Tasks (LABTs) guard the observable
@@ -40,7 +37,7 @@ provider disabled.
 
 ### Steps
 1. From `<repo>`, run:
-   `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_tool_family_vision_migration.py -k 'public_actions or root_schema or child_input_schemas or correlated'`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Inspect `vision.get_schema()` and record the action enum and the five input
    branch titles.
 3. Send an unknown action, a non-object input, and a cross-action field through
@@ -69,7 +66,7 @@ and invalid/cross-action calls are rejected before a child runs.
 
 ### Steps
 1. Run:
-   `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_tool_family_vision_migration.py tests/test_vision_capability.py -k 'analyze or fallback or default_vision_failure or default_route or credential or removed_provider'`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. With a recording service, call `analyze` for an existing image and with
    `question: null`; record the exact success shape and one request.
 3. Make that service raise a provider error and call `analyze` without a
@@ -107,7 +104,7 @@ failed route does not cause an implicit fallback.
 
 ### Steps
 1. Run:
-   `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_tool_family_vision_migration.py -k 'check_'`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Call `check` with `preset: null`; record its default provider/model result.
 3. Call `check` with an allowed preset and with an unlisted preset; record the
    borrowed identity, no `analyze_image` call, and sanitized denial.
@@ -133,7 +130,7 @@ never sends an image/provider request after route construction, and authorizatio
 
 ### Steps
 1. Run:
-   `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_tool_family_vision_migration.py -k 'list_action or endpoint_classification'`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Call `list` with a recording factory and record the default route, endpoint
    classification, and `responses_vision` flag.
 3. Record that only the allowed vision preset appears; no service factory,
@@ -158,7 +155,7 @@ Pass when enumeration is read-only and stops at the allowed-preset boundary.
 
 ### Steps
 1. Run:
-   `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_tool_family_vision_migration.py -k 'manual'`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Call `manual` with a live service that would fail if used and record the
    installed body and host-local `manual_path`.
 3. Call `manual` with an active-provider port that raises if read; record that
@@ -186,7 +183,7 @@ has no provider/configuration side effects.
 
 ### Steps
 1. Run:
-   `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_tool_family_vision_migration.py tests/test_tool_plugin_declaration.py -k 'preset or declaration or configuration'`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Inspect `DECLARATION.requires` and record `workdir`, `active_provider`, and
    `configuration`; record that `VisionConfiguration` is the only setup snapshot.
 3. Borrow an allowed preset whose fixture declares an `api_key_env`; record that
@@ -216,7 +213,7 @@ gates, not parallel-lane evidence.
 
 ### Steps
 1. Run:
-   `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_vision_settings.py tests/test_tool_settings_contract.py`.
+   **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Bind a valid local route, change its owner file afterward, and record the
    exact 12-key order, five-field order, applied current/default values, and
    unchanged second SHOW.

@@ -12,8 +12,6 @@ related_files:
   - src/lingtai/kernel/tool_executor.py
   - src/lingtai/intrinsic_skills/system-manual/reference/settings-inventory/SKILL.md
   - src/lingtai/kernel/base_agent/CONTRACT.md
-  - tests/test_karma.py
-  - tests/test_system_declared_plugin.py
   - tests/_workdir_lease_helpers.py
   - tests/_snapshot_helpers.py
   - tests/_lifecycle_clock_helpers.py
@@ -28,6 +26,8 @@ maintenance: |
   affects agent-observable lifecycle behavior, update the matching LABT here
   in the same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # System Behavior Tests — lifecycle control and settings discovery
 
 LABT v2. These are self-contained agent-executable behavioral tests for the

@@ -14,6 +14,8 @@ related_files:
 maintenance: |
   Tracks the Qwen Code daemon backend flag-discovery topic it documents; update when that integration changes.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Qwen Code Daemon Backend — Flag Discovery Entrypoint
 
@@ -39,7 +41,7 @@ canonicalizes to the `qwen-code` backend id.
 
 Your options land between the harness-owned `--yolo` and the final
 `-p <prompt>` (argv placement is pinned by
-`tests/test_daemon_backend_options.py::test_qwen_code_cmd_appends_backend_argv_before_prompt`):
+`retired-test:test_daemon_backend_options::test_qwen_code_cmd_appends_backend_argv_before_prompt`):
 
 ```jsonc
 {

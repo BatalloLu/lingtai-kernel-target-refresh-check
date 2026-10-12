@@ -11,15 +11,14 @@ related_files:
   - src/lingtai/adapters/tool_plugin_host.py
   - src/lingtai/kernel/tool_plugin/__init__.py
   - src/lingtai/mcp_servers/task_card/resident.py
-  - tests/test_task_card_controller.py
-  - tests/test_task_card_notifications.py
-  - tests/test_tool_settings_contract.py
 maintenance: |
   Created during the every-contract-needs-behaviors sweep. Keep this file
   reciprocal with CONTRACT.md and ANATOMY.md (tridirectional loop): when a
   task-card behavior clause changes, update the guarding LABT here in the same
   change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Intrinsic Task Card Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -38,7 +37,7 @@ pytest commands must run from the repo root with the project's Python.
 - **estimate**: ≈ 20 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_task_card_controller.py tests/test_task_card_resident_shared.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. In `<scratch>`, start a watch with a renderer that prints a body; verify `taskcard/taskcard.md` is written atomically before `taskcard/status` becomes exact `active`, and that `taskcard/watch.json` is persisted.
 3. Start a second watch while the first is active and record the result; then call `remove` twice and record both results.
 
@@ -60,10 +59,10 @@ Pass when the suites pass and the ordering/idempotency observations hold. Fail o
 - **estimate**: ≈ 10 minutes
 
 ### Steps
-1. From `<repo>`, run `PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider tests/test_task_card_notifications.py` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Inspect the recorded events for error, recovered, and refresh-limit operations, produced through the production `AgentTaskCardNotificationsAdapter` (the kernel `TaskCardNotificationsPort`); verify the exact source, explicit `system` channel, idempotency key, priority, and bounded `extra` fields, followed by one reminder submit and clear.
 3. Attempt to construct an event with a foreign `source`, pass a foreign `channel`/`extra` keyword to a typed operation, pass a foreign `source`/`channel`/`extra`/`priority` keyword to each native port operation, hand the family adapter a port that offers a generic `enqueue_system_notification`, and submit malformed reminder turns; record that each fails before publication.
-4. Run `PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider tests/test_tool_plugin_declaration.py::test_official_task_card_manager_holds_only_the_native_notification_operations` and confirm the live bound manager holds only the typed view over a granted port whose public surface is exactly `clear_reminder`, `publish_error`, `publish_limit`, `publish_recovered`, `submit_reminder`.
+4. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and confirm the live bound manager holds only the typed view over a granted port whose public surface is exactly `clear_reminder`, `publish_error`, `publish_limit`, `publish_recovered`, `submit_reminder`.
 
 ### Expected evidence
 - [ ] Step 1: the family-owned typed notification suite passes.
@@ -84,7 +83,7 @@ Pass when the typed suite passes, all three event forms retain their exact wire 
 - **estimate**: ≈ 10 minutes
 
 ### Steps
-1. From `<repo>`, run `PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider tests/test_task_card_controller.py tests/test_tool_settings_contract.py` and capture every outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture every outcome.
 2. Inspect the five rows and verify exact key order, fresh current/default values, configurable flags, five-field-only projection, and exact owner-manual anchors.
 3. Change valid and invalid owner-document fields, preview a customized legacy ceiling before migration, force the provider to fail, and attempt a nonempty settings input.
 4. Verify SHOW creates or changes no owner document, returns no partial inventory on failure, omits paths/body/watch/unknown fields, and leaves ordinary Task Card lifecycle behavior unchanged.

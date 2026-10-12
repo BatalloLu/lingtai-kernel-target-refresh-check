@@ -23,8 +23,6 @@ related_files:
   - src/lingtai/tools/registry.py
   - src/lingtai/agent.py
   - src/lingtai/init_schema.py
-  - tests/test_plugin_tool.py
-  - tests/test_tool_plugin_declaration.py
   - docs/examples/agent-plugins/hello-lingtai/plugin.json
   - docs/examples/agent-plugins/hello-lingtai/mcp.json
   - docs/examples/agent-plugins/hello-lingtai/server.py
@@ -41,6 +39,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # lingtai/tools/plugin + lingtai/services/plugin_registry (split)
 
 Plugin capability — the per-agent **Agent Plugins** (agent-plugins.org, v1.0.0)
@@ -209,7 +209,7 @@ family never receives a whole Agent.
 - A minimal working plugin ships at
   `docs/examples/agent-plugins/hello-lingtai/` — one skill, one stdio MCP server
   (stdlib only, so it stands in for genuinely third-party code), pinned by
-  `tests/test_plugin_tool.py::test_the_shipped_example_plugin_registers_end_to_end`.
+  `retired-test:test_plugin_tool::test_the_shipped_example_plugin_registers_end_to_end`.
 
 ## Public API
 

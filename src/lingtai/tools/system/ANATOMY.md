@@ -40,15 +40,8 @@ related_files:
   - src/lingtai/cli.py
   - src/lingtai/tools/context/BEHAVIORS.md
   - src/lingtai/tools/context/manual/SKILL.md
-  - tests/test_how_to_change_name.py
   - tests/test_how_to_change_name_e2e.py
-  - tests/test_cli.py
-  - tests/test_tool_family_system_migration.py
-  - tests/test_meta_block.py
-  - tests/test_runtime_meta_slim.py
   - tests/test_init_reader.py
-  - tests/test_system_sleep_alarm.py
-  - tests/test_system_declared_plugin.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. Include neighboring
   ANATOMY.md files so the anatomy graph stays connected rather than isolated;
@@ -58,6 +51,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # intrinsics/system
 
 System intrinsic — runtime, lifecycle, identity, and the read-only kernel-level settings catch-all. Provides the agent with refresh (hot-reload config/presets), karma-gated lifecycle actions on other agents (sleep, lull, suspend, cpr, interrupt, clear, nirvana), preset listing, and the agent's true name/nickname. It is an **LTP v2 family** (`src/lingtai/tools/CONTRACT.md`): one model-facing root `system` with eleven fixed operational children followed by the generic reserved `settings` and `manual` children, each owning its own strict `input` object. Every retained operational action value, its semantics, receipts, privilege gates, and errors are unchanged, and the children consume no additional model tool slots.

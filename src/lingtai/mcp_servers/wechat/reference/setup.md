@@ -14,9 +14,6 @@ related_files:
 - src/lingtai/mcp_servers/wechat/lockfile.py
 - src/lingtai/mcp_servers/wechat/settings.py
 - src/lingtai/mcp_servers/wechat/api.py
-- tests/test_wechat_config_resolution.py
-- tests/test_wechat_login.py
-- tests/test_wechat_settings.py
 - ENVIRONMENT_VARIABLES.md
 maintenance: |
   Tracks WeChat configuration, login, settings projection, and poller recovery;

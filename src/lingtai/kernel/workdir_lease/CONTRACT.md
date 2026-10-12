@@ -18,7 +18,6 @@ related_files:
   - src/lingtai/cli.py
   - tests/test_workdir_lease.py
   - tests/test_workdir_lease_posix_only.py
-  - tests/test_services_logging.py
   - tests/test_lifecycle_daemon_shutdown.py
 maintenance: |
   <!-- CANONICAL-MAINTENANCE v2 BEGIN -->
@@ -34,6 +33,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Workdir Lease
 
 ## Purpose
@@ -199,7 +200,7 @@ no adapter, proves the old `WorkingDir` lock methods are retired (single lock
 authority), proves the fake alone cannot satisfy conformance (the production
 adapter is always exercised), rejects lock-file existence as authority, and
 asserts the CLI composition roots inject the platform's production adapter.
-`tests/test_services_logging.py` pins the rebuild's exact CLI-visible contention
+`retired-test:test_services_logging` pins the rebuild's exact CLI-visible contention
 wording and asserts the lease is released exactly once on both a post-acquire
 setup failure (temp-dir creation) and an in-rebuild failure.
 `tests/test_lifecycle_daemon_shutdown.py` asserts the full

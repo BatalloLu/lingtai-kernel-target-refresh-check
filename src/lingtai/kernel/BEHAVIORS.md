@@ -23,11 +23,6 @@ related_files:
   - src/lingtai/tools/context/CONTRACT.md
   - src/lingtai/tools/notification/CONTRACT.md
   - src/lingtai/CONTRACT.md
-  - tests/test_kernel_version_nudge.py
-  - tests/test_eigen.py
-  - tests/test_large_result_no_notification.py
-  - tests/test_tool_meta_comment_overflow.py
-  - tests/test_source_drift.py
 maintenance: |
   Written by the kernel nudge/notification CONVERT_BEHAVIOR migration (2026-08)
   and trimmed per the fable PR review: K001/K002/K005/K006/K007 are now
@@ -52,6 +47,8 @@ maintenance: |
   nudge, notifications, and meta_block. When any of those change
   agent-observable behavior, update the matching LABT here in the same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Kernel Behavior Tests — nudge / notification family
 
 LABT v2. These are self-contained agent-executable behavioral tests for the
@@ -440,8 +437,8 @@ summary is accepted or a non-error result is returned.
   longer publishes a `large_tool_result` source
   ([CONTRACT.md](../tools/notification/CONTRACT.md#behavior))
 - **supersedes**: `tests/test_large_result_rescan.py::test_rescan_returns_zero_for_huge_history`,
-  `tests/test_large_result_no_notification.py::test_large_result_still_reported_by_current_tool_result_chars`,
-  `tests/test_large_result_no_notification.py::test_current_tool_result_chars_reports_threshold_and_over_count`
+  `retired-test:test_large_result_no_notification::test_large_result_still_reported_by_current_tool_result_chars`,
+  `retired-test:test_large_result_no_notification::test_current_tool_result_chars_reports_threshold_and_over_count`
 - **runner**: any LingTai agent with the `shell` tool at a checkout of
   this repository
 - **prerequisites**: a checkout of this repo at `<repo-root>`; python on PATH

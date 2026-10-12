@@ -13,16 +13,12 @@ related_files:
   - src/lingtai/tools/web_search/manual/reference/operation-contract.md
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
   - src/lingtai/adapters/tool_plugin_host.py
-  - tests/test_web_official_plugin.py
-  - tests/test_web_composition_port.py
-  - tests/test_web_settings_action.py
   - src/lingtai/tools/browser/core.py
   - src/lingtai/tools/browser/port.py
   - src/lingtai/adapters/browser_transport.py
   - src/lingtai/services/websearch/__init__.py
   - src/lingtai/services/websearch/openai.py
   - src/lingtai/services/websearch/anthropic.py
-  - tests/test_web_canonical_provider_routing.py
   - src/lingtai/kernel/tool_result_summary.py
   - src/lingtai/kernel/tool_result_artifacts.py
   - src/lingtai/kernel/workdir.py
@@ -35,6 +31,8 @@ maintenance: |
   envelope dispatch build on the generic tool_family package; keep that link
   current when either side's boundary changes.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Unified web capability
 
 ## Purpose
@@ -493,13 +491,13 @@ regular file, changed-file-observed-next-call), no old-path cross-read,
 explicit argument rejection, environment immutability, search-to-browse
 continuation, and manual/browse operation with invalid settings and no
 provider construction. Existing browser Core/Port and SearchService contract
-tests remain applicable. `tests/test_web_settings_action.py` additionally
+tests remain applicable. `retired-test:test_web_settings_action` additionally
 proves declaration/action order, exact row-key and five-field equality,
 current/default/configurable values, exact manual targets, full private
 credential redaction, one fixed no-row failure when current truth is
 unavailable, no mutation input, and unchanged ordinary search behavior.
 Provider ownership/routing checks
-(`tests/test_web_canonical_provider_routing.py`) cover: `PROVIDERS` admits
+(`retired-test:test_web_canonical_provider_routing`) cover: `PROVIDERS` admits
 exactly `duckduckgo`/`anthropic`/`openai` and the factory rejects `gemini`;
 the real no-config `setup(agent)` path composes all three specs and genuinely
 selects OpenAI via its standard `OPENAI_API_KEY` env var when set on an

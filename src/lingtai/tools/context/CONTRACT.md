@@ -20,12 +20,7 @@ related_files:
   - src/lingtai/tools/context/manual/SKILL.md
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
   - src/lingtai/adapters/tool_plugin_host.py
-  - tests/test_context_ownership_redesign.py
-  - tests/test_tool_family_context_migration.py
-  - tests/test_deep_refresh.py
-  - tests/test_context_declared_tool_plugin.py
   - src/lingtai/tools/notification/CONTRACT.md
-  - tests/test_notification_one_shot.py
 maintenance: |
   Keep related paths real and the paired Anatomy reciprocal. Update schemas,
   model prose, manuals, results, lifecycle wiring, private summary engine, and
@@ -33,6 +28,8 @@ maintenance: |
   unchanged public surface through the declared host-plugin contract;
   `context_runtime` is the only new host port and delegates existing engines.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Context capability contract
 
@@ -157,10 +154,9 @@ survive the shed.
 
 Focused verification:
 
-```bash
-python -m pytest -q tests/test_context_ownership_redesign.py \
-  tests/test_tool_family_context_migration.py tests/test_deep_refresh.py \
-  tests/test_pad_lingtai_split.py tests/test_context_declared_tool_plugin.py
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_context_declared_tool_plugin, test_context_ownership_redesign, test_deep_refresh, test_pad_lingtai_split, test_tool_family_context_migration.
 ```
 
 Evidence pins public action sets and strict retirement; file and append no-hot-

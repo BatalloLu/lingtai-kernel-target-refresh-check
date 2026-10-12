@@ -24,7 +24,6 @@ related_files:
   - src/lingtai/services/ANATOMY.md
   - src/lingtai/services/daemon.py
   - src/lingtai/cli_daemon.py
-  - tests/test_cli_daemon.py
   - src/lingtai/llm/service.py
   - src/lingtai/llm/interface_converters.py
   - src/lingtai/llm/openai/ANATOMY.md
@@ -40,24 +39,12 @@ related_files:
   - src/lingtai/tools/daemon/run_dir.py
   - src/lingtai/tools/daemon/shell_prompt_events.py
   - src/lingtai/tools/bash/ANATOMY.md
-  - tests/test_daemon_shell_prompt_events.py
   - src/lingtai/tools/daemon/dispatch_ledger.py
   - src/lingtai/kernel/daemon_dispatch.py
   - src/lingtai/kernel/session_stats/ANATOMY.md
   - src/lingtai/kernel/session_stats/CONTRACT.md
   - src/lingtai/mcp_servers/daemon_common/server.py
-  - tests/test_daemon.py
-  - tests/test_daemon_dispatch_ledger.py
   - tests/test_daemon_attention_delay.py
-  - tests/test_daemon_central_manager.py
-  - tests/test_tool_family_daemon_migration.py
-  - tests/test_daemon_settings.py
-  - tests/test_daemon_empty_parity.py
-  - tests/test_apriori_summary_executor.py
-  - tests/test_daemon_run_dir.py
-  - tests/test_daemon_codex_usage.py
-  - tests/test_mcp_v2_adapter_metadata.py
-  - tests/test_codex_standalone_compaction.py
   - tests/test_daemon_detached_supervisor.py
   - src/lingtai/kernel/daemon_supervisor/ANATOMY.md
   - src/lingtai/kernel/daemon_supervisor/CONTRACT.md
@@ -102,6 +89,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # core/daemon
 
 Daemon capability (分神) — dispatch ephemeral subagents (分神) that operate
@@ -409,7 +398,7 @@ intentional omission of the parent notification axis.
 
 ## Composition
 
-- **Standalone service:** `src/lingtai/services/daemon.py` composes `DaemonManager` and `DaemonFamilyDispatcher`; `src/lingtai/cli_daemon.py` only drives that API, while `tests/test_cli_daemon.py` proves direct-preset dispatch/readback without `init.json` or Agent artifacts.
+- **Standalone service:** `src/lingtai/services/daemon.py` composes `DaemonManager` and `DaemonFamilyDispatcher`; `src/lingtai/cli_daemon.py` only drives that API, while `retired-test:test_cli_daemon` proves direct-preset dispatch/readback without `init.json` or Agent artifacts.
 - **Parent:** `src/lingtai/tools/` (tool package).
 - **Siblings:** `avatar/`, `mcp/`, `knowledge/` (private durable memory), `skills/` (skill catalog), canonical `shell` (retained `bash/` implementation).
 - **Summary composition edge:** `_build_daemon_apriori_summarizer_fn` in

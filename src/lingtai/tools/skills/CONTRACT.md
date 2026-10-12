@@ -11,12 +11,13 @@ related_files:
   - src/lingtai/tools/tool_family/CONTRACT.md
   - src/lingtai/tools/tool_family/__init__.py
   - src/lingtai/kernel/tool_result_summary.py
-  - tests/test_skills.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. If behavior and this
   contract disagree, the code is the source of truth — fix the contract in the
   same change and bump contract_version on breaking contract edits.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Skills capability contract
 
@@ -183,43 +184,44 @@ Do not change any of the following; documented for reviewers only.
 
 | Claim | Source `src/lingtai/tools/skills/...` | Test |
 |---|---|---|
-| Unknown actions return the typed `ACTION_REQUIRED` failure | `__init__.py` (`handle_skills`) | `tests/test_skills.py::test_unknown_action_returns_error` |
-| Unknown actions do no handler I/O | `__init__.py` (`handle_skills`) | `tests/test_skills.py::test_unknown_action_fails_before_any_handler_io` |
-| Root is the closed LTP v2 envelope with strict-empty inputs | `__init__.py` (`get_schema`) | `tests/test_skills.py::test_family_schema_is_the_canonical_ltp_v2_root` |
-| Schema and dispatch come from one child registry | `__init__.py` (`_build_family`) | `tests/test_skills.py::test_schema_children_are_the_same_registry_dispatch_uses` |
-| Both actions reject any `input` key / bad envelope fields | `__init__.py` (`handle_skills`) | `tests/test_skills.py::test_both_actions_reject_extra_input_before_dispatch` |
-| `reasoning`/`_reasoning`/`summarize` never reach a handler | `__init__.py` (`handle_skills`) | `tests/test_skills.py::test_envelope_metadata_never_reaches_either_handler` |
-| The composed schema survives both provider wires | `__init__.py` (`get_schema`) | `tests/test_skills.py::test_skills_family_reaches_both_provider_wires` |
-| Root `summarize` is this family's canonical control | `src/lingtai/kernel/tool_result_summary.py` | `tests/test_skills.py::test_skills_is_a_migrated_ltp_v2_family_for_summarize` |
-| `info` omits the manual body | `__init__.py` (`_skills_info`) | `tests/test_skills.py::test_info_omits_skills_manual_body` |
-| `info` returns the exact health/problem report | `__init__.py` (`_reconcile`) | `tests/test_skills.py::test_info_result_keys_and_health_are_exactly_preserved` |
-| `manual` returns the skills manual body | `__init__.py` (`_adapt_manual_result`) | `tests/test_skills.py::test_manual_returns_skills_manual_body` |
-| `manual` returns exact body/path with no double wrap | `__init__.py` (`_adapt_manual_result`) | `tests/test_skills.py::test_manual_result_is_exact_body_and_path_without_double_wrap` |
-| `manual` performs no `info`-side catalogue mutation | `__init__.py` (`handle_skills`) | `tests/test_skills.py::test_manual_has_no_info_side_effect` |
-| `manual` degrades with the exact loader message | `__init__.py` (`_adapt_manual_result`) | `tests/test_skills.py::test_manual_degrades_with_exact_loader_message` |
-| Missing intrinsic manual reports `degraded` | `__init__.py` (`_reconcile`) | `tests/test_skills.py::test_info_reports_degraded_when_intrinsic_missing` |
-| Declared paths resolve (absolute / relative / `~`) | `__init__.py` (`_resolve_path`) | `tests/test_skills.py::test_skills_scans_absolute_path`, `::test_skills_resolves_relative_path_from_working_dir`, `::test_skills_expands_tilde` |
-| Catalog is injected into the `skills` prompt section | `__init__.py` (`_reconcile`) | `tests/test_skills.py::test_catalog_injected_into_skills_section` |
-| Former `library`/`codex` configs do not register legacy tools | `__init__.py` / registry | `tests/test_skills.py::test_former_library_config_does_not_register_library_tool` |
-| Catalog scan/parse helpers behave per spec | `src/lingtai/tools/_catalog.py` | `tests/test_catalog_helpers.py::test_scan_recurses_and_sorts` |
-| `SKILL.md` frontmatter validation | `src/lingtai/tools/_catalog.py` | `tests/test_validate_skill.py` |
+| Unknown actions return the typed `ACTION_REQUIRED` failure | `__init__.py` (`handle_skills`) | `retired-test:test_skills::test_unknown_action_returns_error` |
+| Unknown actions do no handler I/O | `__init__.py` (`handle_skills`) | `retired-test:test_skills::test_unknown_action_fails_before_any_handler_io` |
+| Root is the closed LTP v2 envelope with strict-empty inputs | `__init__.py` (`get_schema`) | `retired-test:test_skills::test_family_schema_is_the_canonical_ltp_v2_root` |
+| Schema and dispatch come from one child registry | `__init__.py` (`_build_family`) | `retired-test:test_skills::test_schema_children_are_the_same_registry_dispatch_uses` |
+| Both actions reject any `input` key / bad envelope fields | `__init__.py` (`handle_skills`) | `retired-test:test_skills::test_both_actions_reject_extra_input_before_dispatch` |
+| `reasoning`/`_reasoning`/`summarize` never reach a handler | `__init__.py` (`handle_skills`) | `retired-test:test_skills::test_envelope_metadata_never_reaches_either_handler` |
+| The composed schema survives both provider wires | `__init__.py` (`get_schema`) | `retired-test:test_skills::test_skills_family_reaches_both_provider_wires` |
+| Root `summarize` is this family's canonical control | `src/lingtai/kernel/tool_result_summary.py` | `retired-test:test_skills::test_skills_is_a_migrated_ltp_v2_family_for_summarize` |
+| `info` omits the manual body | `__init__.py` (`_skills_info`) | `retired-test:test_skills::test_info_omits_skills_manual_body` |
+| `info` returns the exact health/problem report | `__init__.py` (`_reconcile`) | `retired-test:test_skills::test_info_result_keys_and_health_are_exactly_preserved` |
+| `manual` returns the skills manual body | `__init__.py` (`_adapt_manual_result`) | `retired-test:test_skills::test_manual_returns_skills_manual_body` |
+| `manual` returns exact body/path with no double wrap | `__init__.py` (`_adapt_manual_result`) | `retired-test:test_skills::test_manual_result_is_exact_body_and_path_without_double_wrap` |
+| `manual` performs no `info`-side catalogue mutation | `__init__.py` (`handle_skills`) | `retired-test:test_skills::test_manual_has_no_info_side_effect` |
+| `manual` degrades with the exact loader message | `__init__.py` (`_adapt_manual_result`) | `retired-test:test_skills::test_manual_degrades_with_exact_loader_message` |
+| Missing intrinsic manual reports `degraded` | `__init__.py` (`_reconcile`) | `retired-test:test_skills::test_info_reports_degraded_when_intrinsic_missing` |
+| Declared paths resolve (absolute / relative / `~`) | `__init__.py` (`_resolve_path`) | `retired-test:test_skills::test_skills_scans_absolute_path`, `::test_skills_resolves_relative_path_from_working_dir`, `::test_skills_expands_tilde` |
+| Catalog is injected into the `skills` prompt section | `__init__.py` (`_reconcile`) | `retired-test:test_skills::test_catalog_injected_into_skills_section` |
+| Former `library`/`codex` configs do not register legacy tools | `__init__.py` / registry | `retired-test:test_skills::test_former_library_config_does_not_register_library_tool` |
+| Catalog scan/parse helpers behave per spec | `src/lingtai/tools/_catalog.py` | `retired-test:test_catalog_helpers::test_scan_recurses_and_sorts` |
+| `SKILL.md` frontmatter validation | `src/lingtai/tools/_catalog.py` | `retired-test:test_validate_skill` |
 
 ## Verification matrix
 
 | Invariant | Automated test | Manual check | Risk if broken |
 |---|---|---|---|
-| No public `skills` tool is registered | `tests/test_skills.py::test_skills_registers_no_public_tool` | Inspect the built tool schemas for a `skills` root | Retired root silently returns |
+| No public `skills` tool is registered | `retired-test:test_skills::test_skills_registers_no_public_tool` | Inspect the built tool schemas for a `skills` root | Retired root silently returns |
 | The manual loads only via `psyche` | `tests/test_psyche_family.py::test_each_action_returns_its_intended_manual` | Call `psyche(action="skills", input={}, reasoning="x")` | Domain manual unreachable |
-| Loading the manual never mutates the catalogue | `tests/test_skills.py::test_psyche_skills_manual_has_no_catalog_side_effect` | Add a skill on disk, load the manual, inspect the `skills` prompt section | Signpost silently reconciles; hidden side effect |
-| Catalog reaches the prompt | `tests/test_skills.py::test_catalog_injected_into_skills_section` | Boot with a custom skill, inspect `skills` prompt section | Skills invisible to the model |
-| Body stays out of prompt | `tests/test_catalog_helpers.py::test_build_catalog_yaml_golden` | Author a long-body skill, inspect prompt | Prompt bloat |
-| Missing manual is degraded not fatal | `tests/test_skills.py::test_manual_degrades_with_exact_loader_message` | Remove the intrinsic manual, load it via `psyche` | Boot failure vs. graceful degrade |
-| Legacy names do not register | `tests/test_skills.py::test_former_library_config_does_not_register_library_tool` | Boot an old `library` manifest, inspect tools | Half-applied rename confuses model |
+| Loading the manual never mutates the catalogue | `retired-test:test_skills::test_psyche_skills_manual_has_no_catalog_side_effect` | Add a skill on disk, load the manual, inspect the `skills` prompt section | Signpost silently reconciles; hidden side effect |
+| Catalog reaches the prompt | `retired-test:test_skills::test_catalog_injected_into_skills_section` | Boot with a custom skill, inspect `skills` prompt section | Skills invisible to the model |
+| Body stays out of prompt | `retired-test:test_catalog_helpers::test_build_catalog_yaml_golden` | Author a long-body skill, inspect prompt | Prompt bloat |
+| Missing manual is degraded not fatal | `retired-test:test_skills::test_manual_degrades_with_exact_loader_message` | Remove the intrinsic manual, load it via `psyche` | Boot failure vs. graceful degrade |
+| Legacy names do not register | `retired-test:test_skills::test_former_library_config_does_not_register_library_tool` | Boot an old `library` manifest, inspect tools | Half-applied rename confuses model |
 
 Run before merging:
 
-```bash
-python -m pytest tests/test_skills.py tests/test_validate_skill.py tests/test_catalog_helpers.py -q
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_catalog_helpers, test_skills, test_validate_skill.
 ```
 
 ## Schema and glossary ownership

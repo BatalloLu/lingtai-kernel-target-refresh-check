@@ -10,13 +10,14 @@ related_files:
   - src/lingtai/tools/avatar/__init__.py
   - src/lingtai/tools/avatar/_launcher.py
   - src/lingtai/tools/avatar/settings.py
-  - tests/test_tool_family_avatar_migration.py
 maintenance: |
   Created during the every-contract-needs-behaviors sweep. Keep this file
   reciprocal with CONTRACT.md and ANATOMY.md (tridirectional loop): when an
   avatar spawn/rules/settings/manual behavior clause changes, update the
   guarding LABT here in the same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Avatar Capability Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -35,7 +36,7 @@ project's Python.
 - **estimate**: ≈ 25 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_avatar_launcher.py tests/test_avatar_rules.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `avatar(action="spawn", input={"name": "bad name with spaces"}, reasoning="probe")` and record the result; then call it with `name="good"` and a mission shorter than 20 characters and record the result.
 3. Call `avatar(action="rules", input={"rules_content": "..."}, reasoning="probe")` from a caller with a truthy admin karma and record the result; confirm no `.rules` file appears in `<scratch>`.
 
@@ -57,7 +58,7 @@ Pass when the suites pass and the gate observations hold. Fail on a malformed na
 - **estimate**: ≈ 10 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_tool_family_avatar_migration.py tests/test_tool_settings_contract.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `avatar(action="settings", input={}, reasoning="inventory policy")`; inspect action order, all row fields and values, and every manual pointer.
 3. Call settings with a set-shaped non-empty input and with a failing injected provider; inspect the parent directory and environment key used by the probe.
 

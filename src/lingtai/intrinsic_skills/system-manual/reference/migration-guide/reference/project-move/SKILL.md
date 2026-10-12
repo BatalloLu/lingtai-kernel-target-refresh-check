@@ -11,7 +11,6 @@ related_files:
 - src/lingtai/intrinsic_skills/system-manual/reference/migration-guide/scripts/move_project.py
 - src/lingtai/tools/system/ANATOMY.md
 - src/lingtai/tools/system/CONTRACT.md
-- tests/test_move_project.py
 maintenance: |
   Keep this helper contract aligned with move_project.py and its focused tests.
   Common authority, phase, acceptance, and receipt rules stay in the parent router.

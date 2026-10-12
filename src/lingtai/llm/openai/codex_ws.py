@@ -6,8 +6,8 @@ defaults to REST; the WebSocket wire is an opt-in selected when a session is
 built with an explicit ``transport="websocket"`` kwarg (tests / internal / a live
 smoke run) or via the ``LINGTAI_CODEX_TRANSPORT`` / ``LINGTAI_CODEX_WS``
 environment selector (see ``_codex_transport_from_env`` in ``adapter.py``). The
-unit tests in ``tests/test_codex_ws_session.py`` inject a fake transport and never
-import this module. It is deliberately kept out of the hot ``adapter`` import path
+retired ``test_codex_ws_session`` suite used a fake transport and never
+imported this module. It is deliberately kept out of the hot ``adapter`` import path
 and only loaded lazily by ``_default_codex_ws_transport_factory``.
 
 Design notes / source citations (all in the official source clone):

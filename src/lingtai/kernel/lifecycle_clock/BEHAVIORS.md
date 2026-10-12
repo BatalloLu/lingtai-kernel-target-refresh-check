@@ -15,6 +15,8 @@ maintenance: |
   lifecycle-clock behavior clause changes, update the guarding LABT here in the
   same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Lifecycle Clock Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -32,7 +34,7 @@ must run from the repo root with the project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_lifecycle_clock.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Using `FakeLifecycleClock` with independently controlled wall and monotonic values, drive an agent heartbeat loop and record the float handed to the injected presence port's `publish_heartbeat`.
 3. Confirm monotonic values are never persisted and wall jumps do not alter monotonic elapsed behavior (and vice versa).
 

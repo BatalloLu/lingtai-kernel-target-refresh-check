@@ -3,11 +3,11 @@ related_files:
   - .github/workflows/wheels.yml
   - scripts/generate_release_manifest.py
   - scripts/publish_release_assets.py
-  - tests/test_release_manifest.py
-  - tests/test_tools_package_data.py
 maintenance: |
   Keep this release runbook synchronized with the CI wheel/sdist workflow, manifest tooling, universal-wheel verification, and publication gates.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Releasing the `lingtai` Python kernel
 
 ## Build + verify
@@ -25,7 +25,7 @@ independent jobs build the artifacts:
   package. There is no per-platform matrix, no native toolchain, and no
   emulated architecture leg: the same wheel serves Linux, macOS, and Windows
   on every supported interpreter
-  (`tests/test_tools_package_data.py::test_wheel_is_pure_python_universal`
+  (`retired-test:test_tools_package_data::test_wheel_is_pure_python_universal`
   pins the same contract locally).
 - **`build-sdist`** — independent source-only build (`uv build --sdist`), so
   a wheel-verification failure cannot suppress the source release.

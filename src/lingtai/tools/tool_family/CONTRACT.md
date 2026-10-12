@@ -32,12 +32,6 @@ related_files:
   - src/lingtai/tools/context/CONTRACT.md
   - src/lingtai/tools/pad/CONTRACT.md
   - src/lingtai/tools/lingtai/CONTRACT.md
-  - tests/test_tool_family_generic.py
-  - tests/test_tool_settings_contract.py
-  - tests/test_tool_family_wire_parity.py
-  - tests/test_tool_family_manual_contract.py
-  - tests/test_tool_family_system_migration.py
-  - tests/test_tool_family_daemon_migration.py
 maintenance: |
   This component contract is governed by the root CONTRACT.md. Keep
   related_files complete and repo-relative, including the paired ANATOMY.md,
@@ -48,6 +42,8 @@ maintenance: |
   package's ToolFamily/handle(); it MUST NOT be required to, per
   src/lingtai/tools/CONTRACT.md "Implementation independence".
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # ToolFamily generic infrastructure
 
 ## Purpose
@@ -547,10 +543,10 @@ Guarded by: [T006](BEHAVIORS.md#behavior-t006) and
 
 ## Contract tests
 
-T011 runs `tests/test_tool_settings_contract.py`; production suites remain the
+T011 runs `retired-test:test_tool_settings_contract`; production suites remain the
 schema/dispatch non-regression evidence.
 
-`tests/test_tool_family_generic.py` proves the infrastructure is generic using
+`retired-test:test_tool_family_generic` proves the infrastructure is generic using
 a fake `widget` family unrelated to `web`: deterministic registration order,
 duplicate-name and reserved-`manual`-collision failures, `oneOf` schema
 composition with root `reasoning` REQUIRED and no unconstrained generic
@@ -574,7 +570,7 @@ byte-for-byte legacy three-key failure with no `diagnostics` key; an
 unknown/cross-action key is still rejected before any handler I/O regardless
 of opt-in; and an unsafe- or non-identifier-shaped field label (and any raw
 rejected value) never appears in a `diagnostics` entry.
-`tests/test_tool_family_wire_parity.py`
+`retired-test:test_tool_family_wire_parity`
 proves the composed schema (including required `reasoning`) survives both
 Chat Completions and Responses wires (including a real Agent
 startup for `web`) at the existing OpenAI adapter seam with zero adapter code
@@ -598,15 +594,15 @@ pre-migration schema and proves the now-generated schema is field-equivalent
 except the three authorized differences (`anyOf` → `oneOf`, required
 `reasoning`, and the added root `allOf`), and separately proves `web`'s own
 `allOf` correlates every real action's `const` with its exact branch schema.
-`tests/test_tool_family_generic_summarize_executor.py` proves the raw-logged-
+`retired-test:test_tool_family_generic_summarize_executor` proves the raw-logged-
 before-summary executor mechanism needs no family-specific kernel wiring,
 using the fake `widget` family. `web`'s own existing suite
-(`tests/test_unified_web_capability.py`,
-`tests/test_web_ltp_v2_summarize_executor.py`, `tests/test_wire_tool_description.py`
+(`retired-test:test_unified_web_capability`,
+`tests/test_web_ltp_v2_summarize_executor.py`, `retired-test:test_wire_tool_description`
 — the last of which now also proves root `allOf` correlation survives
 identically on both Chat Completions and Responses wires)
 remains this migration's Web-specific evidence per `../web_search/CONTRACT.md`.
-`tests/test_tool_family_daemon_migration.py` is the family-specific evidence
+`retired-test:test_tool_family_daemon_migration` is the family-specific evidence
 for `daemon` (`../daemon/CONTRACT.md`): one model tool slot proven against a
 real Agent's composed tool list, all six child schemas and their exact field
 ownership, the complete nested `emanate` task schema, cross-action and
@@ -615,7 +611,7 @@ receipt truth, the reserved `manual` child's no-double-wrap result and its
 separation from the engine's retained internal flat branch, and the composed
 schema (including the nested task object) surviving both wires.
 
-`tests/test_tool_family_context_migration.py` and
+`retired-test:test_tool_family_context_migration` and
 `tests/test_context_ownership_redesign.py` are the family-specific evidence for
 `context` (`../context/CONTRACT.md`): the final action inventory, strict branch
 isolation, `_tc_id` isolation on the consume-rather-than-drop molt path,
@@ -626,11 +622,11 @@ proving a foreign `input` field on `molt` (e.g. `files`) yields the
 with molt's own allowed-field-set text, while the sibling `summarize` action
 still gets the plain legacy failure for a cross-action `session_journal_path`
 key, and no diagnostic ever claims `session_journal_path` must be relative.
-`tests/test_pad_lingtai_split.py` independently pins the two sibling
+`retired-test:test_pad_lingtai_split` independently pins the two sibling
 families' narrower public inventories.
 
 `tests/test_tool_family_system_migration.py` and
-`tests/test_tool_family_context_migration.py` are the equivalent family-specific
+`retired-test:test_tool_family_context_migration` are the equivalent family-specific
 evidence for the intrinsic consumers, and independently exercise this package
 against an intrinsic: the closed root on both wires, wrong-branch rejection
 before handler I/O, envelope metadata isolation including `_tc_id`, and the

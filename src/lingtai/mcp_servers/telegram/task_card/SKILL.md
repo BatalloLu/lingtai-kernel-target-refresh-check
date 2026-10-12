@@ -15,8 +15,6 @@ related_files:
 - src/lingtai/mcp_servers/telegram/task_card/api_cost.py
 - src/lingtai/mcp_servers/task_card/event_projection.py
 - src/lingtai/tools/task_card/manual/SKILL.md
-- tests/test_telegram_task_card_api_cost.py
-- tests/test_telegram_task_card_event_tail.py
 maintenance: |
   Keep this shipped subpackage manual aligned with the intrinsic Task Card
   owner. Do not reintroduce the retired Telegram controller schema, endpoint,

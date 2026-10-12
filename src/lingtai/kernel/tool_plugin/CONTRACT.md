@@ -20,10 +20,8 @@ related_files:
   - src/lingtai/tools/daemon/__init__.py
   - src/lingtai/services/ANATOMY.md
   - src/lingtai/services/daemon.py
-  - tests/test_cli_daemon.py
   - src/lingtai/tools/daemon/execution_host.py
   - src/lingtai/tools/daemon/shell_prompt_events.py
-  - tests/test_daemon_shell_prompt_events.py
   - src/lingtai/tools/daemon/manual/SKILL.md
   - src/lingtai/tools/email/__init__.py
   - src/lingtai/tools/email/manual/SKILL.md
@@ -53,25 +51,8 @@ related_files:
   - src/lingtai/tools/web_search/__init__.py
   - src/lingtai/tools/web_search/CONTRACT.md
   - src/lingtai/tools/web_search/manual/SKILL.md
-  - tests/test_web_settings_action.py
   - src/lingtai/agent.py
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_tool_settings_contract.py
-  - tests/test_tool_family_avatar_migration.py
-  - tests/test_context_declared_tool_plugin.py
-  - tests/test_daemon.py
-  - tests/test_email_official_tool_plugin.py
-  - tests/test_notification_settings.py
-  - tests/test_notification_delay_alarm.py
   - tests/test_notification_store.py
-  - tests/test_shell_tool_plugin_declaration.py
-  - tests/test_system_declared_plugin.py
-  - tests/test_task_card_controller.py
-  - tests/test_task_card_notifications.py
-  - tests/test_tool_family_vision_migration.py
-  - tests/test_web_official_plugin.py
-  - tests/test_web_composition_port.py
-  - tests/test_intrinsic_manual_actions.py
 maintenance: |
   This component contract is governed by the root CONTRACT.md and owns the
   declared host-plugin contract every official model-facing tool family follows.
@@ -83,7 +64,7 @@ maintenance: |
   Composition Root, and the contract tests. OFFICIAL_TOOL_PLUGIN_NAMES is
   normative: adding, removing, or renaming a reserved official name is a change
   to this contract and must move the list, this file, BEHAVIORS.md, and
-  tests/test_tool_plugin_declaration.py together. Ports are earned by real
+  retired-test:test_tool_plugin_declaration together. Ports are earned by real
   slices (root CONTRACT.md rules 10-11) — add a host port only with the family
   that consumes it, and never widen GRANTABLE_HOST_PORTS to a whole-Agent
   argument or to tool_mount. Update the Port, affected Adapters, contract tests,
@@ -92,6 +73,8 @@ maintenance: |
   root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or
   auto-fix the rule here.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Declared Host Tool Plugin Contract
 
 ## Purpose
@@ -461,17 +444,17 @@ This component never selects.
 
 ## Contract tests
 
-`tests/test_tool_plugin_declaration.py` is the shared primitive/slice suite;
-`tests/test_deep_refresh.py` owns init reconstruction, including the opt-in Web
+`retired-test:test_tool_plugin_declaration` is the shared primitive/slice suite;
+`retired-test:test_deep_refresh` owns init reconstruction, including the opt-in Web
 claim/schema/handler removal and re-add regression; and
 `tests/test_tool_family_avatar_migration.py` supplies Avatar's focused declared
-vertical proof; `tests/test_context_declared_tool_plugin.py` supplies Context's
+vertical proof; `retired-test:test_context_declared_tool_plugin` supplies Context's
 focused static-declaration, restricted-runtime-port, canonical-manual, and
-installer-collision proof; `tests/test_daemon.py` preserves Daemon manager
+installer-collision proof; `retired-test:test_daemon` preserves Daemon manager
 lifecycle coverage, including terminal-notification retry behavior;
-`tests/test_email_official_tool_plugin.py` supplies Email's manager/port,
+`retired-test:test_email_official_tool_plugin` supplies Email's manager/port,
 no-row/one-mount, and refresh-replacement proof; and
-`tests/test_plugin_tool.py` supplies Plugin's read-only action boundary,
+`retired-test:test_plugin_tool` supplies Plugin's read-only action boundary,
 protected-field projection, closed vanilla-skills namespace, and detached
 catalog-state proof:
 
@@ -481,7 +464,7 @@ catalog-state proof:
   manager's live notification-route retry regression, and the standard-table
   proof that `plugin_catalog`/`avatar_parent` stay unreachable for a
   declaration that did not name them;
-`tests/test_notification_delay_alarm.py` plus `tests/test_notification_store.py`
+`retired-test:test_notification_delay_alarm` plus `tests/test_notification_store.py`
 preserve Notification Core delay/timer and Store behavior:
 
 - declaration staticness and the `mcp`/`avatar`/`context`/`daemon`/`email`/
@@ -540,20 +523,20 @@ preserve Notification Core delay/timer and Store behavior:
   native notification boundary: the granted port object carries exactly the
   five closed operations and no generic publisher, foreign
   `source`/`channel`/`extra` arguments are refused, the manager retains only the
-  family's typed view, and `tests/test_task_card_notifications.py` pins exact
+  family's typed view, and `retired-test:test_task_card_notifications` pins exact
   error/recovered/limit wire parity plus reminder submit/clear through the
-  production adapter (`tests/test_tool_plugin_declaration.py`,
-  `tests/test_task_card_controller.py`).
+  production adapter (`retired-test:test_tool_plugin_declaration`,
+  `retired-test:test_task_card_controller`).
 - Vision's static `DECLARATION`, exact
   `workdir`/`active_provider`/`configuration` grant, one mount on a real
   Agent with the `active_provider` port reading the live `Agent.service` and
   the `configuration` snapshot absent from the standard table (a bare standard
   grant fails with `HostPortError`), the package-owned
   `capabilities/vision/SKILL.md` manual, the strict controlled-host manual
-  proof in `tests/test_intrinsic_manual_actions.py`, and the family-local
+  proof in `retired-test:test_intrinsic_manual_actions`, and the family-local
   provider/preset/credential boundaries (VN001–VN006:
-  `tests/test_tool_family_vision_migration.py`,
-  `tests/test_vision_capability.py`, `tests/test_inherit_fallback.py`).
+  `retired-test:test_tool_family_vision_migration`,
+  `retired-test:test_vision_capability`, `retired-test:test_inherit_fallback`).
 - Web's static `DECLARATION`, exact
   `workdir`/`web_runtime`/`provider_identity` grant and exact
   `search | browse | settings | manual` surface, one mount on a real Agent
@@ -567,17 +550,17 @@ preserve Notification Core delay/timer and Store behavior:
   `capabilities/web/SKILL.md` manual with strict zero-input manual/settings
   behavior, the
   strict controlled-host manual proof in
-  `tests/test_intrinsic_manual_actions.py`, and the family-local provider
-  gate/spill/isolation/settings suites (`tests/test_web_official_plugin.py`,
-  `tests/test_web_composition_port.py`,
-  `tests/test_web_canonical_provider_routing.py`,
-  `tests/test_web_output_spill.py`, `tests/test_web_search_capability.py`,
-  `tests/test_unified_web_capability.py`, `tests/test_web_settings_action.py`).
+  `retired-test:test_intrinsic_manual_actions`, and the family-local provider
+  gate/spill/isolation/settings suites (`retired-test:test_web_official_plugin`,
+  `retired-test:test_web_composition_port`,
+  `retired-test:test_web_canonical_provider_routing`,
+  `retired-test:test_web_output_spill`, `retired-test:test_web_search_capability`,
+  `retired-test:test_unified_web_capability`, `retired-test:test_web_settings_action`).
 
 Also decisive for a change here:
-`tests/test_mcp_capability.py`, `tests/test_tool_family_mcp_migration_parity.py`,
+`retired-test:test_mcp_capability`, `retired-test:test_tool_family_mcp_migration_parity`,
 `tests/test_mcp_identity_discovery.py` (the slice's unchanged public behavior),
-`tests/test_curated_mcp_plugin_package.py` (the external transport route is
+`retired-test:test_curated_mcp_plugin_package` (the external transport route is
 undisturbed), and `tests/test_architecture_documents.py`.
 
 ## Maintenance

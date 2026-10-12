@@ -11,8 +11,6 @@ related_files:
   - src/lingtai/services/mcp_inbox.py
   - src/lingtai/kernel/base_agent/__init__.py
   - src/lingtai/kernel/meta_block.py
-  - tests/test_licc_notification_contract_doc.py
-  - tests/test_notification_sync.py
 maintenance: |
   Keep this runbook aligned with the LICC notification contract, BaseAgent's
   synthetic injection path, canonical notification metadata paths, wake events,

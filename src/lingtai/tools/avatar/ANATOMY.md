@@ -25,9 +25,6 @@ related_files:
   - src/lingtai/tools/avatar/manual/reference/spawn.md
   - src/lingtai/tools/avatar/manual/reference/lifecycle.md
   - src/lingtai/tools/tool_family/ANATOMY.md
-  - tests/test_avatar_rules.py
-  - tests/test_tool_family_avatar_migration.py
-  - tests/test_tool_plugin_declaration.py
   - src/lingtai/tools/avatar/glossary-en.md
   - src/lingtai/tools/avatar/glossary-zh.md
   - src/lingtai/tools/avatar/glossary-wen.md

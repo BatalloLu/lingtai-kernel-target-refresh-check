@@ -12,10 +12,6 @@ related_files:
 - src/lingtai/mcp_servers/wechat/media.py
 - src/lingtai/mcp_servers/wechat/api.py
 - src/lingtai/mcp_servers/wechat/types.py
-- tests/test_wechat_media_validation.py
-- tests/test_wechat_media_warning_integration.py
-- tests/test_wechat_media_official_cdn.py
-- tests/test_wechat_media_upload_diagnostics.py
 maintenance: |
   Tracks WeChat media type detection, validation warnings, upload stages, and
   partial-delivery guidance; update when provider fields, containment, or

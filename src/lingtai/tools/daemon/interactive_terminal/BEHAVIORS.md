@@ -15,6 +15,8 @@ maintenance: |
   interactive-terminal behavior clause changes, update the guarding LABT here
   in the same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Interactive Terminal Port Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -33,7 +35,7 @@ root with the project's Python.
 - **estimate**: ≈ 20 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_interactive_terminal_port.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Spawn a child that echoes bytes through the Port and confirm the returned value is an opaque handle (never a PID/process object), that `read` returns arbitrary raw byte chunks, and that the final chunk is empty at terminal EOF.
 3. Call `wait(handle, timeout=0.1)` on a child that stays alive and confirm `TimeoutError` is raised and the child is not terminated; then `terminate` the handle and confirm an exit receipt with the first non-`None` local reason retained.
 

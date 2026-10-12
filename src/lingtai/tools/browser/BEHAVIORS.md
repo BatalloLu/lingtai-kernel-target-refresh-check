@@ -15,6 +15,8 @@ maintenance: |
   browse subcomponent behavior clause changes, update the guarding LABT here in
   the same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Internal Browse Subcomponent Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -32,7 +34,7 @@ commands must run from the repo root with the project's Python.
 - **estimate**: ≈ 20 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_browser_capability.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Inspect `WebManager._deliver_browse` and confirm the unified parent always overrides the engine's internal paginated page with the complete joined `snapshot.blocks` text before returning.
 3. Confirm a transport success whose body fails to decode to readable text yields no blocks and raises the `NO_TEXT_BLOCKS` extract failure with HTTP provenance (decode-replacement dominated case), and that cleanly decoded text is never reclassified.
 
