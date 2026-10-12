@@ -4521,17 +4521,6 @@ def commit_delivered_notification_sources(agent, payloads: Mapping[str, Any]) ->
     identities remain in the process-local ledger. We do not infer business
     processing from observation. Delivery never touches producer/store state.
     """
-    # Capture genuinely new delivered work before advancing the shared ledger.
-    # Re-reading an already delivered mirror is not another idle episode.
-    try:
-        pending = pending_notification_payloads(agent, payloads)
-        note_work = getattr(agent, "_note_auto_molt_notification_work", None)
-        if pending and callable(note_work):
-            note_work(pending)
-    except Exception:
-        # Episode bookkeeping must not invalidate successful notification
-        # delivery or its existing fail-open ledger semantics.
-        pass
     try:
         agent._notification_delivered_source_signatures = (
             notification_source_signatures(payloads)

@@ -204,32 +204,27 @@ State ordering and wall-domain event `ts` are unchanged. Guarded by
 [BA008](BEHAVIORS.md#behavior-ba008); the consumer procedure is in the
 [Telegram Task Card manual](../../../mcp_servers/telegram/task_card/SKILL.md).
 
-An idle episode begins at the first IDLE/ASLEEP boundary after genuine new
-inbound work. IDLE↔ASLEEP, the reminder's synthetic notification wake, ordinary
-ACTIVE/STUCK/SUSPENDED churn, and context molt/post-molt reorientation retain its
-one-shot latch; generic ACTIVE never re-arms it. Fresh request input from a
-human/peer, user input, admitted correlated task turns, or an external `.prompt`
-start the next episode. Newly delivered work-bearing notification producers
-(`email`, `daemon`, `bash`, `cron`, `mcp.*`, their same-named system event sources
-and dotted subtypes, or `system.sleep_alarm`) also re-arm it; unchanged delivered
-mirrors, `system.auto_molt`, post-molt and maintenance notices do not. This is
-work provenance, not a new authentication or notification-delivery policy.
-A system-first text merge preserves real-work rearm for absorbed user/peer
-input even though its resulting envelope retains the original system sender.
-Once the idle anchor reaches `LINGTAI_AUTO_MOLT_IDLE_SECONDS` (default 1800;
-invalid/nonpositive/nonfinite → 1800, no disable value), heartbeat publishes one
-ordinary `system.auto_molt` event through the existing producer; normal sync
-owns wake/delivery. A failed publish remains retryable and an old episode's
-successful publication cannot latch a later real-work episode, even at the same
-monotonic timestamp. The generation and latch are process-local, not cross-crash
-exactly-once. This is an actionable safe-boundary molt reason: tend changed
-stores, write a valid journal and molt once, then remain IDLE until human input
-or other real work. Explicitly preserve unfinished authorized work and defer
-the molt rather than discard context. The lifecycle publisher itself never
+An inactivity period is continuous IDLE and/or ASLEEP time on the injected
+monotonic lifecycle clock. IDLE↔ASLEEP preserves it; leaving both for ACTIVE,
+STUCK or SUSPENDED clears the anchor and successful-publication latch. Heartbeat
+publishes one ordinary `system.auto_molt` event per period only when elapsed time
+is at least `LINGTAI_AUTO_MOLT_IDLE_SECONDS` (default 1800; invalid/nonpositive/
+nonfinite → 1800, no disable value) AND CURRENT context is strictly above 100000
+tokens. The loaded session's canonical `ChatInterface.estimate_context_tokens()`
+counts current system/tools/history, not cumulative input, since-molt spending or
+last provider input. Unloaded/unknown context is ineligible; this read never
+creates a session or requests a provider. A failed publish remains retryable.
+The process-local timer/latch reset on restart. Normal notification sync owns
+wake/delivery; its ordinary ACTIVE wake can start a new inactivity period.
+After molt, the gate reads the replacement context; no post-molt size guarantee
+is made, and retained/reconstructed context above 100000 can remain eligible.
+At a safe boundary, tend changed stores, write a valid journal and molt once,
+then remain IDLE until human input or other real work. Preserve unfinished
+authorized work and defer the molt rather than discard it. The publisher never
 molts, generates a journal, refreshes, cancels work or directly calls a provider;
 notification delivery may start an ordinary paid turn. Separate from
 `idle_elapsed_s` and the hidden 24h IDLE→ASLEEP timeout. Guarded by
-[BA009](BEHAVIORS.md#behavior-ba009); the procedure is in the
+[BA009](BEHAVIORS.md#behavior-ba009); procedure:
 [Context manual](../../tools/context/manual/SKILL.md).
 
 Clause IDs are stable; each rule composes the linked normative source.
@@ -692,10 +687,10 @@ the poison-recovery boot baseline that keeps a relaunch ASLEEP until a
 genuinely later notification change), `tests/test_cli_worker_poison_recovery.py`
 (hard exit after poison, and no refresh-success kick-start while a worker
 recovery is pending), `retired-test:test_silence_kill` (idempotent private producer),
-`tests/test_auto_molt_idle_episode.py` (own-wake and actual molt retention,
-real-work rearm, IDLE/ASLEEP continuity, retry, stale-publication race and
-no forced shed); `retired-test:test_auto_molt_notification` remains historical
-coverage, not a claim of restored real heartbeat-loop conformance,
+`tests/test_auto_molt_idle_episode.py` (strict current-context/time gate,
+IDLE/ASLEEP continuity, publication retry, unloaded context, post-molt context
+and journal refusal); `retired-test:test_auto_molt_notification` remains historical
+coverage, not restored real heartbeat-loop conformance,
 `retired-test:test_system` + `tests/test_system_declared_plugin.py` (direct and
 official self-sleep ordering), and `tests/test_karma.py` +
 `tests/test_perform_refresh_handshake.py` (signal-file and watcher-spawn

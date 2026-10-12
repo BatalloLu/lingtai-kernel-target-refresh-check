@@ -151,9 +151,10 @@ summary paths remain under `history/` and `system/summaries/`; notification file
 survive the shed. Eligible inactivity is an actionable safe-boundary molt reason,
 not a forced shed or automatic journal. Preserve unfinished authorized work and
 explicitly defer the molt; after an inactivity molt with no real work remaining,
-reorient then stay IDLE until real input. The runtime owns the one-shot episode
-and no-rearm promise ([BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009));
-context lifecycle and its post-molt notice do not start another episode.
+reorient then stay IDLE until real input. Eligibility requires both continuous
+IDLE/ASLEEP time ≥ the positive env duration (default 1800 s) and CURRENT context
+strictly >100000, as owned by [BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009).
+Molt does not promise a context size below that boundary.
 
 ## Evidence
 
