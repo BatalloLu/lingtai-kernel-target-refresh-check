@@ -425,17 +425,6 @@ def _context_molt(agent, args: dict) -> dict:
     except OSError:
         pass
 
-    # Drop appendix tracking — the wire chat is rebuilt from scratch
-    # below, so any prior single-slot pair indexed by call_id is gone.
-    # The next producer will append a fresh pair without trying to
-    # remove a stale one.
-    if hasattr(agent, "_appendix_ids_by_source"):
-        agent._appendix_ids_by_source.clear()
-    # Pre-molt tc_inbox items don't survive the wire rebuild — drain so
-    # they don't leak into the post-molt wire.
-    if hasattr(agent, "_tc_inbox"):
-        agent._tc_inbox.drain()
-
     # Notification files (.notification/) survive molt — they are system
     # state, not conversation memory.  Only reset in-memory tracking so
     # the next sync re-reads from disk cleanly.
@@ -705,13 +694,6 @@ def context_forget(agent, *, source: str = "warning_ladder", attempts: int = 0,
             current_path.unlink()
     except OSError:
         pass
-
-    if hasattr(agent, "_appendix_ids_by_source"):
-        agent._appendix_ids_by_source.clear()
-    # Pre-molt tc_inbox items don't survive the wire rebuild — drain so
-    # they don't leak into the post-molt wire.
-    if hasattr(agent, "_tc_inbox"):
-        agent._tc_inbox.drain()
 
     # Notification files (.notification/) survive molt — they are system
     # state, not conversation memory.  Only reset in-memory tracking so

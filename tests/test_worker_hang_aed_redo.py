@@ -368,68 +368,46 @@ def test_barrier_failure_fails_the_provider_start_mark_closed(tmp_path, monkeypa
     assert wr.redrive_worker_hang_redo(_BootAgent(tmp_path)) == "none"
 
 
-# --- legacy tc_inbox items: mark before the first send ----------------------------
+# --- modern tc_wake wire-drive: mark before send(None) ---------------------------
 
 
-class _LegacyItem:
-    def __init__(self, source):
-        self.source, self.call, self.result, self.replace_in_history = source, SimpleNamespace(id=f"call_{source}"), object(), False
+def _tc_wake_agent(tmp_path, monkeypatch):
+    from lingtai.kernel.llm.interface import ChatInterface, ToolCallBlock, ToolResultBlock
 
-
-class _Inbox:
-    def __init__(self, items):
-        self.items = list(items)
-
-    def drain(self):
-        drained, self.items = self.items, []
-        return drained
-
-    def enqueue(self, item):
-        self.items.append(item)
-
-
-class _Iface:
-    def __init__(self):
-        self.appended, self.entries = [], []
-
-    def has_pending_tool_calls(self):
-        return False
-
-    def add_assistant_message(self, *, content):
-        self.appended.append(content)
-
-
-def _tc_wake_agent(tmp_path, monkeypatch, items):
-    """Minimal agent for `_handle_tc_wake`'s legacy loop; send records the
-    on-disk redo status and stops the loop."""
     agent = _make_run_loop_agent(tmp_path)
     while not agent.inbox.empty():
         agent.inbox.get_nowait()
-    agent._tc_inbox, agent._chat, agent._appendix_ids_by_source = _Inbox(items), SimpleNamespace(interface=_Iface()), {}
+    iface = ChatInterface()
+    iface.add_assistant_message([ToolCallBlock(id="notice", name="notification", args={"action": "check"})])
+    iface.add_tool_results([ToolResultBlock(id="notice", name="notification", content={"notice": "preserve"})])
+    agent._chat = SimpleNamespace(interface=iface)
     monkeypatch.setattr(turn, "_make_tool_executor", lambda a, g: None)
-    monkeypatch.setattr(turn, "_restore_tool_results_after_continuation_failure", lambda *a, **k: False)
-    monkeypatch.setattr(turn, "scan_and_emit_committed_facts", lambda a: None)
     return agent
 
 
-def test_bound_tc_wake_with_legacy_items_marks_provider_started_before_first_send(tmp_path, monkeypatch):
-    items = [_LegacyItem("a"), _LegacyItem("b")]
-    agent = _tc_wake_agent(tmp_path, monkeypatch, items)
+def test_bound_tc_wake_marks_provider_started_before_wire_send(tmp_path, monkeypatch):
+    agent = _tc_wake_agent(tmp_path, monkeypatch)
+    before = agent._chat.interface.to_dict()
     path = _seed(tmp_path, mode="tc_wake")
     assert wr.redrive_worker_hang_redo(agent) == "enqueued"
     msg = agent.inbox.get_nowait()
     wr.match_in_flight_worker_hang_redo(agent, msg)
     sends = []
-    agent._session.send = lambda payload: (sends.append(_load(path)["redo"]["status"]), (_ for _ in ()).throw(RuntimeError("stop")))[1]
+
+    def send(payload):
+        sends.append((payload, _load(path)["redo"]["status"]))
+        raise RuntimeError("stop")
+
+    agent._session.send = send
     with pytest.raises(RuntimeError, match="stop"):
         turn._handle_tc_wake(agent, msg)
-    assert sends == ["provider_started"], "the mark precedes the very first legacy send"
-    assert agent._chat.interface.appended, "the legacy splice happened after the mark"
+    assert sends == [(None, "provider_started")]
+    assert agent._chat.interface.to_dict() == before
 
 
-def test_bound_tc_wake_mark_failure_requeues_legacy_items_in_order_and_sends_nothing(tmp_path, monkeypatch):
-    items = [_LegacyItem("a"), _LegacyItem("b")]
-    agent = _tc_wake_agent(tmp_path, monkeypatch, items)
+def test_bound_tc_wake_mark_failure_preserves_wire_and_sends_nothing(tmp_path, monkeypatch):
+    agent = _tc_wake_agent(tmp_path, monkeypatch)
+    before = agent._chat.interface.to_dict()
     _seed(tmp_path, mode="tc_wake")
     assert wr.redrive_worker_hang_redo(agent) == "enqueued"
     msg = agent.inbox.get_nowait()
@@ -437,7 +415,7 @@ def test_bound_tc_wake_mark_failure_requeues_legacy_items_in_order_and_sends_not
     monkeypatch.setattr(wr, "_fsync_directory", lambda d, **k: (_ for _ in ()).throw(OSError("barrier")))
     agent._session.send = lambda payload: (_ for _ in ()).throw(AssertionError("provider called"))
     turn._handle_tc_wake(agent, msg)
-    assert agent._tc_inbox.items == items and not agent._chat.interface.appended
+    assert agent._chat.interface.to_dict() == before
     assert [f for n, f in agent._logs if n == "tc_wake_noop"][-1]["reason"] == "worker_hang_redo_mark_failed"
 
 
@@ -471,9 +449,9 @@ def test_barrier_failure_after_replace_settles_no_provider_call_through_the_run_
     assert wr.redrive_worker_hang_redo(_BootAgent(tmp_path)) == "none", "no replay follows"
 
 
-def test_bound_legacy_tc_wake_mark_failure_settles_no_provider_call_through_the_run_loop(tmp_path, monkeypatch):
-    items = [_LegacyItem("a"), _LegacyItem("b")]
-    agent = _tc_wake_agent(tmp_path, monkeypatch, items)
+def test_bound_tc_wake_mark_failure_settles_no_provider_call_through_the_run_loop(tmp_path, monkeypatch):
+    agent = _tc_wake_agent(tmp_path, monkeypatch)
+    before = agent._chat.interface.to_dict()
     path = _seed(tmp_path, mode="tc_wake")
     assert wr.redrive_worker_hang_redo(agent) == "enqueued"
     barrier_calls = []
@@ -494,19 +472,21 @@ def test_bound_legacy_tc_wake_mark_failure_settles_no_provider_call_through_the_
     monkeypatch.setattr(turn, "_handle_message", handle)
     _stop_on_sleep(agent)
     turn._run_loop(agent)
-    assert agent._tc_inbox.items == items and not agent._chat.interface.appended
+    assert agent._chat.interface.to_dict() == before
     redo = _load(path)["redo"]
     assert redo["status"] == "completed" and redo["outcome"] == "no_provider_call"
     assert wr.redrive_worker_hang_redo(_BootAgent(tmp_path)) == "none"
 
 
-def test_unbound_legacy_tc_wake_is_unchanged(tmp_path, monkeypatch):
-    agent = _tc_wake_agent(tmp_path, monkeypatch, [_LegacyItem("a")])
+def test_unbound_tc_wake_drives_existing_wire(tmp_path, monkeypatch):
+    agent = _tc_wake_agent(tmp_path, monkeypatch)
+    before = agent._chat.interface.to_dict()
     sends = []
     agent._session.send = lambda payload: (sends.append(payload), (_ for _ in ()).throw(RuntimeError("stop")))[1]
     with pytest.raises(RuntimeError, match="stop"):
         turn._handle_tc_wake(agent, _make_message(MSG_TC_WAKE, "system", ""))
-    assert len(sends) == 1 and agent._chat.interface.appended
+    assert sends == [None]
+    assert agent._chat.interface.to_dict() == before
 
 
 # --- dismissal ------------------------------------------------------------------

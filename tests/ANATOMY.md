@@ -263,6 +263,8 @@ related_files:
   - tests/test_notification_store.py
   - tests/test_notification_one_shot.py
   - tests/test_notification_sync.py
+  - tests/test_pre_request_hook.py
+  - tests/test_tc_wake.py
   - tests/test_notification_tool.py
   - tests/test_nudge_inline_cap.py
   - tests/test_nudge_policy.py
@@ -341,7 +343,6 @@ related_files:
   - tests/test_sync_gitee_mirror.py
   - tests/test_system.py
   - tests/test_system_dismiss.py
-  - tests/test_system_notifications.py
   - tests/test_system_summarize.py
   - tests/test_task_card_controller.py
   - tests/test_task_card_event_projection_shared.py
@@ -349,11 +350,6 @@ related_files:
   - tests/test_task_card_proactivity.py
   - tests/test_task_card_resident_shared.py
   - tests/test_taskcard_resident_meta.py
-  - tests/test_tc_inbox.py
-  - tests/test_tc_inbox_mid_turn_drain.py
-  - tests/test_tc_inbox_remove_by_notif_id.py
-  - tests/test_tc_wake_chat_not_ready.py
-  - tests/test_tc_wake_orphan_heal.py
   - tests/test_telegram_account_last_message_id.py
   - tests/test_telegram_inbound_media_download_failure.py
   - tests/test_telegram_lossless_envelope.py

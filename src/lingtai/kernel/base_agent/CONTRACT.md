@@ -30,6 +30,8 @@ related_files:
   - src/lingtai/tools/system/karma.py
   - tests/test_aed_recovery.py
   - tests/test_notification_sync.py
+  - tests/test_tc_wake.py
+  - tests/test_pre_request_hook.py
   - src/lingtai/tools/notification/CONTRACT.md
   - tests/test_notification_one_shot.py
   - tests/test_cli_worker_poison_recovery.py
@@ -232,6 +234,13 @@ ordinary paid LLM turn. A failed publish does not set the latch. It is separate 
 
 Clause IDs are stable; each rule composes the linked normative source.
 
+The retired legacy queue is not an inbound SDK surface. Notification sync
+splices its complete pair directly into canonical chat; `MSG_TC_WAKE` drives
+that wire with `send(None)`, without fake input or a meta prefix. A stale or
+mid-pair wake does not send. The generic `ChatSession.pre_request_hook` remains
+caller-owned and is not installed by BaseAgent. Guarded by
+[BA006](BEHAVIORS.md#behavior-ba006) and `tests/test_tc_wake.py`.
+
 Automatic notification delivery composes the [Notification contract](../../tools/notification/CONTRACT.md): ACTIVE and IDLE share event/message identity from the exact delivered observation. Ordinary same-process molt/rebuild/redacted resync retain that identity; a new Agent/process restart does not persist it. Delivery is not business completion, and earlier delivered messages remain usable subject to newer instructions and producer safeguards.
 
 1. `agent-runtime.paths.v1` — One working directory owns one agent. The
@@ -326,10 +335,9 @@ Automatic notification delivery composes the [Notification contract](../../tools
    boot enqueue again (no provider side effect began). The run loop binds
    the redo by message id only (a merge keeps that id), persists
    `provider_started` immediately before the provider call in
-   `_handle_request` and in `_handle_tc_wake` on both of its sending paths —
-   before the first nonempty legacy `tc_inbox` splice/send and before the
-   wire-drive `send(None)` (fail closed: no provider call, and legacy items
-   are re-enqueued in order, if it cannot be written durably — and a failed
+   `_handle_request` and before `_handle_tc_wake` wire-drive `send(None)`
+   (fail closed: no provider call and the existing canonical pair is untouched
+   if it cannot be written durably — and a failed
    mark settles `no_provider_call` from process-local truth even if the
    directory entry already shows `provider_started`), and settles
    the block when the turn ends

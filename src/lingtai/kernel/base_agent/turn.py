@@ -2070,8 +2070,8 @@ def _concat_queued_messages(agent, msg: Message) -> Message:
     inbox so the run loop processes them in their own iteration with
     their own dispatch path. Without this filter, an empty-content
     MSG_TC_WAKE queued behind a MSG_REQUEST would be silently absorbed
-    into the merged request, and the tc_inbox drain handler would never
-    fire — mail notifications would stay queued indefinitely.
+    into the merged request instead of driving the already-spliced
+    notification pair in its own inference round.
 
     If nothing same-type is queued, returns the original message
     unchanged. Otherwise, joins all same-type contents with blank lines
@@ -2243,9 +2243,6 @@ def _handle_request(agent, msg: Message) -> dict:
             "errors": ["agent interface is unavailable"],
         }
 
-    # Splice any queued involuntary tool-call pairs
-    agent._drain_tc_inbox()
-
     max_calls, dup_free, dup_hard = _get_guard_limits(agent)
     guard = LoopGuard(
         max_total_calls=max_calls,
@@ -2282,7 +2279,7 @@ def _handle_request(agent, msg: Message) -> dict:
         return {"text": "", "failed": True, "errors": ["worker hang redo state could not be recorded"]}
     response = agent._session.send(content)
     # Settle point: the initial send returned; any receipt-bearing result
-    # spliced onto the wire during it (e.g. a request-start inbox drain) is now
+    # spliced onto the wire during it (e.g. a caller pre-request hook) is now
     # durably present.
     scan_and_emit_committed_facts(agent)
     agent._last_usage = response.usage
@@ -2310,12 +2307,6 @@ def _handle_tc_wake(agent, msg: Message) -> None:
     round off that wire — no fake user message, no meta prefix.  From
     the LLM's viewpoint it is indistinguishable from the agent having
     voluntarily called the tool itself.
-
-    The legacy ``tc_inbox`` queue is still drained at the top for
-    back-compat (in case anything outside the kernel still enqueues),
-    but the empty-queue path now routes to the wire-drive path instead
-    of no-op-and-return — the previous "tc_inbox_empty" silent
-    no-op was the bug that left spliced notification pairs unread.
     """
     try:
         if is_worker_interface_poisoned(agent):
@@ -2342,13 +2333,9 @@ def _handle_tc_wake(agent, msg: Message) -> None:
                 return
 
         iface = agent._chat.interface
-        items = agent._tc_inbox.drain()
 
-        # Mid-pair tail — defer.  Re-enqueue any drained legacy items so
-        # the next wake retries them.
+        # Mid-pair tail — defer until the outstanding tool calls settle.
         if iface.has_pending_tool_calls():
-            for item in items:
-                agent._tc_inbox.enqueue(item)
             agent._log(
                 "tc_wake_noop",
                 reason="pending_tool_calls",
@@ -2364,99 +2351,6 @@ def _handle_tc_wake(agent, msg: Message) -> None:
                 dup_hard_block=8,
             ),
         )
-
-        # A bound AED redo must record `provider_started` durably before ANY
-        # provider send on this wire — the legacy items below send too. Fail
-        # closed: re-enqueue every drained item in order, touch nothing.
-        from .worker_recovery import mark_worker_hang_redo_provider_started
-
-        if items and not mark_worker_hang_redo_provider_started(agent):
-            for item in items:
-                agent._tc_inbox.enqueue(item)
-            agent._log("tc_wake_noop", reason="worker_hang_redo_mark_failed")
-            return
-
-        # Legacy tc_inbox path — drained items get spliced and driven the
-        # old way (call appended here, result passed through send).  Empty
-        # in production post-redesign; preserved for back-compat.
-        for idx, item in enumerate(items):
-            try:
-                if getattr(item, "replace_in_history", False):
-                    prior_id = agent._appendix_ids_by_source.get(item.source)
-                    if prior_id is not None:
-                        iface.remove_pair_by_call_id(prior_id)
-                    agent._appendix_ids_by_source.pop(item.source, None)
-                iface.add_assistant_message(content=[item.call])
-                if getattr(item, "replace_in_history", False):
-                    agent._appendix_ids_by_source[item.source] = item.call.id
-                agent._save_chat_history()
-
-                agent._log("tc_wake_dispatch", source=item.source, call_id=item.call.id)
-                try:
-                    response = agent._session.send([item.result])
-                    # Settle point: send returned.
-                    scan_and_emit_committed_facts(agent)
-                except Exception as send_err:
-                    from ..llm_utils import WorkerStillRunningError
-
-                    # Worker still alive — the interface is unsafe to touch.
-                    # Re-raise before the restore/heal path mutates it; the run
-                    # loop's central branch poisons and requests refresh.
-                    if isinstance(send_err, WorkerStillRunningError):
-                        raise
-                    # The spliced tool result was passed into send() and the
-                    # adapter rolled the user entry back when the API call
-                    # failed. Restore the real result before the catch-all
-                    # below synthesizes a placeholder — without this, the
-                    # original notification payload is permanently replaced by
-                    # the kernel notice and the agent has no way to recover
-                    # the message that was on the wire (issue #170).
-                    _restore_tool_results_after_continuation_failure(
-                        agent, [item.result], ledger_source="tc_wake",
-                    )
-                    # Settle point: send's exception handling (incl. any
-                    # rollback/restore) has completed.  A survivor still on the
-                    # wire (adapter did not roll back) fires here; a rolled-back
-                    # entry is absent and does not.
-                    scan_and_emit_committed_facts(agent)
-                    raise
-                agent._last_usage = response.usage
-                agent._save_chat_history(ledger_source="tc_wake")
-                _process_response(agent, response, ledger_source="tc_wake")
-            except Exception as splice_err:
-                from ..llm_utils import WorkerStillRunningError
-
-                if isinstance(splice_err, WorkerStillRunningError):
-                    # Interface poisoned — do not inspect/heal/save it. Re-queue
-                    # the remaining items and re-raise to the run loop.
-                    agent._log(
-                        "tc_wake_send_error",
-                        source=item.source,
-                        call_id=item.call.id,
-                        error=str(splice_err)[:300],
-                        worker_still_running=True,
-                    )
-                    for remaining in items[idx + 1:]:
-                        agent._tc_inbox.enqueue(remaining)
-                    raise
-                if iface.has_pending_tool_calls():
-                    # tool_completed=True: the tool result was produced by the
-                    # notification system and passed in as item.result — the
-                    # failure is in the LLM round-trip that followed.
-                    iface.close_pending_tool_calls(
-                        reason=f"tc_wake splice failed: {str(splice_err)[:200]}",
-                        tool_completed=True,
-                    )
-                    agent._save_chat_history()
-                agent._log(
-                    "tc_wake_send_error",
-                    source=item.source,
-                    call_id=item.call.id,
-                    error=str(splice_err)[:300],
-                )
-                for remaining in items[idx + 1:]:
-                    agent._tc_inbox.enqueue(remaining)
-                raise
 
         # Wire-drive path: notification sync (or anything else that
         # appends a complete (call, result) pair before posting

@@ -223,8 +223,8 @@ def test_mail_inbox_wiring(tmp_path):
         "to": "127.0.0.1:8301",
         "message": "inbox test",
     })
-    # tc_inbox stays empty under the new path.
-    assert len(agent._tc_inbox.drain()) == 0
+    # Mail uses the modern mirror without a legacy queue.
+    assert not hasattr(agent, "_tc_inbox")
     # The raw notification mirror carries the current unread message context.
     out = snapshot_notifications(agent.working_dir)
     assert "email" in out
@@ -688,8 +688,8 @@ def test_concat_does_not_absorb_tc_wake(tmp_path):
     messages regardless of type and merged their (often empty) content
     into a new MSG_REQUEST. A MSG_TC_WAKE (empty content, signal-only)
     queued behind a MSG_REQUEST would be silently consumed and the
-    tc_inbox drain handler would never fire — mail notifications stayed
-    queued indefinitely behind long-running tasks.
+    wire-drive handler would never fire — the pre-spliced notification pair
+    remained unread behind long-running tasks.
     """
     agent = BaseAgent(intrinsics=_TEST_INTRINSICS, service=make_mock_service(), agent_name="test", working_dir=tmp_path / "test", workdir_lease=make_test_lease(), agent_presence=make_test_presence_store(), snapshot_port=make_test_snapshot_port(), lifecycle_clock=make_test_lifecycle_clock(), source_revision_port=make_test_source_revision_port(), notification_store=notification_store_for(tmp_path / "test"))
     text_msg = _make_message(MSG_REQUEST, "user", "do the thing")

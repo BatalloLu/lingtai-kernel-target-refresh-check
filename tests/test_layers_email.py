@@ -98,8 +98,8 @@ def test_email_receive_notification(tmp_path):
         "subject": "hi",
         "message": "body",
     })
-    # tc_inbox should be empty under the new path.
-    assert len(agent._tc_inbox.drain()) == 0
+    # Mail uses the modern mirror without a legacy queue.
+    assert not hasattr(agent, "_tc_inbox")
     # The raw notification mirror carries full unread message context.
     out = snapshot_notifications(agent.working_dir)
     assert "email" in out

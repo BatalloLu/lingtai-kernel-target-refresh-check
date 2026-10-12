@@ -14,10 +14,9 @@ Where possible the tests use the real `notifications.py` module against
 ``tmp_path``; agent-level tests use a stub that mimics the
 BaseAgent → SessionManager → ChatSession → ChatInterface hierarchy.
 
-The deeper integration paths (heartbeat → `_sync_notifications` → wire
-mutation under real adapters) are covered by the existing `test_tc_inbox*`
-suites and the email integration tests, which continue to pass
-because `tc_inbox` is preserved during the migration window.
+Modern wire-drive coverage is in `test_tc_wake.py`; generic adapter hook
+coverage remains in `test_pre_request_hook.py`. Email integration and one-shot
+notification tests cover producers and shared delivered identity.
 """
 from __future__ import annotations
 
@@ -492,7 +491,6 @@ def test_molt_preserves_notification_dir(tmp_path: Path) -> None:
         _working_dir: Path = tmp_path
         _notification_fp: tuple = (("email.json", 1, 12),)
         _notification_block_id: str | None = "notif_xyz"
-        _appendix_ids_by_source: dict = field(default_factory=dict)
 
     agent = _MoltStub()
     # Only reset in-memory tracking; notification files survive molt.

@@ -23,6 +23,7 @@ related_files:
   - src/lingtai/tools/system/karma.py
   - tests/test_aed_recovery.py
   - tests/test_notification_sync.py
+  - tests/test_tc_wake.py
   - tests/test_notification_one_shot.py
   - tests/test_cli_worker_poison_recovery.py
   - tests/test_worker_hang_aed_redo.py
@@ -221,11 +222,13 @@ Pass when the focused suite proves fresh fail-closed admission and the one-hop l
 
 ### Steps
 1. From `<repo>`, run `python -m pytest -q tests/test_worker_hang_aed_redo.py tests/test_aed_recovery.py tests/test_cli_worker_poison_recovery.py tests/test_notification_sync.py -k "redo or worker_hang or refresh_boot or non_refresh_boot or pending_worker_recovery or baseline or foreign"`.
-2. Inspect `worker_recovery.py` (`_plan_redo`, `redrive_worker_hang_redo`, `mark_worker_hang_redo_provider_started`, `settle_worker_hang_redo`, `resolve_worker_hang_artifact`), the `turn.py` WorkerStillRunning branch and pre-send marks, and `cli.py::run` against the Contract paragraph.
+2. Run `python -m pytest -q tests/test_tc_wake.py tests/test_pre_request_hook.py` to verify direct sync/wire delivery, unchanged producer/history state, no-call guards, and generic hook preservation.
+3. Inspect `worker_recovery.py` (`_plan_redo`, `redrive_worker_hang_redo`, `mark_worker_hang_redo_provider_started`, `settle_worker_hang_redo`, `resolve_worker_hang_artifact`), the `turn.py` WorkerStillRunning branch and pre-send marks, and `cli.py::run` against the Contract paragraph.
 
 ### Expected evidence
-- [ ] Step 1: the group passes with no provider or network call; the redo suite shows one `_handle_message` call per hang, the four modes, an exact `request` text in a `0600` artifact, boot enqueue with the original id and no refresh-success send (on refresh and non-refresh boots), `provider_started` on disk before the provider call (both `_handle_tc_wake` paths, including a nonempty legacy `tc_inbox` whose items are re-enqueued in order on failure) and `completed` with the text stripped afterwards, the POSIX parent-directory fsync barrier after replace (Windows boundary opens no directory) with a barrier failure failing the mark closed, fail-closed on a `provider_started` record found at boot and on a mark-write failure, tampered records abandoned, attempts bounded by `max_aed_attempts`, id-preserving concatenation, dismissal abandoning a pending redo, and ordinary refresh/unreplayable recovery unchanged.
-- [ ] Step 2: no second replay file, no content-based binding, no in-process retry.
+- [ ] Step 1: the group passes with no provider or network call; the redo suite shows one `_handle_message` call per hang, the four modes, an exact `request` text in a `0600` artifact, boot enqueue with the original id and no refresh-success send (on refresh and non-refresh boots), `provider_started` on disk before the provider call (the `_handle_tc_wake` wire-drive path; a failed mark leaves its existing canonical pair unchanged) and `completed` with the text stripped afterwards, the POSIX parent-directory fsync barrier after replace (Windows boundary opens no directory) with a barrier failure failing the mark closed, fail-closed on a `provider_started` record found at boot and on a mark-write failure, tampered records abandoned, attempts bounded by `max_aed_attempts`, id-preserving concatenation, dismissal abandoning a pending redo, and ordinary refresh/unreplayable recovery unchanged.
+- [ ] Step 2: direct sync/wire tests preserve the pair and producer bytes, do not replay unchanged events, and retain generic caller hooks.
+- [ ] Step 3: no second replay file, no content-based binding, no in-process retry.
 
 ### Pass / Fail
 Pass when the suite is green and the inspection matches the Contract. Fail if the poisoned process retries, if a refresh-success request is sent while a redo is enqueued, if a `provider_started` record is replayed, if a `continuation` redo carries the original text, if a `tc_wake` hang is left to notification resync, or if replay text survives a terminal status; record the evidence trail in the task report.

@@ -735,8 +735,8 @@ def test_realpath_poll_backoff_commit_fires(monkeypatch):
 
 def test_realpath_initial_send_drained_pair_fires_at_request_settle_point(monkeypatch):
     # (D) A receipt-bearing (call, result) pair spliced onto the wire DURING
-    # the initial request send — the adapter's pre-request tc_inbox drain rides
-    # any API request, including the very first one — fires at the initial-send
+    # the initial request send — a caller-owned adapter pre-request hook can
+    # run on the very first API request — fires at the initial-send
     # settle point inside _handle_request (turn.py ~2088).  The response
     # carries no tool calls, so no _process_response settle point ever runs:
     # deleting the initial-send scan must turn exactly this test red.
@@ -768,7 +768,6 @@ def test_realpath_initial_send_drained_pair_fires_at_request_settle_point(monkey
     guard = LoopGuard(max_total_calls=100, dup_free_passes=3, dup_hard_block=8)
     executor = _FakeExecutor(guard, [])
     agent = _ProcAgent(iface, executor, session)
-    agent._drain_tc_inbox = lambda: None
     agent._pre_request = lambda msg: "hello"
     agent._post_request = lambda msg, result: None
 
