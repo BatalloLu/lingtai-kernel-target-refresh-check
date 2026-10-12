@@ -217,7 +217,8 @@ def test_router_manual_discloses_depth_and_first_call_guard(tmp_path):
         assert len(body) < 10000
         manual_path = Path(result["manual_path"])
         assert (manual_path.parent / "reference/settings/SKILL.md").is_file()
-        assert "Network rules are retired" in (manual_path.parent / "reference/network-rules/SKILL.md").read_text()
+        assert "compatibility reader, automatic rewrite, purge, or data migration" in body
+        assert not (manual_path.parent / "reference/network-rules/SKILL.md").exists()
     finally:
         agent.stop(timeout=1.0)
 
@@ -953,6 +954,36 @@ def test_manual_docs_preserve_external_skill_timestamp_option():
     assert "optional for custom/external" in text
     assert "validate.py --require-last-changed-at .library/custom/<skill-name>/" not in text
     assert "metadata-only" in text
+
+
+def test_shipped_web_manual_keeps_supported_routes_without_legacy_bundle(tmp_path):
+    import re
+
+    agent = _agent(tmp_path, capabilities={"knowledge": {}, "skills": {}})
+    try:
+        root = agent.working_dir / ".library/intrinsic/capabilities/web"
+        assert {
+            str(path.relative_to(root))
+            for path in root.rglob("*") if path.is_file()
+        } == {
+            "SKILL.md",
+            "reference/operation-contract.md",
+            "reference/agent-native-browser.md",
+        }
+        for source in root.rglob("*.md"):
+            for link in re.findall(r"\]\(([^)]+)\)", source.read_text()):
+                if "://" not in link:
+                    assert (source.parent / link.split("#")[0]).is_file(), (source, link)
+        body = (root / "SKILL.md").read_text()
+        assert "Eight five-field rows" in body
+        assert "complete artifact" in body
+        assert "SSRF/DNS checks" in body
+        assert "explicit human consent" in body
+        assert "dedicated lightweight" in (root / "reference/agent-native-browser.md").read_text()
+        assert "- name: web-manual" in agent._prompt_manager.read_section("skills")
+        assert "web-manual" in agent._build_system_prompt()
+    finally:
+        agent.stop(timeout=1.0)
 
 
 def test_manual_docs_installed_relative_links_resolve(tmp_path):

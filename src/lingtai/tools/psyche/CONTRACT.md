@@ -22,7 +22,6 @@ related_files:
   - src/lingtai/tools/skills/CONTRACT.md
   - src/lingtai/intrinsic_skills/psyche-manual/SKILL.md
   - src/lingtai/intrinsic_skills/psyche-manual/reference/settings/SKILL.md
-  - src/lingtai/intrinsic_skills/psyche-manual/reference/network-rules/SKILL.md
   - tests/test_project_creation.py
 maintenance: |
   This component contract is governed by the root CONTRACT.md and owns the one

@@ -3,11 +3,10 @@ name: web-manual-agent-native-browser
 description: >
   Separate interactive Chrome DevTools MCP route for forms, login, SPA pages,
   uploads, and human verification that static Web browse intentionally cannot do.
-version: 2.0.0
-last_changed_at: "2026-09-09T10:53:00Z"
+version: 2.1.0
+last_changed_at: "2026-10-12T00:00:00Z"
 related_files:
   - src/lingtai/tools/web_search/manual/SKILL.md
-  - src/lingtai/tools/web_search/manual/reference/tier-3-playwright.md
 maintenance: |
   Keep this separate-channel route aligned with the current Chrome DevTools MCP
   and mcp-manual guidance. It is not a Web action; preserve human consent,
@@ -41,9 +40,9 @@ never move or expose a private file merely to make an upload work.
 
 Keep the profile/session and uploads within that authorized location. Stop and
 ask the human when access, consent, payment, CAPTCHA, or a protected resource
-is required. Do not bypass login, paywall, robots, or access control. For pure
-headless public scraping, use the [Tier 3](tier-3-playwright.md) procedure
-instead.
+is required. Do not bypass login, paywall, robots, or access control. A separate
+headless public-scraping procedure needs its own authorization and current
+upstream documentation; it is not a Web action.
 
 Use the [Chrome DevTools MCP upstream guide](https://github.com/ChromeDevTools/chrome-devtools-mcp)
 for current `--user-data-dir`/profile and tool schemas. For a large accessibility
