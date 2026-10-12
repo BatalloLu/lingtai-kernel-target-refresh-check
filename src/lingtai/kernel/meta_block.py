@@ -70,7 +70,6 @@ from .config import (
 from .i18n import t as _t
 from .reminders.context_pressure import (
     current_molt_emission_descriptor,
-    render_current_molt_context,
     render_forced_rebuild_failed_warning,
     render_forced_rebuild_warning,
     render_reconstruction_molt,
@@ -1101,8 +1100,8 @@ def build_molt_context(agent, usage: float) -> str | None:
     *sustained-pressure* signal: the reminder appears only once context has been
     high (>= the 0.85 reconstruction ratio) for
     ``CONTEXT_PRESSURE_WARN_AFTER_ROUNDS`` consecutive *fresh provider rounds*,
-    tracked by ``SessionManager.note_context_pressure_round``. The first two
-    high rounds are the window in which the automatic delayed-summarize
+    tracked by ``SessionManager.context_pressure_reminder.note_round``. The
+    first two high rounds are the window in which the automatic delayed-summarize
     reconstruction (and any agent summarize) is expected to relieve pressure; a
     drop below the threshold resets the streak and clears the reminder.
 
@@ -1118,18 +1117,11 @@ def build_molt_context(agent, usage: float) -> str | None:
         return None
     # The warning decision + prose live in ``ContextPressureReminder``; the
     # context-intrinsic gate and session lookup stay here (they are agent/session
-    # concerns, not reminder concerns). Prefer the real reminder object; fall
-    # back to the session's compat streak/active surface so lightweight test
-    # stand-ins (a SimpleNamespace with only context_pressure_* attributes) still
-    # render identical prose.
+    # concerns, not reminder concerns).
     reminder = getattr(session, "context_pressure_reminder", None)
-    if reminder is not None:
-        return reminder.current_molt_context(usage)
-
-    if not getattr(session, "context_pressure_warning_active", False):
+    if reminder is None:
         return None
-    streak = int(getattr(session, "context_pressure_streak", 0))
-    return render_current_molt_context(streak=streak, usage=usage)
+    return reminder.current_molt_context(usage)
 
 
 def build_context_rebuild_hint(agent, usage: float) -> str | None:
@@ -1404,9 +1396,8 @@ def _current_molt_emission_event(agent, *, usage, message) -> dict | None:
     state (``build_meta`` runs both for the text-input prefix and per tool-result
     stamp; a side effect here would desync the dedup).
 
-    Returns ``None`` only when no real reminder object is available (compat
-    session stand-ins that expose just ``context_pressure_*`` attributes carry no
-    round id / debug state to build a meaningful event from).
+    Returns ``None`` when no reminder object is available to supply the
+    round id / debug state needed for a meaningful event.
     """
     session = getattr(agent, "_session", None)
     reminder = getattr(session, "context_pressure_reminder", None)

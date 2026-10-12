@@ -83,7 +83,7 @@ which values applied and tests can inject variants.
   post-forced-rebuild overflow line — the fixed human-authored `100% context
   Forced Rebuilt Failed. … (xxx %) Molt IMMEDIATELY!!` sentence, one-decimal
   percentage). The renderers are the single source of truth for the wording and are
-  shared by the class methods and by `meta_block` (its compatibility fallback and
+  shared by the class methods and by `meta_block` (its reconstruction paths and
   the overflow-warning merge, see below).
 - `__init__.py` — re-exports `ContextPressureReminder`, the emission descriptors,
   and the two molt renderers (`render_current_molt_context` /
@@ -94,17 +94,15 @@ which values applied and tests can inject variants.
 ## Connections
 
 - `session.py` — `SessionManager.__init__` constructs one
-  `ContextPressureReminder` (`self._context_pressure`). `_track_usage` calls
-  `note_context_pressure_round(...)` per real provider round. The properties
-  `context_pressure_streak` / `context_pressure_warning_active`, the method
-  `note_context_pressure_round`, and the new `context_pressure_reminder`
-  accessor are thin compatibility shims that delegate to the reminder; existing
-  callers/tests that read the streak surface keep working unchanged.
+  `ContextPressureReminder` (`self._context_pressure`), exposed through
+  `context_pressure_reminder`. `_track_usage` calls the reminder's
+  `note_round(...)` per real provider round; consumers read `streak` / `active`
+  on that same owned object rather than a parallel SessionManager surface.
 - `meta_block.py` — `build_molt_context` keeps the psyche-intrinsic gate and
-  session lookup, then delegates rendering: it prefers
-  `session.context_pressure_reminder.current_molt_context(usage)` and falls back
-  to `render_current_molt_context(streak, usage)` for lightweight session
-  stand-ins that only expose the compat `context_pressure_*` attributes.
+  session lookup, then delegates the warning decision and rendering to
+  `session.context_pressure_reminder.current_molt_context(usage)`. Test session
+  stand-ins expose a real `ContextPressureReminder` too; there is no alternate
+  streak/active rendering path.
   `build_meta` (side-effect-free) routes the returned text into current
   `agent_meta.agent_state.context.molt` via a transit key (`_tool_meta_context`)
   that `ToolExecutor._attach_tool_block` promotes, and always carries the

@@ -211,16 +211,6 @@ class ToolExecutor:
             if hidden_key in args:
                 args.pop(hidden_key, None)
                 removed_args.append(hidden_key)
-        deprecated_secondary = None
-        if "secondary" in args:
-            deprecated_secondary = args.pop("secondary")
-            removed_args.append("secondary")
-            self._log(
-                "deprecated_secondary_ignored",
-                tool_name=tc.name,
-                tool_call_id=tc_id,
-                tool_trace_id=tool_trace_id,
-            )
 
         if reasoning:
             self._log(
@@ -239,7 +229,6 @@ class ToolExecutor:
             tool_trace_id=tool_trace_id,
             tool_args=args,
             removed_args=removed_args,
-            deprecated_secondary_ignored=deprecated_secondary is not None,
         )
         return args
 

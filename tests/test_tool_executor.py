@@ -1475,82 +1475,142 @@ def test_tool_executor_meta_fn_covers_parallel_path():
         assert "agent_meta" not in r.metadata
         assert "current_time" not in r.content
 
-def test_deprecated_secondary_arg_is_ignored_not_dispatched():
+@pytest.mark.parametrize("unexpected_arg", ["secondary", "unexpected"])
+@pytest.mark.parametrize("value", [
+    {"tool": "telegram", "args": {"action": "read", "chat_id": 123}},
+    None,
+    False,
+])
+def test_obsolete_secondary_arg_follows_ordinary_dispatch_error(unexpected_arg, value):
     seen = []
+    handled = []
     logs = []
+
+    def read(*, path):
+        handled.append(path)
+        return {"status": "ok", "path": path}
 
     def dispatch(tc):
         seen.append((tc.name, dict(tc.args)))
-        return {"status": "ok", "echo": dict(tc.args)}
+        return read(**tc.args)
 
-    make_result = MagicMock(side_effect=lambda name, result, **kw: {"name": name, "result": result})
-    executor = ToolExecutor(
+    executor = make_executor(
         dispatch_fn=dispatch,
-        make_tool_result_fn=make_result,
-        guard=LoopGuard(max_total_calls=50),
         known_tools={"read", "telegram"},
         logger_fn=lambda event_type, **fields: logs.append((event_type, fields)),
     )
+    args = {"path": "/tmp", unexpected_arg: value}
+    call = ToolCall(name="read", args=args, id="tc1")
+    errors = []
 
-    calls = [ToolCall(
-        name="read",
-        args={
-            "path": "/tmp",
-            "secondary": {"tool": "telegram", "args": {"action": "read", "chat_id": 123}},
-        },
-        id="tc1",
-    )]
-
-    results, intercepted, _ = executor.execute(calls)
+    results, intercepted, _ = executor.execute([call], collected_errors=errors)
 
     assert not intercepted
-    assert seen == [("read", {"path": "/tmp"})]
+    assert len(results) == 1
+    assert seen == [("read", args)]
+    assert handled == []  # Python rejects the keyword before the body runs.
+    assert call.args == {"path": "/tmp", unexpected_arg: value}
     payload = results[0]["result"]
-    assert payload["echo"] == {"path": "/tmp"}
+    assert payload["status"] == "error"
+    assert payload["error_type"] == "TypeError"
+    assert payload["error_phase"] == "dispatch"
+    assert f"unexpected keyword argument '{unexpected_arg}'" in payload["message"]
+    assert payload["tool_args"] == args
+    assert payload["tool_call_id"] == "tc1"
+    assert errors == [f"read: {payload['message']}"]
     assert "_secondary" not in payload
-    assert any(event == "deprecated_secondary_ignored" for event, _fields in logs)
+    normalized = [fields for event, fields in logs if event == "tool_call_normalized"]
+    assert len(normalized) == 1
+    assert normalized[0]["tool_args"] == args
+    assert normalized[0]["removed_args"] == []
+    assert all(event != "deprecated_secondary_ignored" for event, _ in logs)
+    assert all("deprecated_secondary_ignored" not in fields for _, fields in logs)
 
 
-def test_deprecated_secondary_arg_is_ignored_on_parallel_path():
+def test_obsolete_secondary_arg_fails_normally_on_parallel_path():
     seen = []
+    handled = []
     logs = []
+
+    def a():
+        handled.append("a")
+        return {"status": "ok"}
+
+    def b(*, value):
+        handled.append("b")
+        return {"status": "ok", "value": value}
 
     def dispatch(tc):
         seen.append((tc.name, dict(tc.args)))
-        return {"status": "ok", "echo": dict(tc.args)}
+        return {"a": a, "b": b}[tc.name](**tc.args)
 
-    make_result = MagicMock(side_effect=lambda name, result, **kw: {"name": name, "result": result})
-    executor = ToolExecutor(
+    executor = make_executor(
         dispatch_fn=dispatch,
-        make_tool_result_fn=make_result,
-        guard=LoopGuard(max_total_calls=50),
         known_tools={"a", "b", "telegram"},
-        parallel_safe_tools={"a", "b"},
+        parallel_safe={"a", "b"},
         logger_fn=lambda event_type, **fields: logs.append((event_type, fields)),
     )
+    args = {"secondary": {"tool": "telegram", "args": {"action": "read", "chat_id": 123}}}
+    errors = []
 
-    calls = [
-        ToolCall(
-            name="a",
-            args={
-                "secondary": {
-                    "tool": "telegram",
-                    "args": {"action": "read", "chat_id": 123},
-                }
-            },
-            id="a1",
-        ),
+    results, intercepted, _ = executor.execute([
+        ToolCall(name="a", args=args, id="a1"),
         ToolCall(name="b", args={"value": 2}, id="b1"),
-    ]
+    ], collected_errors=errors)
+
+    assert not intercepted
+    assert [result["name"] for result in results] == ["a", "b"]
+    assert len(seen) == 2
+    assert ("a", args) in seen
+    assert ("b", {"value": 2}) in seen
+    assert handled == ["b"]
+    failed, valid = [result["result"] for result in results]
+    assert failed["status"] == "error"
+    assert failed["error_type"] == "TypeError"
+    assert failed["error_phase"] == "dispatch"
+    assert "unexpected keyword argument 'secondary'" in failed["message"]
+    assert failed["tool_args"] == args
+    assert failed["tool_call_id"] == "a1"
+    assert errors == [f"a: {failed['message']}"]
+    assert valid["status"] == "ok"
+    assert valid["value"] == 2
+    assert all("_secondary" not in result["result"] for result in results)
+    normalized = [fields for event, fields in logs if event == "tool_call_normalized"]
+    assert len(normalized) == 2
+    assert all(fields["removed_args"] == [] for fields in normalized)
+    assert all(event != "deprecated_secondary_ignored" for event, _ in logs)
+    assert all("deprecated_secondary_ignored" not in fields for _, fields in logs)
+
+
+@pytest.mark.parametrize("parallel", [False, True])
+def test_secondary_named_handler_arg_is_preserved_as_ordinary_data(parallel):
+    """A handler accepting this name gets data, not a nested dispatch request."""
+    seen = []
+
+    def handler(*, value, secondary):
+        return {"status": "ok", "value": value, "secondary": secondary}
+
+    def dispatch(tc):
+        seen.append((tc.name, dict(tc.args)))
+        return handler(**tc.args)
+
+    executor = make_executor(dispatch_fn=dispatch, known_tools={"custom", "telegram"})
+    args = {"value": 1, "secondary": {"tool": "telegram", "args": {"action": "read"}}}
+    calls = [ToolCall(name="custom", args=args, id="custom1")]
+    if parallel:
+        calls.append(ToolCall(name="custom", args={"value": 2, "secondary": None}, id="custom2"))
 
     results, intercepted, _ = executor.execute(calls)
 
     assert not intercepted
-    assert len(results) == 2
-    assert ("a", {}) in seen
-    assert ("b", {"value": 2}) in seen
-    assert all("_secondary" not in result["result"] for result in results)
-    assert any(event == "deprecated_secondary_ignored" for event, _fields in logs)
+    assert len(results) == len(calls)
+    assert len(seen) == len(calls)
+    for call, result in zip(calls, results):
+        assert (call.name, call.args) in seen
+        assert result["result"]["status"] == "ok"
+        assert result["result"]["value"] == call.args["value"]
+        assert result["result"]["secondary"] == call.args["secondary"]
+        assert "_secondary" not in result["result"]
 
 
 def test_tool_executor_attaches_batch_progress_notice_only():
