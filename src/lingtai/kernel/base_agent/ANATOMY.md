@@ -54,6 +54,7 @@ related_files:
   - src/lingtai/kernel/llm/base.py
   - ENVIRONMENT_VARIABLES.md
   - tests/test_notification_sync.py
+  - tests/test_auto_molt_idle_episode.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. Include neighboring
   ANATOMY.md files so the anatomy graph stays connected rather than isolated;
@@ -149,12 +150,27 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
   the narrow read-only host adapter, never through generic Agent access.
 
 
-- `_set_state` (`src/lingtai/kernel/base_agent/__init__.py:1246-1303`) records
+- `_set_state` (`src/lingtai/kernel/base_agent/__init__.py:1253-1323`) records
   `idle_elapsed_s` on the existing `agent_state` event only on IDLE exit,
   subtracting the process-local `_idle_since_monotonic` before clearing it.
   Guarded by [BA008](BEHAVIORS.md#behavior-ba008).
 
-- `_inactive_since_monotonic` / `_auto_molt_notified_since` — process-local inactivity-period anchor and one-shot latch, maintained only in `_set_state` (IDLE↔ASLEEP keeps, ACTIVE/STUCK/SUSPENDED clears) and consumed by `lifecycle.py::_maybe_notify_auto_molt`, which the heartbeat calls after the hidden idle timeout and before `_fire_sleep_alarm_if_due`/`_sync_notifications`. Threshold: `config.py::auto_molt_idle_seconds`. Separate from `_idle_since_monotonic`. Guarded by [BA009](BEHAVIORS.md#behavior-ba009).
+- `_inactive_since_monotonic` / `_auto_molt_notified_since` / `_auto_molt_episode`
+  — process-local idle-episode anchor, successful-publication latch and race
+  generation (`src/lingtai/kernel/base_agent/__init__.py:528-534`,
+  `_rearm_auto_molt_for_work` at `src/lingtai/kernel/base_agent/__init__.py:1237-1251`).
+  Generic state churn retains them. Fresh dequeue
+  work (`turn.py::_run_loop_body`; `_concat_queued_messages` preserves real-work
+  rearm in a system-first mixed text burst), external prompt input
+  (`lifecycle.py::_heartbeat_loop`), and newly delivered work notifications
+  (`meta_block.py::commit_delivered_notification_sources` →
+  `BaseAgent._note_auto_molt_notification_work` →
+  `lifecycle.py::_auto_molt_notification_has_work`) own rearm.
+  `lifecycle.py::_maybe_notify_auto_molt` compares the captured generation
+  under the existing notification RLock after publication; it cannot latch a
+  newer episode. Heartbeat calls it before alarm/sync. Threshold:
+  `config.py::auto_molt_idle_seconds`; distinct from `_idle_since_monotonic`.
+  Guarded by [BA009](BEHAVIORS.md#behavior-ba009).
 
 - `_event_journal` is optional injected process-local ownership. Raw Core instances may leave it `None`; storage state belongs to the selected outer adapter (`base_agent/__init__.py:409`, `base_agent/__init__.py:1058-1059`).
 - `identity.py` mutates `.agent.json` (manifest) and `system/system.md` (identity prompt section) via `_build_manifest` (`base_agent/identity.py:76-114`) and `_update_identity` (`base_agent/identity.py:48-65`). The manifest now includes a sanitized `llm` block (`provider`, `model`, `base_url`) read from the live `LLMService` via `_safe_llm_from_service` (`base_agent/identity.py:117-154`). The wrapper subclass extends with `preset` (active/default/allowed) read from `init.json` and re-applies the LLM safelist for defense-in-depth — see `src/lingtai/agent.py`. The identity prose renderer (`base_agent/__init__.py:137-243` inside `_build_identity_section`) folds both blocks into the cached system-prompt prefix only when present, so bare BaseAgent instances stay quiet. It renders `created_at` ("born") but deliberately omits `started_at`: session start changes on every process restart, including a plain refresh with no source/config change, and would otherwise invalidate the cached prefix. `started_at` remains in the manifest and disk identity state — only this prompt render omits it.
