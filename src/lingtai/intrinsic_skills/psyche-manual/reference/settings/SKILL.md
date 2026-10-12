@@ -9,8 +9,6 @@ related_files:
 - src/lingtai/tools/psyche/settings.py
 - src/lingtai/tools/psyche/CONTRACT.md
 - src/lingtai/agent.py
-- tests/test_psyche_family.py
-- tests/test_psyche_prompt_settings.py
 maintenance: |
   Keep this focused reference aligned with the applied-snapshot provider,
   `settings/psyche.json` parser, reconstruction rollback, redaction, and stable

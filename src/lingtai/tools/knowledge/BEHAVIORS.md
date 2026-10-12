@@ -15,6 +15,8 @@ maintenance: |
   knowledge tool behavior clause changes, update the guarding LABT here in the
   same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Knowledge Capability Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -32,7 +34,7 @@ the repo root with the project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_knowledge.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `knowledge(action="info", input={}, reasoning="probe")` and record the result; confirm it reports `knowledge_dir`, `catalog_size`, and `problems` but no entry bodies.
 3. Call `knowledge(action="info", input={"query": "x"}, reasoning="probe")` and record the result; confirm rejection happens before any scan or mutation.
 

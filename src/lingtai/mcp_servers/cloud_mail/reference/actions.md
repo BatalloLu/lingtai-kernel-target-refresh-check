@@ -5,8 +5,6 @@ related_files:
 - src/lingtai/mcp_servers/cloud_mail/_family.py
 - src/lingtai/mcp_servers/cloud_mail/client.py
 - src/lingtai/mcp_servers/cloud_mail/manager.py
-- tests/test_cloud_mail_addon.py
-- tests/test_cloud_mail_toolfamily_ltpv2.py
 maintenance: |
   Tracks Cloud Mail action inputs, results, and side-effect guidance; update it
   with the manager, family schema, client, and focused behavior tests.

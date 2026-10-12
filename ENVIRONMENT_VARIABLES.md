@@ -56,6 +56,8 @@ maintenance: |
   owner. The nested environment-variables skill is only a progressive-disclosure
   router; do not copy this table into it or into resident prompt layers.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # LingTai environment-variable registry
 
 This is the canonical deep reference for environment configuration. Source code
@@ -152,7 +154,7 @@ surface is explicit; do not set test hooks in a production agent environment.
 | `LINGTAI_DAEMON_SUPERVISOR_TEST_FAKE_LLM_SCENARIO` | unset | Registered test scenario | Fake-LLM scenario selection | Child construction; restart child | Unknown scenario fails closed | Test and supervisor code | Never use to bypass provider checks |
 | `LINGTAI_DAEMON_SUPERVISOR_TEST_FAKE_LLM_SLEEP` | zero or unset | Non-negative numeric seconds | Fake-LLM test delay | Fake backend construction; restart child | Falls back to zero or fails the test | Test and supervisor code | Not a production timeout control |
 | `LINGTAI_AVATAR_BOOT_WAIT_SECONDS` | unset | Test-only arbitrary text | Regression probe proving Avatar settings have no environment-variable peer | Focused test setup only | Production ignores it | `tests/test_tool_family_avatar_migration.py` | No production effect; never use it as an operator setting |
-| `LINGTAI_FAKE_APP_SERVER_MODE` | unset; normal quota | Test scenario `exhausted` | Fake Codex app-server quota | Fake-server invocation; rerun test after change | Unrecognized value falls back to normal quota | `tests/_fake_codex_app_server.py` | Test-only; never set in production |
+| `LINGTAI_FAKE_APP_SERVER_MODE` | unset; normal quota | Test scenario `exhausted` | Fake Codex app-server quota | Fake-server invocation; rerun test after change | Unrecognized value falls back to normal quota | `retired-test:_fake_codex_app_server` | Test-only; never set in production |
 | `LINGTAI_FAKE_CLI_REPORT` | unset | Test-only path or selector | Fake CLI report | Fake CLI invocation; rerun test after change | Invalid value fails the test | `tests/_fake_*` | Keep artifacts in a test temporary directory |
 | `LINGTAI_TEST_CONFIG` | unset | Test-only string or path | Test fixture setup | Fixture construction; rerun test after change | Invalid value fails fixture setup | `tests/` | No production behavior |
 | `LINGTAI_TEST_FAKE_CLAUDE_SIGNAL_RECORD` | unset | Test-only local path | Fake Claude signal record | Fake launcher invocation; rerun test after change | Invalid value fails the test | `tests/` | Keep artifacts in a test temporary directory |

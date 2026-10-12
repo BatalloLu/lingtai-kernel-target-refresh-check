@@ -10,7 +10,6 @@ related_files:
   - src/lingtai/mcp_servers/feishu/manager.py
   - src/lingtai/mcp_servers/ANATOMY.md
   - src/lingtai/tools/CONTRACT.md
-  - tests/test_feishu_toolfamily_ltpv2.py
 maintenance: |
   LABT v2, migrated 2026-08 from tests/test_feishu_toolfamily_ltpv2.py
   (previously filed as C006 under src/lingtai/tools/telegram/BEHAVIORS.md;

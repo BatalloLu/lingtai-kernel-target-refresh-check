@@ -16,10 +16,6 @@ related_files:
   - src/lingtai/mcp_servers/task_card/event_projection.py
   - src/lingtai/mcp_servers/telegram/manager.py
   - src/lingtai/mcp_servers/telegram/task_card/CONTRACT.md
-  - tests/test_session_stats.py
-  - tests/test_daemon_dispatch_ledger.py
-  - tests/test_provider_admission.py
-  - tests/test_telegram_task_card_rows.py
   - ENVIRONMENT_VARIABLES.md
 maintenance: |
   <!-- CANONICAL-MAINTENANCE v2 BEGIN -->
@@ -35,6 +31,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Agent Record / Session Stats
 
 ## Purpose
@@ -170,13 +168,13 @@ probes, cancels, polls, or mutates a job. Telegram is a consumer adapter through
 
 ## Contract tests
 
-`tests/test_session_stats.py` protects atomic publication, redaction, exact
+`retired-test:test_session_stats` protects atomic publication, redaction, exact
 nested schema, mixed arithmetic, daemon-scoped details, 600-second boundary,
 malformed-state omission, strict stale/malformed/missing reads, single-flight
 nonblocking behavior, and completion publication on the next hook without a
-second refresh loop. `tests/test_daemon_dispatch_ledger.py` protects ledger
+second refresh loop. `retired-test:test_daemon_dispatch_ledger` protects ledger
 selection and diagnostics. `tests/test_provider_admission.py` audits the one
-background thread owner. `tests/test_telegram_task_card_rows.py` proves Telegram
+background thread owner. `retired-test:test_telegram_task_card_rows` proves Telegram
 reads the published common snapshot without fallback.
 
 ## Maintenance

@@ -27,7 +27,6 @@ related_files:
 - src/lingtai/mcp_servers/feishu/reference/diagnostics.md
 - src/lingtai/mcp_servers/feishu/reference/capability-matrix.md
 - src/lingtai/mcp_servers/feishu/reference/message-semantics.md
-- tests/test_feishu_settings.py
 maintenance: |
   Tracks the Feishu MCP's model-facing entry, strict action surface, and
   focused manual routes. Keep the deep references aligned with their owning

@@ -15,21 +15,15 @@ related_files:
   - src/lingtai/mcp_servers/telegram/server.py
   - src/lingtai/tools/task_card/CONTRACT.md
   - pyproject.toml
-  - tests/test_telegram_task_card_programmable.py
-  - tests/test_telegram_task_card_toggle.py
-  - tests/test_telegram_task_card_event_tail.py
-  - tests/test_task_card_event_projection_shared.py
-  - tests/test_telegram_task_card_rows.py
-  - tests/test_telegram_task_card_display_expression.py
   - src/lingtai/mcp_servers/telegram/task_card/api_cost.py
-  - tests/test_telegram_task_card_api_cost.py
-  - tests/test_mcp_skill_manuals.py
 maintenance: |
   This component contract is governed by the root CONTRACT.md. Keep related
   files complete and repo-relative, keep the paired Anatomy/manual reciprocal,
   and update Telegram tests plus the intrinsic producer contract together when
   the projection boundary changes.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Telegram Task Card Projection
 
 ## Purpose
@@ -374,16 +368,16 @@ this component.
 
 ## Tests
 
-- `tests/test_telegram_task_card_programmable.py` covers active projection,
+- `retired-test:test_telegram_task_card_programmable` covers active projection,
   screenshot-shaped Markdown rendering (headings/subheadings, bold, inline code,
   and list items), raw HTML/special-character escaping, malformed-delimiter safe
   fallback, unchanged HTML parse mode and raw slot bytes, diff-only updates,
   exact-`inactive` frame exclusion (idempotent, resident/automatic/body
   preserved), reactivation, and last-good preservation for missing/blank
   producer state.
-- `tests/test_telegram_task_card_toggle.py` covers toggle suppression and the
+- `retired-test:test_telegram_task_card_toggle` covers toggle suppression and the
   hidden-finalize clear semantics.
-- `tests/test_telegram_task_card_event_tail.py` continues to cover the automatic
+- `retired-test:test_telegram_task_card_event_tail` continues to cover the automatic
   channel independently, including identical parenthesized reasoning-token
   rendering from current-call carriers and `llm_response` fallbacks, authoritative
   v1 SESSION updates (including the 93.8k-to-150.3k stale regression),
@@ -393,19 +387,19 @@ this component.
   SESSION Cost row: once-per-response live sums with mixed models, row-window
   and re-broadcast stability, complete versus bounded-partial rehydrate, molt
   reset, legacy absence, and HTML escaping.
-- `tests/test_telegram_task_card_api_cost.py` covers per-call estimation and
+- `retired-test:test_telegram_task_card_api_cost` covers per-call estimation and
   catalog behavior plus the Cost row fold/format: replay/carrier dedupe, gaps
   and rejected snapshots, missing model/price/usage/billing as partial, n/a
   without blocking, and the opt-in shared `session_cost` metadata row without a standalone
   metadata budget, with byte-identical output when that optional row is absent.
-- `tests/test_telegram_task_card_rows.py` proves strict common `async_work`
+- `retired-test:test_telegram_task_card_rows` proves strict common `async_work`
   consumption, missing/malformed/stale omission, mixed-lane rendering, and
   pending sync-versus-async Shell wording without raw-argument leakage.
-- `tests/test_task_card_event_projection_shared.py` pins shared-core safety and
+- `retired-test:test_task_card_event_projection_shared` pins shared-core safety and
   byte compatibility with Telegram's established render surface.
 - `tests/test_task_card_resident_shared.py` pins provider-neutral route/slot,
   old-first rotation, peer adoption, and partial-failure state transitions.
-- `tests/test_telegram_task_card_display_expression.py` covers the
+- `retired-test:test_telegram_task_card_display_expression` covers the
   `display_expression` grammar allowlist, approved footer-first default
   rendering, a valid changed expression reordering/dropping slots end-to-end
   through `TelegramManager`, hot JSON reload without a process restart,
@@ -415,6 +409,6 @@ this component.
   after a valid atomic external replace preserves the external
   `normal_rows`/`locale`/`display_expression`/`max_refreshes` siblings in both
   the persisted file and the next manager projection tick.
-- `tests/test_mcp_skill_manuals.py` covers packaged docs for this subpackage.
+- `retired-test:test_mcp_skill_manuals` covers packaged docs for this subpackage.
 
 The SESSION line splits ordinary input, cache writes, cache reads and output without double charging. Unknown write counts keep input/write allocation unknown even when the combined total is known.

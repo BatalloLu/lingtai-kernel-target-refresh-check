@@ -5,8 +5,6 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
-  - tests/test_lifecycle_clock.py
-  - tests/test_auto_molt_notification.py
   - src/lingtai/kernel/base_agent/CONTRACT.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
   - src/lingtai/kernel/base_agent/lifecycle.py
@@ -24,20 +22,10 @@ related_files:
   - tests/test_aed_recovery.py
   - tests/test_notification_sync.py
   - tests/test_tc_wake.py
-  - tests/test_notification_one_shot.py
   - tests/test_cli_worker_poison_recovery.py
   - tests/test_worker_hang_aed_redo.py
-  - tests/test_silence_kill.py
-  - tests/test_system.py
-  - tests/test_system_declared_plugin.py
-  - tests/test_karma.py
   - tests/test_perform_refresh_handshake.py
   - tests/test_tool_result_restore_after_continuation_failure.py
-  - tests/test_correlated_turns.py
-  - tests/test_execution_workspace.py
-  - tests/test_turn_events.py
-  - tests/test_turn_permissions.py
-  - tests/test_provider_admission.py
   - src/lingtai/adapters/acp/BEHAVIORS.md
 maintenance: |
   Created during the every-contract-needs-behaviors sweep. Keep this file
@@ -45,6 +33,8 @@ maintenance: |
   composed-lifecycle behavior clause of the agent-runtime contract changes,
   update the guarding LABT here in the same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Agent Runtime Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -117,8 +107,8 @@ Pass when every failure before `spawn_detached` returns leaves the slot released
 - **estimate**: ≈ 10 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest -q -x tests/test_tool_result_restore_after_continuation_failure.py tests/test_aed_recovery.py tests/test_notification_sync.py tests/test_silence_kill.py`.
-2. Run `python -m pytest -q -x tests/test_system.py tests/test_system_declared_plugin.py tests/test_karma.py tests/test_perform_refresh_handshake.py`.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
+2. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 3. Inspect `BaseAgent._request_turn_cancel`, `request_cooperative_cancel`, both `_run_loop` dequeue branches, `_sync_notifications`, and `_process_response`; confirm producer writes route through the helper, only the two post-shutdown fresh-dequeue sites clear, the awake clear precedes concatenation, and inner consumers never clear.
 
 ### Expected evidence
@@ -140,7 +130,7 @@ Pass when both focused groups pass and source ownership matches the contract. Fa
 - **estimate**: ≈ 3 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest -q -x tests/test_turn_events.py tests/test_turn_permissions.py tests/test_correlated_turns.py tests/test_execution_workspace.py tests/test_tool_executor.py` with the project Python.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** with the project Python.
 2. Inspect the normal test and confirm the submitted correlation id returns one `normal` result carrying the complete collected text.
 3. Inspect the active-cancel and two-queued-turn tests: cancel the matching active handle before releasing its fake provider, then cancel the pending second handle while the first is blocked.
 4. Inspect failure and shutdown tests and confirm AED terminal failure becomes `failed` while run-loop shutdown settles an unprocessed queued handle `cancelled`; a control already claimed during the dequeue/bind race makes its private envelope skip provider dispatch.
@@ -193,7 +183,7 @@ record the evidence trail in the task report.
 
 ### Steps
 
-1. From `<repo>`, run `python -m pytest -q tests/test_provider_admission.py`.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Inspect the derived-admission tests: a `RootProviderAdmission` may create one typed daemon or avatar parent; attempting to create a child from that parent raises before provider I/O.
 3. Inspect the denied and indeterminate provider-call tests: they assert the recording provider has no calls; invoke two admitted calls and confirm the recording Port receives a fresh decision for each.
 4. Inspect the constructor-inventory sensitivity test. Confirm direct names, import aliases, package attributes, and module/function assignment aliases are recognized; review every inventory addition rather than treating the scan as a whole-program proof.
@@ -214,14 +204,14 @@ Pass when the focused suite proves fresh fail-closed admission and the one-hop l
 - **id**: BA006
 - **title**: a poison-recovery relaunch redoes the interrupted turn from the recovery artifact, never in-process, and otherwise stays ASLEEP
 - **guards**: `agent-runtime` § Contract rules, rule 5 (`agent-runtime.refresh.v1`), poison-recovery paragraph — see [CONTRACT.md](CONTRACT.md#contract-rules)
-- **pinned by**: `tests/test_worker_hang_aed_redo.py` (all tests), `tests/test_cli_worker_poison_recovery.py::test_refresh_boot_with_pending_worker_recovery_stays_asleep_without_kickstart`, `tests/test_notification_sync.py::test_start_with_pending_worker_recovery_does_not_self_wake_on_first_sync`, `tests/test_notification_sync.py::test_baseline_refuses_when_external_notification_already_pending`, `tests/test_aed_recovery.py::test_worker_hang_request_artifact_is_bounded_and_redacted`
+- **pinned by**: `tests/test_worker_hang_aed_redo.py` (all tests), `tests/test_cli_worker_poison_recovery.py::test_refresh_boot_with_pending_worker_recovery_stays_asleep_without_kickstart`, `retired-test:test_notification_sync::test_start_with_pending_worker_recovery_does_not_self_wake_on_first_sync`, `retired-test:test_notification_sync::test_baseline_refuses_when_external_notification_already_pending`, `tests/test_aed_recovery.py::test_worker_hang_request_artifact_is_bounded_and_redacted`
 - **runner**: any LingTai coding agent with `shell` access to this repository
 - **prerequisites**: a clean checkout of `<repo>` and the project Python with pytest; no live agent sharing pytest scratch state
 - **estimate**: ≈ 10 minutes
 - **motivation**: production defect 2026-09-08 (Runyuan). After a 300 s provider timeout plus grace (`WorkerStillRunningError`) the agent was force-relaunched to discard the poisoned interface; #1663 stopped the relaunch from self-waking but the interrupted LLM call was never redone ("at 300s the agent SHOULD go to aed mode and REDO the llm call"). The 11:38Z recurrence was a `tc_wake_wire` turn with no notification sources, so a passive resync could not redrive it.
 
 ### Steps
-1. From `<repo>`, run `python -m pytest -q tests/test_worker_hang_aed_redo.py tests/test_aed_recovery.py tests/test_cli_worker_poison_recovery.py tests/test_notification_sync.py -k "redo or worker_hang or refresh_boot or non_refresh_boot or pending_worker_recovery or baseline or foreign"`.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Run `python -m pytest -q tests/test_tc_wake.py tests/test_pre_request_hook.py` to verify direct sync/wire delivery, unchanged producer/history state, no-call guards, and generic hook preservation.
 3. Inspect `worker_recovery.py` (`_plan_redo`, `redrive_worker_hang_redo`, `mark_worker_hang_redo_provider_started`, `settle_worker_hang_redo`, `resolve_worker_hang_artifact`), the `turn.py` WorkerStillRunning branch and pre-send marks, and `cli.py::run` against the Contract paragraph.
 
@@ -267,7 +257,7 @@ Pass when both assertions hold and no test sends a real message. Fail if a hidde
 - **estimate**: ≈ 1 minute
 
 ### Steps
-1. Run `python -m pytest -q tests/test_lifecycle_clock.py` from the repository root.
+1. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** from the repository root.
 
 ### Expected evidence
 - [ ] IDLE exit to ACTIVE, ASLEEP or STUCK records monotonic duration despite a wall-clock jump; time spent in those other states and a missing anchor produce no duration.
@@ -285,7 +275,7 @@ Pass when the focused producer tests pass; fail on inferred duration or wall-tim
 - **estimate**: ≈ 1 minute
 
 ### Steps
-1. Run `python -m pytest -q tests/test_auto_molt_notification.py` from the repository root.
+1. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** from the repository root.
 
 ### Expected evidence
 - [ ] The default and malformed/nonpositive/nonfinite environment values resolve to 1800 seconds; a valid value wins.

@@ -16,7 +16,6 @@ related_files:
   - src/lingtai/mcp_servers/telegram/server.py
   - src/lingtai/tools/daemon/supervisor_runtime.py
   - src/lingtai/kernel/refresh_watcher/watcher_program.py
-  - tests/test_notification_delay_alarm.py
   - tests/test_notification_store.py
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.

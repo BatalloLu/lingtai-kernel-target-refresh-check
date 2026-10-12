@@ -13,7 +13,6 @@ related_files:
   - src/lingtai/adapters/acp/server.py
   - src/lingtai/cli_acp.py
   - src/lingtai/venv_resolve.py
-  - tests/test_venv_resolve.py
   - src/lingtai/cli_puffo_v0.py
   - src/lingtai/cli.py
   - ENVIRONMENT_VARIABLES.md
@@ -30,22 +29,9 @@ related_files:
   - src/lingtai/kernel/process_match.py
   - src/lingtai/kernel/base_agent/CONTRACT.md
   - pyproject.toml
-  - tests/test_acp_stdio.py
-  - tests/test_resident_acp_socket.py
-  - tests/test_puffo_v0_profile.py
-  - tests/test_puffo_admission_witness.py
-  - tests/test_driver_authority_adapter.py
-  - tests/test_correlated_turns.py
-  - tests/test_execution_workspace.py
-  - tests/test_turn_events.py
-  - tests/test_turn_permissions.py
-  - tests/test_provider_admission.py
-  - tests/test_tool_executor.py
-  - tests/test_session_mcp.py
   - tests/test_process_match.py
   - tests/test_lifecycle_daemon_shutdown.py
   - tests/test_lingtai_facade.py
-  - tests/test_tools_package_data.py
 maintenance: |
   Keep this contract reciprocal with its Anatomy and root CONTRACT.md. Update
   ACP translation, the Core turn boundary, composition, manual, and settlement/
@@ -54,6 +40,8 @@ maintenance: |
   content, MCP, workspace, permissions, or transport requires an explicit
   contract change rather than an undocumented fallback.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # ACP local driving adapters
 
 ## Purpose
@@ -240,7 +228,7 @@ constructs, starts, stops, or leases another Agent. It is not a Puffo profile.
    restore commit, the initial-send drain carrier, the three no-API terminal
    commits (intercept / cancel / poll-backoff), and the main tool-loop send
    success and exception points — is pinned by a real-path discriminating test
-   in `tests/test_puffo_admission_witness.py` (deleting the scan at any of
+   in `retired-test:test_puffo_admission_witness` (deleting the scan at any of
    them turns a test red). The four tc_wake settle points (dispatch
    `send([item.result])` success/exception and continue `send(None)`
    success/exception) are EXEMPT from red-coverage by design: non-correlated
@@ -702,12 +690,12 @@ and CLI Python-stdout quarantine/hard-exit ownership.
 `tests/test_resident_acp_socket.py` pins owner-only short-path binding,
 same-UID admission, reconnect without Agent shutdown, collision/stale handling,
 empty-only session MCP, read-only endpoint discovery, and Agent-directory-scoped
-refresh opt-in. `tests/test_avatar_launcher.py` pins stripping that marker from
+refresh opt-in. `retired-test:test_avatar_launcher` pins stripping that marker from
 ordinary and derived Avatar launches.
-`tests/test_puffo_v0_profile.py` pins opaque-id provisioning/resolution,
+`retired-test:test_puffo_v0_profile` pins opaque-id provisioning/resolution,
 tamper/revocation rejection, full-tool composition, fixed-workspace and
 empty-session-MCP rejection, authenticated-adapter admission, profile CLI
-composition, and rejection of abbreviated `--profile` flag spellings. `tests/test_driver_authority_adapter.py` pins the inherited root
+composition, and rejection of abbreviated `--profile` flag spellings. `retired-test:test_driver_authority_adapter` pins the inherited root
 endpoint configuration and its fail-closed missing/malformed/derived-role
 outcomes. `tests/test_correlated_turns.py` independently proves an
 untrusted inbox event cannot reach provider dispatch under this profile policy.
@@ -718,12 +706,12 @@ grant; that the typed call class is not inferred from request text; and that
 the real non-streaming, streaming, rate-gated, and reused
 worker dispatch boundaries preserve admission rather than treating a direct
 proxy test as production-path proof.
-`tests/test_execution_workspace.py`, `tests/test_turn_events.py`, `tests/test_turn_permissions.py`, `tests/test_tool_executor.py`, `tests/test_session_mcp.py`, and the ACP
+`retired-test:test_execution_workspace`, `retired-test:test_turn_events`, `retired-test:test_turn_permissions`, `retired-test:test_tool_executor`, `retired-test:test_session_mcp`, and the ACP
 wire tests pin workspace rooting/escape/isolation, stdio validation, atomic
 publication/rollback, collisions, and close/EOF ownership.
 `tests/test_correlated_turns.py` pins the consumed Core Port's normal, matching
 active cancel, pending-cancel isolation, failure, and shutdown settlement.
-`tests/test_puffo_admission_witness.py` pins the Puffo admission committed-fact:
+`retired-test:test_puffo_admission_witness` pins the Puffo admission committed-fact:
 receipt extraction rules (structured field vs. plain-text last-marker,
 malformed/absent, synthesized, `read_inbox` no-receipt), the
 `sha256(toolCallId ‖ 0x00 ‖ receipt)` binding, and the settle-point wire-scan

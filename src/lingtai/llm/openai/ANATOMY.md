@@ -11,17 +11,11 @@ related_files:
   - src/lingtai/llm/openai/codex_effort.py
   - src/lingtai/llm/openai/codex_ws.py
   - src/lingtai/llm/openai/codex_usage.py
-  - tests/test_codex_credits.py
   - src/lingtai/llm/openai/defaults.py
-  - tests/test_codex_live_effort.py
   - src/lingtai/auth/codex_account_source.py
   - src/lingtai/llm/service.py
   - src/lingtai/tools/daemon/ANATOMY.md
   - src/lingtai/tools/daemon/CONTRACT.md
-  - tests/test_codex_prompt_cache_key.py
-  - tests/test_codex_native_multiaccount.py
-  - tests/test_codex_standalone_compaction.py
-  - tests/test_openai_responses_stateless.py
   - src/lingtai/intrinsic_skills/system-manual/reference/llm-adapters/SKILL.md
   - ENVIRONMENT_VARIABLES.md
 maintenance: |
@@ -33,6 +27,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # src/lingtai/llm/openai/
 
 OpenAI adapter — wraps the `openai` SDK for the `openai` provider (official OpenAI by default, or any OpenAI-compatible endpoint via `base_url`) over Chat Completions (default) or the always-stateless Responses API, plus the `codex` OAuth variant.
@@ -47,7 +43,7 @@ OpenAI adapter — wraps the `openai` SDK for the `openai` provider (official Op
 | `adapter.py` | large | 5 classes + helpers: `OpenAIChatSession`, `OpenAIResponsesSession`, `OpenAIAdapter`, `CodexResponsesSession`, `CodexOpenAIAdapter` |
 | `codex_usage.py` | small | Authenticated, read-only ordinary-usage check through the bound SDK client; paid credits never count as included allowance. `codex_allow_credits` defaults off; on skips the local admission check and leaves billing to OpenAI. |
 | `defaults.py` | 14 | `DEFAULTS` provider metadata for the `openai` family: `base_url=None` (official endpoint), `api_key_env="OPENAI_API_KEY"`, `wire_api="chat_completions"` |
-| `codex_effort.py` | ~200 | Codex provider-local **active-route descriptor** for runtime reasoning effort (issue #1197). `resolve_codex_effort_descriptor(model=, base_url=, construction_effort=, wire=)` returns a frozen `CodexEffortDescriptor` only when EVERY invariant axis matches — native `codex` integration + exact model `gpt-5.6-sol` + a non-empty normalized endpoint actually selected for that session + the Responses wire + a `construction_effort` inside the route's exact values — and `None` (fail closed) otherwise. `None` base URL resolves to the official default; an explicit proxy/custom/pool-selected endpoint is normalized and retained in the per-SESSION descriptor. It owns the exact ordered values `low\|medium\|high\|xhigh\|max\|ultra`, the emitted field `reasoning.effort`, an evidence revision, an alias-independent but endpoint-sensitive `fingerprint`, and **three separate default-ish facts that are never merged**: `provider_default` (`low`, provider catalog evidence), `omitted_default_policy` (`xhigh`, the adapter's fixed policy for an OMITTED/`default` thinking level), and `construction_baseline` (the effort THIS session actually constructed with). Only the last is the capability baseline, and it is part of the fingerprint. `to_capability()` projects it onto the neutral kernel `ReasoningEffortCapability`. Tests: `tests/test_codex_live_effort.py`. |
+| `codex_effort.py` | ~200 | Codex provider-local **active-route descriptor** for runtime reasoning effort (issue #1197). `resolve_codex_effort_descriptor(model=, base_url=, construction_effort=, wire=)` returns a frozen `CodexEffortDescriptor` only when EVERY invariant axis matches — native `codex` integration + exact model `gpt-5.6-sol` + a non-empty normalized endpoint actually selected for that session + the Responses wire + a `construction_effort` inside the route's exact values — and `None` (fail closed) otherwise. `None` base URL resolves to the official default; an explicit proxy/custom/pool-selected endpoint is normalized and retained in the per-SESSION descriptor. It owns the exact ordered values `low\|medium\|high\|xhigh\|max\|ultra`, the emitted field `reasoning.effort`, an evidence revision, an alias-independent but endpoint-sensitive `fingerprint`, and **three separate default-ish facts that are never merged**: `provider_default` (`low`, provider catalog evidence), `omitted_default_policy` (`xhigh`, the adapter's fixed policy for an OMITTED/`default` thinking level), and `construction_baseline` (the effort THIS session actually constructed with). Only the last is the capability baseline, and it is part of the fingerprint. `to_capability()` projects it onto the neutral kernel `ReasoningEffortCapability`. Tests: `retired-test:test_codex_live_effort`. |
 
 ### adapter.py class map
 
@@ -354,7 +350,7 @@ The trigger/boundary/replay machinery described in this section
 `_prepare_compact_request`, `_compacted_replay_input`) lives on
 `_StandaloneCompactionMixin` (`adapter.py:3706`), which `CodexResponsesSession`
 mixes in unchanged (extraction was a pure refactor; see
-`tests/test_codex_standalone_compaction.py`). Codex is the mixin's only host
+`retired-test:test_codex_standalone_compaction`). Codex is the mixin's only host
 since the MiMo adapter was removed. Codex owns its own `_compact_now()` — the
 mixin only prepares the request (`_prepare_compact_request`), it never calls
 `client.responses.compact` itself.
@@ -380,7 +376,7 @@ compaction is a wholly separate request (`responses.compact`, not
 `compact()` raises `TypeError` and silently disables compaction forever
 behind a broad exception guard, which is why `_compact_now` (`adapter.py:3555`)
 omits it and a dedicated test binds the sent kwargs against the real SDK
-signature (`tests/test_codex_standalone_compaction.py::
+signature (`retired-test:test_codex_standalone_compaction::
 test_compact_request_kwargs_bind_against_real_sdk_signature`).
 
 Trigger and lifecycle (`adapter.py:3389-3686`):
@@ -434,7 +430,7 @@ Trigger and lifecycle (`adapter.py:3389-3686`):
   calibration ratio that silently under-projects a subsequent large live
   delta and can let a request cross `context_token_limit` with no preceding
   re-arm — the exact silent-under-projection bug this invariant closes. See
-  `tests/test_codex_standalone_compaction.py::
+  `retired-test:test_codex_standalone_compaction::
   test_calibration_sample_reflects_compacted_representation_not_raw_canonical`
   and `::test_large_live_delta_after_compaction_triggers_rearm_before_crossing_limit`
   (the latter drives a `DynamicResponses` fake whose reported
@@ -452,7 +448,7 @@ Trigger and lifecycle (`adapter.py:3389-3686`):
   see the re-arm bullet below.
 - `_compact_now()` — determines the split point via
   `ChatInterface.find_compaction_boundary(keep_turns=1)` (the same turn-aware
-  boundary tested in `tests/test_compaction.py`, called here with an explicit
+  boundary tested in `retired-test:test_compaction`, called here with an explicit
   `keep_turns=1` rather than the library's generic default of 3). The
   invariant this endpoint actually needs is: **compact everything that is
   safely old, and keep exactly the one newest complete live turn** —
@@ -566,7 +562,7 @@ Stable HTTP headers (`session_id` / `thread_id`, underscore spelling to match Co
 
 ### Codex client-identity headers (`originator` / `User-Agent`)
 
-The default request identity is explicit LingTai: `_CODEX_ORIGINATOR = "lingtai"` and `User-Agent: LingTai/<version>`, with the version token resolved through the shared LLM HTTP identity helper (`../identity_headers.py:20`). `_CODEX_IMPERSONATE_OFFICIAL_CLI` is reserved for explicit local protocol comparisons and switches both `originator` and `User-Agent` to the official Codex CLI-shaped values only when enabled; account-selection headers remain independent of this identity choice. `adapter.py:199`, `adapter.py:244`, `adapter.py:190`, `adapter.py:241`, `tests/test_codex_prompt_cache_key.py:113`, `tests/test_codex_prompt_cache_key.py:590`
+The default request identity is explicit LingTai: `_CODEX_ORIGINATOR = "lingtai"` and `User-Agent: LingTai/<version>`, with the version token resolved through the shared LLM HTTP identity helper (`../identity_headers.py:20`). `_CODEX_IMPERSONATE_OFFICIAL_CLI` is reserved for explicit local protocol comparisons and switches both `originator` and `User-Agent` to the official Codex CLI-shaped values only when enabled; account-selection headers remain independent of this identity choice. `adapter.py:199`, `adapter.py:244`, `adapter.py:190`, `adapter.py:241`, `retired-test:test_codex_prompt_cache_key`, `retired-test:test_codex_prompt_cache_key`
 
 ### Codex `ChatGPT-Account-ID` header (the user's own account id)
 

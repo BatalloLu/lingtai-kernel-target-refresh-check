@@ -27,7 +27,6 @@ related_files:
   - src/lingtai/kernel/base_agent/ANATOMY.md
   - src/lingtai/agent.py
   - src/lingtai/cli.py
-  - tests/test_refresh_watcher_process.py
   - ENVIRONMENT_VARIABLES.md
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.

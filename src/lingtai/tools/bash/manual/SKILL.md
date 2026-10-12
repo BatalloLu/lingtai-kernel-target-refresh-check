@@ -15,7 +15,6 @@ related_files:
 - src/lingtai/tools/bash/_tool_family.py
 - src/lingtai/tools/bash/CONTRACT.md
 - src/lingtai/tools/bash/ANATOMY.md
-- tests/test_shell_settings.py
 - src/lingtai/tools/bash/manual/reference/async-jobs/SKILL.md
 - src/lingtai/tools/bash/manual/reference/scheduled-work/SKILL.md
 - src/lingtai/tools/bash/manual/reference/notification-reminders/SKILL.md

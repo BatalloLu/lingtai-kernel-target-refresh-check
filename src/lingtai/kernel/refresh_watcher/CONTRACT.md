@@ -32,8 +32,6 @@ related_files:
   - tests/_refresh_watcher_helpers.py
   - tests/test_perform_refresh_handshake.py
   - tests/test_process_match.py
-  - tests/test_deep_refresh.py
-  - tests/test_refresh_watcher_process.py
 maintenance: |
   <!-- CANONICAL-MAINTENANCE v2 BEGIN -->
   This component contract is governed by the root CONTRACT.md. Keep
@@ -49,6 +47,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Refresh Watcher
 
 ## Purpose
@@ -303,8 +303,8 @@ same matcher import and not embed a second matcher implementation.
 
 The existing handshake, request-wire, entrypoint, matcher, redaction, and
 permanent-alert tests remain the behavior evidence in
-`tests/test_perform_refresh_handshake.py`, `tests/test_deep_refresh.py`, and
-`tests/test_process_match.py`. `tests/test_refresh_watcher_process.py` runs the
+`tests/test_perform_refresh_handshake.py`, `retired-test:test_deep_refresh`, and
+`tests/test_process_match.py`. `retired-test:test_refresh_watcher_process` runs the
 rendered Core policy with a small fake process mechanism and asserts policy
 selection of observation, liveness, launch, graceful stop, and forced stop
 without source-keyword scanning. The real POSIX `-m` smoke remains the evidence

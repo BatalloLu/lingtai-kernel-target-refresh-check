@@ -33,19 +33,17 @@ related_files:
   - src/lingtai/adapters/posix/bash_state_lock.py
   - src/lingtai/tools/bash/ANATOMY.md
   - src/lingtai/tools/bash/manual/SKILL.md
-  - tests/test_shell_tool_plugin_declaration.py
-  - tests/test_shell_settings.py
-  - tests/test_execution_workspace.py
   - src/lingtai/tools/daemon/execution_host.py
   - src/lingtai/tools/daemon/shell_prompt_events.py
   - src/lingtai/tools/daemon/CONTRACT.md
-  - tests/test_daemon_shell_prompt_events.py
   - tests/test_daemon_detached_supervisor.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. If behavior and this
   contract disagree, the code is the source of truth — fix the contract in the
   same change and bump contract_version on breaking contract edits.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Shell capability contract
 
@@ -478,24 +476,24 @@ for cancellation correctness.
 
 | Claim | Source | Test |
 |---|---|---|
-| Async `run` returns a `job_id` + `pid` immediately | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_async_run_returns_job_id_and_pid` |
-| `poll` returns `running` then `done` with captured output | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_poll_returns_running`, `::test_poll_returns_done_with_output` |
-| `cancel` kills the process (group) and reports `cancelled` | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_cancel_kills_process` |
-| Nonzero exit is flagged failed with a `warning`, `status` stays `ok`/`done` | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_nonzero_exit_is_flagged_failed_with_warning`, `::test_poll_nonzero_exit_is_flagged_failed` |
-| A missing-module / traceback signature is detected in output | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_missing_module_is_detected` |
-| Warning-tail redaction fails open when the redactor is unavailable | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_fail_open_returns_input_when_redactor_unavailable` |
-| Allowlist mode permits only listed commands; denylist blocks listed ones | `src/lingtai/tools/bash/__init__.py` | `tests/test_layers_bash.py::test_allow_only`, `::test_deny_only`, `::test_pipe_awareness` |
-| Policy is enforced on async runs too | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_policy_applies_to_async` |
-| Neutral process refs are strict/JSON-safe, unknown identity is never same, and the POSIX adapter owns spawn plus exact wait | `src/lingtai/tools/bash/_async_process.py`, `src/lingtai/adapters/posix/bash_process.py` | `tests/test_bash_async_process_contract.py` |
-| Manager policy consumes neutral refs before v3 compatibility fields and refuses unverifiable cancellation | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_running_result_prefers_neutral_command_ref_over_legacy_fields`, `::test_cancel_refuses_unverifiable_neutral_supervisor_ref` |
-| Async `reminder` defaults to 1800 for omitted direct calls while schema marks it required | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_schema_requires_reminder_with_runtime_default` |
-| Last-resort deadlines are measured from successful async return, and a bounded durable handoff blocks both pre-adapter-spawn and durable-`running` pre-return publication windows while retaining crash fallback | `src/lingtai/tools/bash/__init__.py`, `_async_supervisor.py` | `tests/test_bash_async.py::test_reminder_deadline_starts_at_successful_async_return`, `::test_return_handoff_blocks_fallback_while_parent_popen_is_delayed`, `::test_return_handoff_blocks_fallback_after_running_before_return_arm`, `::test_owner_resuming_after_handoff_expiry_cannot_report_start_success`, `::test_stale_pre_return_reminder_timer_defers_to_latest_deadline` |
-| Supervisor terminal truth, bounded start-lease recovery, parent-reaper/fresh-manager handling of an actual preclaim supervisor exit, PID identity refusal, and sink-idempotent completion wake survive manager loss | `src/lingtai/tools/bash/_async_supervisor.py`, `__init__.py` | `tests/test_bash_async.py::TestBashAsyncRelaunchDurability`, `::test_owned_parent_reaps_actual_supervisor_exit_before_start_claim`, `::test_fresh_manager_recovers_actual_preclaim_exit_after_owner_loss`, `::test_legacy_live_pid_remains_running_and_uncancellable` |
-| Reminder validation rejects non-finite and backend-unsafe delays | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_async_reminder_rejects_invalid_values` |
-| Deadline claim, bounded cancellation suppression/recovery, and terminal handling have deterministic lock-owned ordering | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_terminal_pop_before_deadline_claim_suppresses_reminder`, `::test_deadline_claim_before_terminal_pop_publishes_once`, `::test_expired_suppressing_reminder_recovers_after_manager_crash` |
-| Direct-manager fallback appends remain multi-event safe across managers | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_async.py::test_direct_manager_fallback_is_serialized_by_shared_store` |
-| `yolo=True` allows all commands and the registered public identity is `shell` | `src/lingtai/tools/bash/__init__.py` | `tests/test_layers_bash.py::test_add_capability_bash_yolo`, `tests/test_shell_pr1_contract.py::test_setup_registers_shell_and_advertises_selected_dialect` |
-| Omitted Shell config is yolo on every route; explicit `yolo=false`/`policy_file` stay restrictive and `yolo=true` wins | `src/lingtai/tools/bash/_tool_family.py` | `tests/test_shell_tool_plugin_declaration.py::test_shell_binding_resolves_one_default_policy_rule`, `::test_default_shell_is_permissive_on_every_composition_route` |
+| Async `run` returns a `job_id` + `pid` immediately | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_async_run_returns_job_id_and_pid` |
+| `poll` returns `running` then `done` with captured output | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_poll_returns_running`, `::test_poll_returns_done_with_output` |
+| `cancel` kills the process (group) and reports `cancelled` | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_cancel_kills_process` |
+| Nonzero exit is flagged failed with a `warning`, `status` stays `ok`/`done` | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_nonzero_exit_is_flagged_failed_with_warning`, `::test_poll_nonzero_exit_is_flagged_failed` |
+| A missing-module / traceback signature is detected in output | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_missing_module_is_detected` |
+| Warning-tail redaction fails open when the redactor is unavailable | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_fail_open_returns_input_when_redactor_unavailable` |
+| Allowlist mode permits only listed commands; denylist blocks listed ones | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_layers_bash::test_allow_only`, `::test_deny_only`, `::test_pipe_awareness` |
+| Policy is enforced on async runs too | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_policy_applies_to_async` |
+| Neutral process refs are strict/JSON-safe, unknown identity is never same, and the POSIX adapter owns spawn plus exact wait | `src/lingtai/tools/bash/_async_process.py`, `src/lingtai/adapters/posix/bash_process.py` | `retired-test:test_bash_async_process_contract` |
+| Manager policy consumes neutral refs before v3 compatibility fields and refuses unverifiable cancellation | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_running_result_prefers_neutral_command_ref_over_legacy_fields`, `::test_cancel_refuses_unverifiable_neutral_supervisor_ref` |
+| Async `reminder` defaults to 1800 for omitted direct calls while schema marks it required | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_schema_requires_reminder_with_runtime_default` |
+| Last-resort deadlines are measured from successful async return, and a bounded durable handoff blocks both pre-adapter-spawn and durable-`running` pre-return publication windows while retaining crash fallback | `src/lingtai/tools/bash/__init__.py`, `_async_supervisor.py` | `retired-test:test_bash_async::test_reminder_deadline_starts_at_successful_async_return`, `::test_return_handoff_blocks_fallback_while_parent_popen_is_delayed`, `::test_return_handoff_blocks_fallback_after_running_before_return_arm`, `::test_owner_resuming_after_handoff_expiry_cannot_report_start_success`, `::test_stale_pre_return_reminder_timer_defers_to_latest_deadline` |
+| Supervisor terminal truth, bounded start-lease recovery, parent-reaper/fresh-manager handling of an actual preclaim supervisor exit, PID identity refusal, and sink-idempotent completion wake survive manager loss | `src/lingtai/tools/bash/_async_supervisor.py`, `__init__.py` | `retired-test:test_bash_async::TestBashAsyncRelaunchDurability`, `::test_owned_parent_reaps_actual_supervisor_exit_before_start_claim`, `::test_fresh_manager_recovers_actual_preclaim_exit_after_owner_loss`, `::test_legacy_live_pid_remains_running_and_uncancellable` |
+| Reminder validation rejects non-finite and backend-unsafe delays | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_async_reminder_rejects_invalid_values` |
+| Deadline claim, bounded cancellation suppression/recovery, and terminal handling have deterministic lock-owned ordering | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_terminal_pop_before_deadline_claim_suppresses_reminder`, `::test_deadline_claim_before_terminal_pop_publishes_once`, `::test_expired_suppressing_reminder_recovers_after_manager_crash` |
+| Direct-manager fallback appends remain multi-event safe across managers | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_bash_async::test_direct_manager_fallback_is_serialized_by_shared_store` |
+| `yolo=True` allows all commands and the registered public identity is `shell` | `src/lingtai/tools/bash/__init__.py` | `retired-test:test_layers_bash::test_add_capability_bash_yolo`, `tests/test_shell_pr1_contract.py::test_setup_registers_shell_and_advertises_selected_dialect` |
+| Omitted Shell config is yolo on every route; explicit `yolo=false`/`policy_file` stay restrictive and `yolo=true` wins | `src/lingtai/tools/bash/_tool_family.py` | `retired-test:test_shell_tool_plugin_declaration::test_shell_binding_resolves_one_default_policy_rule`, `::test_default_shell_is_permissive_on_every_composition_route` |
 | PowerShell argv/dialect policy and Windows selector composition stay behind shared Ports | `src/lingtai/adapters/windows/` and `src/lingtai/adapters/shell*.py` | `tests/test_shell_pr1_contract.py` (native Windows execution remains a separate acceptance gate) |
 | Sync `run.timeout` above the hard ceiling (`LINGTAI_TOOL_TIMEOUT_MAX_SECONDS`, default 120, floored at 30) is refused and steered to `async=true` | `src/lingtai/tools/bash/__init__.py`, `_tool_family.py` | `tests/test_bash_shell_dialect.py::test_sync_run_refuses_timeout_above_cap`, `::test_sync_run_accepts_timeout_at_cap`, `::test_sync_run_cap_follows_env_override`, `::test_cap_below_default_is_floored_at_default` |
 | Every sync timeout result carries the async steering guidance | `src/lingtai/tools/bash/__init__.py` | `tests/test_bash_shell_dialect.py::test_timeout_error_with_output_also_appends_guidance`, `::test_sync_timeout_with_captured_output_includes_guidance` |
@@ -504,17 +502,18 @@ for cancellation correctness.
 
 | Invariant | Automated test | Manual check | Risk if broken |
 |---|---|---|---|
-| Async job lifecycle (start/poll/cancel) is correct | `tests/test_bash_async.py` | Run a `sleep 30` async job, poll it, then cancel it | Orphaned processes / zombies; agent cannot stop background work |
-| Async reminder does not overwrite a sibling reminder | `tests/test_bash_async.py::test_async_reminder_does_not_overwrite_close_due_jobs` | Start two async `sleep` jobs with short reminders and inspect `.notification/system.json` | Close-due fallback reminders are lost instead of being preserved as separate system events |
-| Cancel kills the whole process group | `tests/test_bash_async.py::test_cancel_kills_process` | Start a job that forks children, cancel it, confirm all die | Runaway child processes survive cancellation |
-| Policy allow/deny (incl. pipes/chains) is enforced | `tests/test_layers_bash.py` | Configure an allowlist, try a denied command, confirm refusal | Sandbox escape via unlisted or piped commands |
-| Inner command failure is surfaced despite `status: ok` | `tests/test_bash_async.py::test_nonzero_exit_is_flagged_failed_with_warning` | Run `python -c 'import nope'`, confirm `ok=false` + `warning` | Agents proceed on silent inner failures |
-| `working_dir` stays inside the agent sandbox | `tests/test_layers_bash.py` | Pass an outside path as `working_dir`, confirm error | Commands escape the agent working directory |
+| Async job lifecycle (start/poll/cancel) is correct | `retired-test:test_bash_async` | Run a `sleep 30` async job, poll it, then cancel it | Orphaned processes / zombies; agent cannot stop background work |
+| Async reminder does not overwrite a sibling reminder | `retired-test:test_bash_async::test_async_reminder_does_not_overwrite_close_due_jobs` | Start two async `sleep` jobs with short reminders and inspect `.notification/system.json` | Close-due fallback reminders are lost instead of being preserved as separate system events |
+| Cancel kills the whole process group | `retired-test:test_bash_async::test_cancel_kills_process` | Start a job that forks children, cancel it, confirm all die | Runaway child processes survive cancellation |
+| Policy allow/deny (incl. pipes/chains) is enforced | `retired-test:test_layers_bash` | Configure an allowlist, try a denied command, confirm refusal | Sandbox escape via unlisted or piped commands |
+| Inner command failure is surfaced despite `status: ok` | `retired-test:test_bash_async::test_nonzero_exit_is_flagged_failed_with_warning` | Run `python -c 'import nope'`, confirm `ok=false` + `warning` | Agents proceed on silent inner failures |
+| `working_dir` stays inside the agent sandbox | `retired-test:test_layers_bash` | Pass an outside path as `working_dir`, confirm error | Commands escape the agent working directory |
 
 Run before merging bash changes:
 
-```bash
-python -m pytest tests/test_bash_async.py tests/test_bash_async_process_contract.py tests/test_bash_shell_dialect.py tests/test_layers_bash.py -q
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_bash_async, test_bash_async_process_contract, test_layers_bash.
 ```
 
 ## Schema and glossary ownership

@@ -26,8 +26,6 @@ related_files:
 - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
 - src/lingtai/mcp_servers/telegram/reference/rate-limits/SKILL.md
 - src/lingtai/tools/task_card/manual/SKILL.md
-- tests/test_telegram_structured_rendering.py
-- tests/test_telegram_settings.py
 - ENVIRONMENT_VARIABLES.md
 maintenance: |
   Tracks the MCP server's manager/config/settings behavior; update when setup,

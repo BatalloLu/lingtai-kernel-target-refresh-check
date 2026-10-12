@@ -4,8 +4,6 @@ contract_version: 1
 root_contract: CONTRACT.md
 related_files:
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
-  - tests/test_lifecycle_clock.py
-  - tests/test_auto_molt_notification.py
   - src/lingtai/tools/context/manual/SKILL.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
   - src/lingtai/tools/system/CONTRACT.md
@@ -14,7 +12,6 @@ related_files:
   - src/lingtai/kernel/config.py
   - src/lingtai/kernel/meta_block.py
   - ENVIRONMENT_VARIABLES.md
-  - tests/test_meta_block.py
   - src/lingtai/kernel/base_agent/__init__.py
   - src/lingtai/kernel/base_agent/lifecycle.py
   - src/lingtai/kernel/base_agent/turn.py
@@ -29,25 +26,13 @@ related_files:
   - src/lingtai/adapters/tool_plugin_host.py
   - src/lingtai/tools/system/karma.py
   - tests/test_aed_recovery.py
-  - tests/test_notification_sync.py
   - tests/test_tc_wake.py
   - tests/test_pre_request_hook.py
   - src/lingtai/tools/notification/CONTRACT.md
-  - tests/test_notification_one_shot.py
   - tests/test_cli_worker_poison_recovery.py
   - tests/test_worker_hang_aed_redo.py
-  - tests/test_silence_kill.py
-  - tests/test_system.py
-  - tests/test_system_declared_plugin.py
-  - tests/test_karma.py
   - tests/test_perform_refresh_handshake.py
   - tests/test_tool_result_restore_after_continuation_failure.py
-  - tests/test_correlated_turns.py
-  - tests/test_execution_workspace.py
-  - tests/test_turn_events.py
-  - tests/test_turn_permissions.py
-  - tests/test_provider_admission.py
-  - tests/test_acp_stdio.py
   - src/lingtai/kernel/process_match.py
   - src/lingtai/kernel/process_scan.py
   - src/lingtai/adapters/posix/process_scan.py
@@ -66,11 +51,9 @@ related_files:
   - tests/test_agent.py
   - tests/test_lifecycle_daemon_shutdown.py
   - tests/test_lingtai_facade.py
-  - tests/test_system_sleep_alarm.py
   - tests/test_process_scan.py
   - tests/test_process_match.py
   - tests/test_windows_import_graph.py
-  - tests/test_cli.py
 maintenance: |
   <!-- CANONICAL-MAINTENANCE v2 BEGIN -->
   This component contract is governed by the root CONTRACT.md. Keep
@@ -86,6 +69,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Agent Runtime
 
 Stable entry: `lingtai.kernel.agent-runtime.v1`.
@@ -682,19 +667,19 @@ command lines and doctor parity), `tests/test_process_scan.py` (scan Port,
 platform selector, CLI stop signals, CPR spawn kwargs, and the Windows
 scan→guard wiring), `tests/test_windows_import_graph.py` (the boot-path import
 graph survives missing POSIX mechanisms — the construction-gate proof), and
-`tests/test_cli.py` (duplicate-guard policy), and
+`retired-test:test_cli` (duplicate-guard policy), and
 `tests/test_aed_recovery.py` (partial-output/exhausted provider-recovery
 terminal guards plus fresh-dequeue latch reset and merge-race survival),
 `tests/test_tool_result_restore_after_continuation_failure.py` (preset-latch
 non-dispatch/no-continuation with latch retention),
-`tests/test_notification_sync.py` (ASLEEP notification wake retention, and
+`retired-test:test_notification_sync` (ASLEEP notification wake retention, and
 the poison-recovery boot baseline that keeps a relaunch ASLEEP until a
 genuinely later notification change), `tests/test_cli_worker_poison_recovery.py`
 (hard exit after poison, and no refresh-success kick-start while a worker
-recovery is pending), `tests/test_silence_kill.py` (idempotent private producer),
-`tests/test_auto_molt_notification.py` (inactivity-period continuity, one-shot
+recovery is pending), `retired-test:test_silence_kill` (idempotent private producer),
+`retired-test:test_auto_molt_notification` (inactivity-period continuity, one-shot
 reminder, retry, real heartbeat wiring, ASLEEP wake),
-`tests/test_system.py` + `tests/test_system_declared_plugin.py` (direct and
+`retired-test:test_system` + `tests/test_system_declared_plugin.py` (direct and
 official self-sleep ordering), and `tests/test_karma.py` +
 `tests/test_perform_refresh_handshake.py` (signal-file and watcher-spawn
 producer ordering). The

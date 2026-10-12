@@ -15,7 +15,6 @@ related_files:
   - src/lingtai/kernel/agent_presence/CONTRACT.md
   - docs/references/lifecycle-clock.md
   - tests/_lifecycle_clock_helpers.py
-  - tests/test_lifecycle_clock.py
   - tests/test_snapshot.py
   - tests/test_agent_presence.py
   - tests/test_architecture_documents.py
@@ -33,6 +32,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Lifecycle Clock
 
 ## Purpose
@@ -152,7 +153,7 @@ to prove substitutability. Core never imports the adapter package.
 
 ## Contract tests
 
-`tests/test_lifecycle_clock.py` proves the Port exposes exactly the two abstract
+`retired-test:test_lifecycle_clock` proves the Port exposes exactly the two abstract
 methods with no concrete-technology imports; the production adapter forwards wall
 and monotonic sources independently and returns the unmodified floats; the fake is
 substitutable and advances wall independently from monotonic; a bare `BaseAgent`

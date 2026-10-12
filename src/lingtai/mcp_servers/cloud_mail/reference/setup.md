@@ -8,8 +8,6 @@ related_files:
 - src/lingtai/mcp_servers/cloud_mail/manager.py
 - src/lingtai/mcp_servers/cloud_mail/server.py
 - src/lingtai/mcp_servers/cloud_mail/settings.py
-- tests/test_cloud_mail_addon.py
-- tests/test_cloud_mail_toolfamily_ltpv2.py
 maintenance: |
   Tracks Cloud Mail configuration, authentication, polling/watermark state, and
   startup/settings diagnosis; update it with the server, manager, client,

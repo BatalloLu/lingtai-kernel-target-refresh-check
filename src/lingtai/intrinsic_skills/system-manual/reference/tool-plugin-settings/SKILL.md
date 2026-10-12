@@ -14,12 +14,13 @@ related_files:
   - src/lingtai/tools/tool_family/settings.py
   - src/lingtai/mcp_servers/ANATOMY.md
   - src/lingtai/mcp_servers/_plugin.py
-  - tests/test_tool_settings_contract.py
 maintenance: |
   Keep this provider guide aligned with the ToolFamily SHOW seam and its
   focused tests; each future provider's meaning and change procedure belong in
   that family's own manual.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # ToolFamily settings SHOW reference
 
 Use this for one bounded family-owner change at a time. Production families opt
@@ -65,6 +66,6 @@ UTF-8 bytes; oversize output becomes one fixed no-row failure.
 
 ## Verify
 
-Run `tests/test_tool_settings_contract.py` plus the opted-in family's real
+Run `retired-test:test_tool_settings_contract` plus the opted-in family's real
 schema/dispatch/manual tests, and confirm all unrelated declarations remain
 opted out.

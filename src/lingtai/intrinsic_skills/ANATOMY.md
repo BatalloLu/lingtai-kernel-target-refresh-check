@@ -37,10 +37,6 @@ related_files:
   - src/lingtai/intrinsic_skills/system-manual/reference/sqlite-log-query/scripts/event_summary.py
   - src/lingtai/intrinsic_skills/system-manual/reference/substrate-manual/SKILL.md
   - src/lingtai/intrinsic_skills/system-manual/reference/trajectory-mining/SKILL.md
-  - tests/test_intrinsic_manual_actions.py
-  - tests/test_lingtai_doctor.py
-  - tests/test_move_project.py
-  - tests/test_override_intrinsic.py
   - src/lingtai/intrinsic_skills/system-manual/reference/external-attach-diagnostic/SKILL.md
   - src/lingtai/intrinsic_skills/system-manual/reference/external-attach-diagnostic/scripts/external_attach_diagnostic.py
 maintenance: |
@@ -56,6 +52,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # src/lingtai/intrinsic_skills/
 
 Kernel-shipped skill bundles that are **not** tied to a specific tool package.
@@ -80,12 +78,12 @@ code under `tools/` (`src/lingtai/intrinsic_skills/__init__.py:1-9`).
   (`src/lingtai/intrinsic_skills/system-manual/reference/migration-guide/scripts/change_name.py:563-974`);
   `src/lingtai/cli.py:242-266` owns
   its early incomplete-target launch gate, with unit/CLI/real-process evidence
-  in `tests/test_how_to_change_name.py:501-579`, `tests/test_cli.py:843-876`, and
+  in `retired-test:test_how_to_change_name`, `retired-test:test_cli`, and
   `tests/test_how_to_change_name_e2e.py:88-224`. The migration guide owns the
   procedure and acceptance boundary. The Project-root helper retains
   its root lifecycle and temporary-process proofs in
   `src/lingtai/intrinsic_skills/system-manual/reference/migration-guide/scripts/move_project.py:1-704`
-  and `tests/test_move_project.py:1-864`; sqlite-log-query ships `scripts/event_summary.py`. This bundle remains the
+  and `retired-test:test_move_project`; sqlite-log-query ships `scripts/event_summary.py`. This bundle remains the
   canonical System operational manual: the declared official `system` family
   derives its reserved `manual` child from `DECLARATION.manual ==
   "system-manual"` (`src/lingtai/tools/system/__init__.py`), and no second

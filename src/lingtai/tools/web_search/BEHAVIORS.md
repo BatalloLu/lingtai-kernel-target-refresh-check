@@ -11,8 +11,6 @@ related_files:
   - src/lingtai/tools/web_search/settings.py
   - src/lingtai/tools/web_search/manual/SKILL.md
   - src/lingtai/tools/CONTRACT.md
-  - tests/test_web_canonical_provider_routing.py
-  - tests/test_web_settings_action.py
 maintenance: |
   LABT v2, migrated 2026-08 from tests/test_web_canonical_provider_routing.py
   (previously filed as C003/C004 under src/lingtai/tools/telegram/BEHAVIORS.md;
@@ -24,6 +22,8 @@ maintenance: |
   Update the matching LABT here in the same change as the contract clause; keep
   the paired ANATOMY.md reciprocal.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Web Search Behavior Tests
 
 LABT v2. Self-contained agent-executable behavioral tests for the `web`
@@ -100,7 +100,7 @@ PASS when error codes, fallback engine, secrets-free results, link_ref, and brow
 - **title**: web settings exposes truthful live facts without mutation
 - **guards**: `web` § Settings ownership ([CONTRACT.md](CONTRACT.md#settings-ownership))
 - **runner**: any LingTai agent with the `web` tool
-- **prerequisites**: isolated workdir and process environment; admitted recording search services; no network; `tests/test_web_settings_action.py` is the bottom assertion.
+- **prerequisites**: isolated workdir and process environment; admitted recording search services; no network; `retired-test:test_web_settings_action` is the bottom assertion.
 - **estimate**: 15 minutes
 
 ### Steps

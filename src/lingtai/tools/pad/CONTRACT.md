@@ -12,15 +12,14 @@ related_files:
   - src/lingtai/tools/tool_family/CONTRACT.md
   - src/lingtai/tools/context/CONTRACT.md
   - src/lingtai/intrinsic_skills/pad-manual/SKILL.md
-  - tests/test_context_ownership_redesign.py
-  - tests/test_pad_lingtai_split.py
-  - tests/test_pad.py
 maintenance: |
   This component contract is governed by root CONTRACT.md. Keep the paired
   ANATOMY.md, manual, schemas, results, glossary resources, and focused tests in
   sync. Bump contract_version for breaking public changes. Version 2 removes
   public edit/load and makes append persistence explicitly non-hot-loading.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Pad capability contract
 
@@ -91,9 +90,9 @@ is mutated only through `shell` — there is no Pad-owned body writer. The promp
 
 Focused evidence:
 
-```bash
-python -m pytest -q tests/test_context_ownership_redesign.py \
-  tests/test_pad_lingtai_split.py tests/test_pad.py
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_context_ownership_redesign, test_pad, test_pad_lingtai_split.
 ```
 
 These tests pin the exact action set, strict retirement, no-hot-load file and

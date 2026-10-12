@@ -23,14 +23,7 @@ related_files:
   - src/lingtai/intrinsic_skills/psyche-manual/SKILL.md
   - src/lingtai/intrinsic_skills/psyche-manual/reference/settings/SKILL.md
   - src/lingtai/intrinsic_skills/psyche-manual/reference/network-rules/SKILL.md
-  - tests/test_psyche_family.py
-  - tests/test_psyche_prompt_settings.py
-  - tests/test_deep_refresh.py
   - tests/test_project_creation.py
-  - tests/test_tool_family_avatar_migration.py
-  - tests/test_context_ownership_redesign.py
-  - tests/test_tool_family_context_migration.py
-  - tests/test_tool_settings_contract.py
 maintenance: |
   This component contract is governed by the root CONTRACT.md and owns the one
   public `psyche` root. Keep the paired ANATOMY.md, the psyche-manual
@@ -41,6 +34,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing and ownership rules, report
   mismatches, and do not duplicate or auto-fix the rule here.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Psyche tool contract
 
 ## Purpose
@@ -276,8 +271,9 @@ Neither the binder nor settings provider receives an Agent.
 
 ## Contract tests
 
-```bash
-python -m pytest -q tests/test_psyche_family.py tests/test_psyche_prompt_settings.py
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_psyche_family, test_psyche_prompt_settings.
 ```
 
 These pin the exact eight-action inventory and order; strict-empty input on every

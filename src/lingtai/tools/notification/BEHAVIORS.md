@@ -12,7 +12,6 @@ related_files:
   - src/lingtai/tools/notification/settings.py
   - src/lingtai/kernel/notifications.py
   - tests/test_daemon_attention_delay.py
-  - tests/test_notification_settings.py
 maintenance: |
   Created during the every-contract-needs-behaviors sweep. Keep this file
   reciprocal with CONTRACT.md and ANATOMY.md (tridirectional loop): when a
@@ -25,6 +24,8 @@ maintenance: |
   clause or `coherent_attention_read`'s daemon mask changes.
   N005 guards the read-only five-field Notification settings projection.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Notification Tool Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -43,7 +44,7 @@ project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_notification_tool.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `notification(action="manual", input={}, reasoning="probe")` and record the result; hash `.notification/` before and after.
 3. Call `notification(action="check", input={}, reasoning="probe")` and confirm it reports current channel state without mutating it.
 4. Publish an event to an unregistered channel (e.g. write `.notification/unregistered.json`) and confirm a `blocked_channel:<channel>` system event is emitted.
@@ -139,7 +140,7 @@ Pass when all evidence is observed and no forbidden side effect occurs. Fail if 
 - **estimate**: ≈ 2 minutes
 
 ### Steps
-1. Run `python -m pytest -q tests/test_notification_settings.py` from `<repo>`.
+1. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** from `<repo>`.
 2. Call `notification(action="settings", input={}, reasoning="inventory")`.
 3. Confirm each `comment` resolves to the named heading in the installed Notification manual.
 4. Call ordinary `notification(action="check", input={}, reasoning="non-regression")`.

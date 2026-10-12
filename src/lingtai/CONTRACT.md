@@ -9,7 +9,6 @@ related_files:
   - src/lingtai/init_schema.py
   - src/lingtai/llm/openai/codex_usage.py
   - src/lingtai/llm/openai/adapter.py
-  - tests/test_codex_credits.py
   - src/lingtai/intrinsic_skills/system-manual/reference/llm-adapters/SKILL.md
   - src/lingtai/kernel/config_resolve.py
   - src/lingtai/cli.py
@@ -27,14 +26,6 @@ related_files:
   - src/lingtai/intrinsic_skills/system-manual/reference/substrate-manual/SKILL.md
   - ENVIRONMENT_VARIABLES.md
   - tests/test_init_reader.py
-  - tests/test_cli.py
-  - tests/test_deep_refresh.py
-  - tests/test_nudge_inline_cap.py
-  - tests/test_agent_config_hydration.py
-  - tests/test_init_schema.py
-  - tests/test_psyche_prompt_settings.py
-  - tests/test_preset_materialization.py
-  - tests/test_presets.py
 maintenance: |
   Keep related_files complete and repo-relative: the paired ANATOMY.md, the
   canonical init.jsonc, real reader/writer/validator code, affected composition
@@ -44,6 +35,8 @@ maintenance: |
   disagree, fail loud and repair the implementation or obtain an authorized
   contract change; never hide the mismatch by weakening the promise.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Init reader
 
 ## Purpose
@@ -147,7 +140,7 @@ Guarded by: [K001](kernel/BEHAVIORS.md#behavior-k001), [K002](kernel/BEHAVIORS.m
    declared Nudge kind, and is therefore not part of Nudge dispatch/docs.
    Updating an existing kind preserves its first position; only new kinds
    append. Identical findings leave the transport payload and publication time
-   unchanged (guarded by `tests/test_nudge_policy.py`).
+   unchanged (guarded by `retired-test:test_nudge_policy`).
 7. Every declared Nudge kind is additionally bound by the shared
    `nudge.upsert` hard inline cap: the fully assembled entry (producer body
    plus `kind` and the policy fields from rule 6) may be at most
@@ -226,7 +219,7 @@ outcomes, ignored-path reporting, structured parse/validation failure evidence,
 secret-redacted effective-manifest use, and the no-auto-mutation invariant.
 Focused Nudge tests prove defaults, invalid-value fallback, self-describing
 messages, global suppression, and dismiss/repeat semantics.
-`tests/test_nudge_inline_cap.py` proves the exact 10,000/10,001-char boundary,
+`retired-test:test_nudge_inline_cap` proves the exact 10,000/10,001-char boundary,
 Unicode character-vs-byte counting, exact sidecar content/hash/path/
 permissions under `tmp/nudge-findings/`, directory-permission enforcement even
 when the directory pre-existed with looser permissions, stable
@@ -236,9 +229,9 @@ cap-bookkeeping leakage into an ordinary uncapped entry, fail-loud
 `.notification/nudge.json` or `.notification/.nudge_state.json`) both when
 the sidecar write fails and when `kind` is oversized or escape-heavy, and
 dismissal/repeat semantics for a capped finding.
-`tests/test_init_schema.py`, `tests/test_presets.py`,
-`tests/test_agent_config_hydration.py`, and
-`tests/test_preset_materialization.py` prove removed-provider rejection
+`retired-test:test_init_schema`, `retired-test:test_presets`,
+`retired-test:test_agent_config_hydration`, and
+`retired-test:test_preset_materialization` prove removed-provider rejection
 (LLM and capability routes), the standard `thinking`/`service_tier`/`wire_api`
 values and scopes, legacy-ignored keys, `disable` element typing, and the
 distinct `openai`/`codex` omission defaults through real config and session

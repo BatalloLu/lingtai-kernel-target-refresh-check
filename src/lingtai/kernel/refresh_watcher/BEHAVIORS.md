@@ -10,7 +10,6 @@ related_files:
   - src/lingtai/kernel/refresh_watcher/__init__.py
   - src/lingtai/kernel/refresh_watcher/watcher_program.py
   - tests/test_perform_refresh_handshake.py
-  - tests/test_refresh_watcher_process.py
   - tests/test_refresh_watcher_lease_probe.py
 maintenance: |
   Created during the every-contract-needs-behaviors sweep. Keep this file
@@ -18,6 +17,8 @@ maintenance: |
   refresh-watcher behavior clause changes, update the guarding LABT here in the
   same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Refresh Watcher Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -37,7 +38,7 @@ run from the repo root with the project's Python.
 
 ### Steps
 1. From `<repo>`, run `python -m pytest tests/test_perform_refresh_handshake.py -q` and capture the outcome.
-2. Run `python -m pytest tests/test_refresh_watcher_process.py -q` and capture the outcome.
+2. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 3. In `<scratch>`, drive one `_perform_refresh` and count detached watcher spawns (via the injected `RefreshWatcherPort` fake); verify the frozen request carries only handshake paths, working directory, tuple command, identity fields JSON, and the env-overwrite policy bit.
 
 ### Expected evidence
@@ -59,7 +60,7 @@ Pass when the suites pass and the one-spawn/zero-spawn observations hold. Fail o
 - **motivation**: production incident 2026-08-19 (`spiritual-bliss-attractor/.lingtai/codex`) exhausted all 12 relaunch attempts. The health check slept `HEALTH_CHECK_WAIT` once and sampled `.agent.heartbeat` a single time — too early for an agent still spawning MCP stdio servers — and the loop retried immediately after SIGKILLing a duplicate that had not yet released the working directory, so every attempt collided again with `another lingtai agent is already running`.
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_refresh_watcher_process.py tests/test_perform_refresh_handshake.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Read the rendered policy (`render_watcher_script`) and confirm the post-relaunch health check is a bounded poll (`_await_fresh_heartbeat`, `HEALTH_CHECK_BUDGET`, `WATCHER_POLL_INTERVAL`) rather than one `time.sleep(HEALTH_CHECK_WAIT)` followed by a single heartbeat read.
 3. In `<scratch>`, run the rendered policy against a fake `PROCESS_MECHANISM` whose relaunch writes its first `.agent.heartbeat` later than `HEALTH_CHECK_WAIT` but inside `HEALTH_CHECK_BUDGET`; record the launch count and the `refresh_watcher_success` event.
 4. In `<scratch>`, run the rendered policy against a fake whose duplicate only leaves the process table some time after `force_stop`; record the timestamp of each `start_agent` call and of the duplicate's disappearance.
@@ -87,7 +88,7 @@ Pass when a heartbeat that arrives after `HEALTH_CHECK_WAIT` but inside `HEALTH_
 - **motivation**: production incident 2026-09-08 (Runyuan). A `WorkerStillRunningError` poisoned the interface, the CLI hard-exited via `os._exit` seconds after its last heartbeat and before `WorkdirLeasePort.release()`; the OS lease was gone but the `.agent.lock` pathname and a young heartbeat remained. The watcher trusted the pathname, logged `refresh_watcher_timeout phase=lock`, and left `.refresh.taken`, so the TUI showed `Refreshing` for hours; trusting the young heartbeat instead would have exited "already alive" without launching a child.
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_refresh_watcher_lease_probe.py tests/test_refresh_watcher_process.py tests/test_perform_refresh_handshake.py -q`.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Read `render_watcher_script` and confirm: the lock phase ends on a cleared pathname or a successful `WORKDIR_LEASE.acquire(0)`/`release` probe; `hb_baseline` is captured at lock release and `advanced_heartbeat_age` gates already-alive, success, and duplicate protection; `_settle_taken` runs on ACK/lock timeout, already-alive, success, permanent failure, and in the `try` handlers; `sys.exit` appears only inside `_exit`.
 
 ### Expected evidence

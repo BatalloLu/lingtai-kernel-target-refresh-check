@@ -15,8 +15,6 @@ related_files:
   - src/lingtai/tools/email/schema.py
   - src/lingtai/tools/email/_family_schema.py
   - src/lingtai/kernel/tool_plugin/ANATOMY.md
-  - tests/test_email_official_tool_plugin.py
-  - tests/test_email_settings.py
   - src/lingtai/tools/tool_family/ANATOMY.md
   - src/lingtai/tools/email/glossary-en.md
   - src/lingtai/tools/email/glossary-zh.md

@@ -17,9 +17,6 @@ related_files:
 - src/lingtai/mcp_servers/cloud_mail/settings.py
 - src/lingtai/mcp_servers/cloud_mail/reference/actions.md
 - src/lingtai/mcp_servers/cloud_mail/reference/setup.md
-- tests/test_cloud_mail_addon.py
-- tests/test_cloud_mail_curated_mcp_plugin.py
-- tests/test_cloud_mail_toolfamily_ltpv2.py
 maintenance: |
   Tracks the Cloud Mail MCP's resident action contract and its routed action and
   setup references. Update this router and the nested references when the

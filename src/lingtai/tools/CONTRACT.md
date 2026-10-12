@@ -21,7 +21,6 @@ related_files:
   - src/lingtai/tools/context/CONTRACT.md
   - src/lingtai/tools/context/__init__.py
   - src/lingtai/tools/context/manual/SKILL.md
-  - tests/test_soul_removed.py
   - src/lingtai/tools/skills/CONTRACT.md
   - src/lingtai/tools/skills/__init__.py
   - src/lingtai/tools/tool_family/CONTRACT.md
@@ -41,8 +40,7 @@ related_files:
   - src/lingtai/mcp_servers/telegram/plugin.py
   - src/lingtai/mcp_catalog.json
   - src/lingtai/services/plugin_registry.py
-  - tests/test_browser_capability.py
-  - tests/test_wire_tool_description.py
+  - tests/test_tool_executor.py
 maintenance: |
   This component contract is governed by the root CONTRACT.md and owns the
   LingTai Tool Protocol (LTP). Keep the paired tools Anatomy and cross-contract
@@ -72,6 +70,8 @@ maintenance: |
   outright (no filesystem family exists; durable filesystem changes go through
   `shell`) — do not reintroduce it here without a real slice.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # LingTai Tool Protocol (LTP)
 
 ## Purpose
@@ -631,30 +631,30 @@ non-goal for third-party-versus-third-party mounts.
   manager. Task Card's
   declaration binds only
   `workdir`/`shutdown`/`task_card_lifecycle`/`task_card_notifications`; its
-  focused suites (`tests/test_task_card_controller.py`,
-  `tests/test_task_card_notifications.py`, plus the Task Card cases in
-  `tests/test_tool_plugin_declaration.py`) prove one retained manager rebound
+  focused suites (`retired-test:test_task_card_controller`,
+  `retired-test:test_task_card_notifications`, plus the Task Card cases in
+  `retired-test:test_tool_plugin_declaration`) prove one retained manager rebound
   across refresh, post-bind persisted-watch resume, the package-owned manual,
   exact error/recovered/limit and reminder wire parity through the production
   five-operation notification adapter, and foreign source/channel/field
   refusal. Vision's declaration binds only
   `workdir`/`active_provider`/`configuration`; its focused suites
-  (`tests/test_tool_family_vision_migration.py`,
-  `tests/test_vision_capability.py`, `tests/test_inherit_fallback.py`, the
-  Vision case in `tests/test_tool_plugin_declaration.py`, and the strict
-  controlled-host manual proof in `tests/test_intrinsic_manual_actions.py`)
-  plus `tests/test_vision_settings.py` prove the five-action schema/dispatch
+  (`retired-test:test_tool_family_vision_migration`,
+  `retired-test:test_vision_capability`, `retired-test:test_inherit_fallback`, the
+  Vision case in `retired-test:test_tool_plugin_declaration`, and the strict
+  controlled-host manual proof in `retired-test:test_intrinsic_manual_actions`)
+  plus `retired-test:test_vision_settings` prove the five-action schema/dispatch
   and read-only settings surface, active-provider default
   routing, allowed-preset own-credential borrowing with no automatic
   provider/MCP fallback, `check`/`list`/`settings`/`manual` no-request
   boundaries, and the package-owned manual. Web's declaration binds only
   `workdir`/`web_runtime`/`provider_identity`; its focused suites
-  (`tests/test_web_official_plugin.py`, `tests/test_web_composition_port.py`,
-  the Web case in `tests/test_tool_plugin_declaration.py`, the strict
-  controlled-host manual proof in `tests/test_intrinsic_manual_actions.py`,
-  and the family-local `tests/test_web_canonical_provider_routing.py`,
-  `tests/test_web_output_spill.py`, `tests/test_web_search_capability.py`,
-  `tests/test_unified_web_capability.py`) prove the exact three-port grant,
+  (`retired-test:test_web_official_plugin`, `retired-test:test_web_composition_port`,
+  the Web case in `retired-test:test_tool_plugin_declaration`, the strict
+  controlled-host manual proof in `retired-test:test_intrinsic_manual_actions`,
+  and the family-local `retired-test:test_web_canonical_provider_routing`,
+  `retired-test:test_web_output_spill`, `retired-test:test_web_search_capability`,
+  `retired-test:test_unified_web_capability`) prove the exact three-port grant,
   the fail-closed typed `web_runtime` bind, the standard-table
   `provider_identity` label, one mount with the manager published back
   exactly once, idempotent refresh re-claim, the package-owned manual with
@@ -668,13 +668,13 @@ non-goal for third-party-versus-third-party mounts.
   declaration type, host ports, exact ordered reserved-name list, and fail-fast
   registrar; `src/lingtai/adapters/tool_plugin_host.py` is the one production
   adapter set; `src/lingtai/tools/mcp/__init__.py` is the base slice; and
-  `tests/test_tool_plugin_declaration.py` plus the generic helper are shared
+  `retired-test:test_tool_plugin_declaration` plus the generic helper are shared
   evidence. Plugin's declaration binds only
   `workdir`/`prompt_section`/`plugin_catalog`; its focused suite
-  (`tests/test_plugin_tool.py`) proves the read-only action boundary, the
+  (`retired-test:test_plugin_tool`) proves the read-only action boundary, the
   protected-field skill projection, the closed vanilla-skills namespace, and the
   detached per-read catalog projection, while
-  `tests/test_tool_plugin_declaration.py` proves its one mount, its real
+  `retired-test:test_tool_plugin_declaration` proves its one mount, its real
   `info`/`settings`/`manual` dispatch, and that a standard-table port stays
   unreachable for a declaration that did not name it. MCP public behavior
   remains guarded by its
@@ -1078,10 +1078,10 @@ neither creates a live avatar nor mutates anything outside its own temporary
 tree; `tests/test_avatar_rules.py` separately covers the retired `rules`
 action's absence and the removed post-spawn fan-out (contract_version 9).
 
-`context`'s evidence (`tests/test_tool_family_context_migration.py`,
-plus the updated `tests/test_context.py`, `tests/test_pad.py`,
-`tests/test_eigen.py`, `tests/test_session_journal_gate.py`, and
-`tests/test_intrinsic_manual_actions.py`) is likewise one family's local
+`context`'s evidence (`retired-test:test_tool_family_context_migration`,
+plus the updated `retired-test:test_context`, `retired-test:test_pad`,
+`tests/test_eigen.py`, `retired-test:test_session_journal_gate`, and
+`retired-test:test_intrinsic_manual_actions`) is likewise one family's local
 evidence, chosen for a risk profile no earlier migration had: the irreversible
 molt plus the record/apply pair that rewrites what the provider actually sees.
 It covers the exact four-action inventory (`molt | summarize | rebuild |
@@ -1094,7 +1094,7 @@ journal gate refusing before any shed, a full successful molt lifecycle in a
 disposable workdir, the synthesized system-forced pair carrying the current
 envelope, and the reserved `manual` child's no-double-wrap result.
 
-`tests/test_soul_removed.py` is the negative evidence for the removed `soul`
+`retired-test:test_soul_removed` is the negative evidence for the removed `soul`
 family: no reserved name, port, adapter, intrinsic, config field, catalog
 string, or notification channel remains, while an older agent's
 `manifest.soul`, leftover `.notification/soul.json`/`btw.json` files,
@@ -1103,9 +1103,9 @@ readable, untouched, and unexecuted.
 
 `task_card` is a migrated intrinsic family as well, but with a narrower
 producer-first boundary than the channel adapters that may consume it. Its local
-evidence (`tests/test_task_card_controller.py`,
-`tests/test_telegram_toolfamily_ltpv2.py`,
-`tests/test_telegram_task_card_programmable.py`) covers the closed family root,
+evidence (`retired-test:test_task_card_controller`,
+`retired-test:test_telegram_toolfamily_ltpv2`,
+`retired-test:test_telegram_task_card_programmable`) covers the closed family root,
 the exact agent-local file contract, activation/deactivation ordering, and the
 fact that transport-specific projection semantics belong to the consuming
 adapter rather than the intrinsic producer.

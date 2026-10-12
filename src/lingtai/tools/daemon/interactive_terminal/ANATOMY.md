@@ -10,8 +10,6 @@ related_files:
   - src/lingtai/tools/daemon/__init__.py
   - src/lingtai/tools/daemon/ANATOMY.md
   - src/lingtai/tools/daemon/CONTRACT.md
-  - tests/test_interactive_terminal_port.py
-  - tests/test_daemon_claude_interactive_backend.py
   - tests/test_lifecycle_daemon_shutdown.py
 maintenance: |
   Keep related_files repo-relative and bidirectional with the capability

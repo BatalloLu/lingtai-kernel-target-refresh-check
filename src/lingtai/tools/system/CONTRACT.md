@@ -32,12 +32,7 @@ related_files:
   - src/lingtai/intrinsic_skills/system-manual/reference/migration-guide/scripts/change_name.py
   - src/lingtai/intrinsic_skills/system-manual/reference/settings-inventory/SKILL.md
   - src/lingtai/cli.py
-  - tests/test_how_to_change_name.py
   - tests/test_how_to_change_name_e2e.py
-  - tests/test_cli.py
-  - tests/test_tool_family_system_migration.py
-  - tests/test_system_sleep_alarm.py
-  - tests/test_system_declared_plugin.py
 maintenance: |
   Keep related_files as repo-relative paths to real files, including the
   paired ANATOMY.md, the LTP/ToolFamily contracts this family is governed by,
@@ -60,6 +55,8 @@ maintenance: |
   summarize.py stays here as a private engine only — keep the context Contract
   link current, since that family owns the public actions driving it.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # System capability contract
 
@@ -240,7 +237,7 @@ v2 `notification_max_chars` field is exposed only through
 `Agent.resolve_notification_max_chars()`; Core keeps the env-first read, the
 shared 2048/10000 clamp, and the 10,000 default. The kernel-fixed
 context-pressure thresholds and legacy `molt_*` fields are never System
-settings. `tests/test_system_runtime_policy.py` owns proof.
+settings. `retired-test:test_system_runtime_policy` owns proof.
 
 ### Single sleep use case
 
@@ -452,22 +449,22 @@ drive it are `context`'s.
 
 | Claim | Source | Test |
 |---|---|---|
-| `system` is a wired intrinsic | `src/lingtai/tools/system/__init__.py` | `tests/test_system.py::test_system_in_all_intrinsics`, `tests/test_system.py::test_system_wired_in_agent` |
-| `sleep` applies one pending-attention/refusal/force use case and transitions the agent to ASLEEP (self, no karma) | `src/lingtai/tools/system/karma.py:sleep_use_case` | `tests/test_system.py::test_system_self_sleep`, `tests/test_system_declared_plugin.py::test_system_sleep_direct_and_mounted_routes_have_refusal_force_parity` |
-| `sleep(delay)` atomically persists one deadline, and heartbeat publishes/consumes its idempotent ordinary system event | `src/lingtai/tools/system/karma.py:sleep_use_case`, `src/lingtai/kernel/base_agent/lifecycle.py:_fire_sleep_alarm_if_due` | `tests/test_system_sleep_alarm.py` |
-| Unknown/legacy actions return the unknown-action error | `src/lingtai/tools/system/__init__.py:handle` | `tests/test_system.py::test_system_rejects_unknown_and_retired_actions` |
-| `refresh` with an unauthorized preset is refused | `src/lingtai/tools/system/preset.py:_refresh` | `tests/test_system.py::test_refresh_with_unauthorized_preset_returns_error` |
-| `refresh` cannot combine `preset` and `revert_preset` | `src/lingtai/tools/system/preset.py:_refresh` | `tests/test_system.py::test_refresh_revert_preset_with_preset_arg_errors` |
-| `presets` lists the allowed library and strips credentials | `src/lingtai/tools/system/preset.py:_presets` | `tests/test_system.py::test_presets_action_lists_full_library`, `tests/test_system.py::test_presets_action_strips_credentials` |
-| `cpr` reports an observed launch exit as failure, but retains its established receipt for a child still running after bounded heartbeat confirmation | `src/lingtai/tools/system/karma.py:_cpr` | `tests/test_system.py::test_cpr_propagates_launch_failure_instead_of_resuscitated`, `tests/test_karma.py::TestCPRLingtai` |
+| `system` is a wired intrinsic | `src/lingtai/tools/system/__init__.py` | `retired-test:test_system::test_system_in_all_intrinsics`, `retired-test:test_system::test_system_wired_in_agent` |
+| `sleep` applies one pending-attention/refusal/force use case and transitions the agent to ASLEEP (self, no karma) | `src/lingtai/tools/system/karma.py:sleep_use_case` | `retired-test:test_system::test_system_self_sleep`, `tests/test_system_declared_plugin.py::test_system_sleep_direct_and_mounted_routes_have_refusal_force_parity` |
+| `sleep(delay)` atomically persists one deadline, and heartbeat publishes/consumes its idempotent ordinary system event | `src/lingtai/tools/system/karma.py:sleep_use_case`, `src/lingtai/kernel/base_agent/lifecycle.py:_fire_sleep_alarm_if_due` | `retired-test:test_system_sleep_alarm` |
+| Unknown/legacy actions return the unknown-action error | `src/lingtai/tools/system/__init__.py:handle` | `retired-test:test_system::test_system_rejects_unknown_and_retired_actions` |
+| `refresh` with an unauthorized preset is refused | `src/lingtai/tools/system/preset.py:_refresh` | `retired-test:test_system::test_refresh_with_unauthorized_preset_returns_error` |
+| `refresh` cannot combine `preset` and `revert_preset` | `src/lingtai/tools/system/preset.py:_refresh` | `retired-test:test_system::test_refresh_revert_preset_with_preset_arg_errors` |
+| `presets` lists the allowed library and strips credentials | `src/lingtai/tools/system/preset.py:_presets` | `retired-test:test_system::test_presets_action_lists_full_library`, `retired-test:test_system::test_presets_action_strips_credentials` |
+| `cpr` reports an observed launch exit as failure, but retains its established receipt for a child still running after bounded heartbeat confirmation | `src/lingtai/tools/system/karma.py:_cpr` | `retired-test:test_system::test_cpr_propagates_launch_failure_instead_of_resuscitated`, `tests/test_karma.py::TestCPRLingtai` |
 | The two name actions preserve live identity, `.agent.json`, and the protected prompt `identity` section, and mutate neither address nor workdir | `src/lingtai/tools/system/name.py` | `tests/test_tool_family_system_migration.py::test_name_actions_preserve_identity_semantics` |
-| The public `summarize` action is gone from `system` with no alias | `src/lingtai/tools/system/schema.py:ACTION_ORDER` | `tests/test_tool_family_system_migration.py::test_public_summarize_action_is_gone_and_fails_loudly`, `tests/test_notification_tool.py::test_system_schema_drops_notification_and_dismiss` |
+| The public `summarize` action is gone from `system` with no alias | `src/lingtai/tools/system/schema.py:ACTION_ORDER` | `tests/test_tool_family_system_migration.py::test_public_summarize_action_is_gone_and_fails_loudly`, `retired-test:test_notification_tool::test_system_schema_drops_notification_and_dismiss` |
 | `items`/`rebuild` belong to no `system` action | `src/lingtai/tools/system/schema.py:INPUT_SCHEMAS` | `tests/test_tool_family_system_migration.py::test_departed_summarize_fields_are_rejected_on_every_action` |
-| PRIVATE ENGINE (driven by `context`, not a `system` action): records a `pending` marker and can rebuild the provider context | `src/lingtai/tools/system/summarize.py:_summarize` | `tests/test_system_summarize.py::test_summarize_writes_pending_status_marker`, `tests/test_system_summarize.py::test_rebuild_true_with_items_records_marks_done_then_rebuilds` |
-| PRIVATE ENGINE: no items with the rebuild discriminator off is an invalid no-op | `src/lingtai/tools/system/summarize.py:_summarize` | `tests/test_system_summarize.py::test_missing_items_without_rebuild_is_invalid_no_op` |
-| PRIVATE ENGINE: runtime threshold mutation is rejected | `src/lingtai/tools/system/summarize.py:_summarize` | `tests/test_system_summarize.py::test_summarize_runtime_threshold_change_rejected` |
-| Notification/dismiss actions are dropped from the `system` schema | `src/lingtai/tools/system/schema.py` | `tests/test_notification_tool.py::test_system_schema_drops_notification_and_dismiss`, `tests/test_notification_tool.py::test_system_rejects_dismiss_action` |
-| Karma signal files clear a target channel path end-to-end | `src/lingtai/tools/system/karma.py` | `tests/test_system_dismiss.py` |
+| PRIVATE ENGINE (driven by `context`, not a `system` action): records a `pending` marker and can rebuild the provider context | `src/lingtai/tools/system/summarize.py:_summarize` | `retired-test:test_system_summarize::test_summarize_writes_pending_status_marker`, `retired-test:test_system_summarize::test_rebuild_true_with_items_records_marks_done_then_rebuilds` |
+| PRIVATE ENGINE: no items with the rebuild discriminator off is an invalid no-op | `src/lingtai/tools/system/summarize.py:_summarize` | `retired-test:test_system_summarize::test_missing_items_without_rebuild_is_invalid_no_op` |
+| PRIVATE ENGINE: runtime threshold mutation is rejected | `src/lingtai/tools/system/summarize.py:_summarize` | `retired-test:test_system_summarize::test_summarize_runtime_threshold_change_rejected` |
+| Notification/dismiss actions are dropped from the `system` schema | `src/lingtai/tools/system/schema.py` | `retired-test:test_notification_tool::test_system_schema_drops_notification_and_dismiss`, `retired-test:test_notification_tool::test_system_rejects_dismiss_action` |
+| Karma signal files clear a target channel path end-to-end | `src/lingtai/tools/system/karma.py` | `retired-test:test_system_dismiss` |
 | The model-facing root is the closed LTP v2 envelope with twelve operational actions (including read-only `meta`) followed by reserved `settings`, `manual` | `src/lingtai/tools/system/__init__.py:get_schema` | `tests/test_tool_family_system_migration.py::test_root_envelope_is_exactly_the_four_ltp_v2_fields`, `::test_public_tool_name_and_action_inventory_adds_only_reserved_settings` |
 | Each action's arguments live only in its own strict `input` | `src/lingtai/tools/system/schema.py:INPUT_SCHEMAS` | `tests/test_tool_family_system_migration.py::test_action_input_fields_match_what_the_handler_reads` |
 | A cross-action smuggle is rejected before any lifecycle I/O | `src/lingtai/tools/tool_family/__init__.py:ToolFamily.handle` | `tests/test_tool_family_system_migration.py::test_cross_action_input_is_rejected_before_any_lifecycle_io` |
@@ -480,21 +477,22 @@ drive it are `context`'s.
 
 | Invariant | Automated test | Manual check | Risk if broken |
 |---|---|---|---|
-| Karma gate blocks unauthorized control | `tests/test_system.py::test_refresh_with_unauthorized_preset_returns_error` + karma gate paths | Call `lull` without `admin.karma` | Any agent could sleep/destroy peers |
+| Karma gate blocks unauthorized control | `retired-test:test_system::test_refresh_with_unauthorized_preset_returns_error` + karma gate paths | Call `lull` without `admin.karma` | Any agent could sleep/destroy peers |
 | `nirvana` requires karma AND nirvana | karma gate in `src/lingtai/tools/system/karma.py:_check_karma_gate` | Call `nirvana` with only karma | Irreversible deletion by under-privileged agent |
-| The private engine preserves the original in events.jsonl | `tests/test_system_summarize.py::test_summarize_replaces_block_content` | `context(action='summarize')` a result, grep events.jsonl by tool_call_id | Loss of original tool output |
-| The private engine's rebuild path flips pending markers done | `tests/test_system_summarize.py::test_rebuild_true_with_items_records_marks_done_then_rebuilds` | `context(action='summarize')` then `context(action='rebuild')`; inspect marker status | Pending compaction never applied |
+| The private engine preserves the original in events.jsonl | `retired-test:test_system_summarize::test_summarize_replaces_block_content` | `context(action='summarize')` a result, grep events.jsonl by tool_call_id | Loss of original tool output |
+| The private engine's rebuild path flips pending markers done | `retired-test:test_system_summarize::test_rebuild_true_with_items_records_marks_done_then_rebuilds` | `context(action='summarize')` then `context(action='rebuild')`; inspect marker status | Pending compaction never applied |
 | No public `summarize` action survives on `system` | `tests/test_tool_family_system_migration.py::test_public_summarize_action_is_gone_and_fails_loudly` | Call `system(action='summarize')` | A silent second context-hygiene surface |
 | A true name stays immutable and neither name action renames the workdir | `tests/test_tool_family_system_migration.py::test_name_actions_preserve_identity_semantics` | `name_set` twice; inspect `.agent.json` + workdir | Identity overwrite or an unintended physical rename |
-| No notification verbs on `system` | `tests/test_notification_tool.py::test_system_schema_drops_notification_and_dismiss` | Call `system(action='check')` | Duplicate notification surfaces diverge |
+| No notification verbs on `system` | `retired-test:test_notification_tool::test_system_schema_drops_notification_and_dismiss` | Call `system(action='check')` | Duplicate notification surfaces diverge |
 | System catch-all SHOW remains complete/read-only and each row points to its exact owner procedure | `tests/test_system_declared_plugin.py` settings/manual tests; [B009](BEHAVIORS.md#behavior-b009) | SHOW, perform one authorized external change, then SHOW again | Hidden mutation, secret exposure, omitted setting, or an unverified shadowed change |
 | Cross-action input cannot reach a lifecycle handler | `tests/test_tool_family_system_migration.py::test_cross_action_input_is_rejected_before_any_lifecycle_io` | Call `sleep` with an `address` in `input` | A weaker action smuggles a privileged target |
 | `nirvana`'s blast radius is exactly one directory | `tests/test_tool_family_system_migration.py::test_nirvana_destroys_only_the_disposable_target` | Inspect siblings after a disposable-target nirvana | Irreversible over-deletion |
 
 Run before merging system changes:
 
-```bash
-python -m pytest tests/test_system.py tests/test_system_summarize.py tests/test_system_dismiss.py tests/test_notification_tool.py tests/test_karma.py tests/test_tool_family_system_migration.py tests/test_tool_family_context_migration.py tests/test_intrinsic_manual_actions.py -q
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_intrinsic_manual_actions, test_karma, test_notification_tool, test_system, test_system_dismiss, test_system_summarize, test_tool_family_context_migration, test_tool_family_system_migration.
 ```
 
 ## Schema and glossary ownership

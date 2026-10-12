@@ -9,7 +9,7 @@ agent. The LLM call itself is faked via a deterministic, in-repo adapter
 registered only when `LINGTAI_DAEMON_SUPERVISOR_TEST_FAKE_LLM=1` is set in the
 child's environment — the same "deterministic fake over live network/model
 calls" approach the rest of the daemon test suite already uses (see
-`tests/test_daemon.py`'s `FakeService`/`create_session` monkeypatches), the
+`retired-test:test_daemon`'s `FakeService`/`create_session` monkeypatches), the
 only difference being this fake must be registered *inside* the spawned
 subprocess (an env-var-gated hook, not a monkeypatch, since a monkeypatch
 cannot cross a process boundary).

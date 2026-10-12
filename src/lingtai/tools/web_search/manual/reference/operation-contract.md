@@ -13,9 +13,6 @@ related_files:
   - src/lingtai/tools/web_search/_spill.py
   - src/lingtai/tools/browser/core.py
   - src/lingtai/tools/web_search/CONTRACT.md
-  - tests/test_unified_web_capability.py
-  - tests/test_web_output_spill.py
-  - tests/test_web_settings_action.py
 maintenance: |
   This reference owns exact Web procedure semantics. Keep it aligned with the
   schema, settings readers, delivery helper, BrowserEngine, and parent router;

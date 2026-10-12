@@ -13,7 +13,6 @@ related_files:
   - src/lingtai/kernel/base_agent/tools.py
   - src/lingtai/kernel/tool_glossary.py
   - src/lingtai/tools/psyche/prompt.py
-  - tests/test_prompt_catalog.py
   - ENVIRONMENT_VARIABLES.md
   - src/lingtai/prompts/character/character.yaml
   - src/lingtai/prompts/comment/comment.yaml

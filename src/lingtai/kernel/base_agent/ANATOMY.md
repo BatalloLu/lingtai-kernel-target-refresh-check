@@ -1,8 +1,6 @@
 ---
 related_files:
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
-  - tests/test_lifecycle_clock.py
-  - tests/test_auto_molt_notification.py
   - src/lingtai/tools/context/manual/SKILL.md
   - src/lingtai/kernel/base_agent/BEHAVIORS.md
   - src/lingtai/kernel/base_agent/CONTRACT.md
@@ -41,32 +39,21 @@ related_files:
   - src/lingtai/adapters/tool_plugin_host.py
   - src/lingtai/tools/system/karma.py
   - tests/test_aed_recovery.py
-  - tests/test_notification_one_shot.py
-  - tests/test_notification_sync.py
   - tests/test_tc_wake.py
   - tests/test_pre_request_hook.py
   - tests/test_cli_worker_poison_recovery.py
   - tests/test_worker_hang_aed_redo.py
-  - tests/test_silence_kill.py
-  - tests/test_system.py
-  - tests/test_system_declared_plugin.py
-  - tests/test_karma.py
   - tests/test_perform_refresh_handshake.py
   - tests/test_tool_result_restore_after_continuation_failure.py
-  - tests/test_correlated_turns.py
-  - tests/test_execution_workspace.py
-  - tests/test_turn_events.py
-  - tests/test_turn_permissions.py
-  - tests/test_provider_admission.py
   - tests/test_lifecycle_daemon_shutdown.py
   - tests/test_lingtai_facade.py
   - src/lingtai/adapters/acp/ANATOMY.md
-  - tests/test_system_sleep_alarm.py
   - src/lingtai/kernel/config.py
   - src/lingtai/kernel/meta_block.py
   - src/lingtai/kernel/notifications.py
   - src/lingtai/kernel/llm/base.py
   - ENVIRONMENT_VARIABLES.md
+  - tests/test_notification_sync.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. Include neighboring
   ANATOMY.md files so the anatomy graph stays connected rather than isolated;
@@ -76,6 +63,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # base_agent
 
 > **Maintenance:** see the `lingtai-kernel-anatomy` skill. **Coding agents** update this file in the same commit as code changes. **LingTai agents** report drift as issues/mail/PR proposals; do not silently fix.
@@ -141,7 +130,7 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
 - `turn.py`, `lifecycle.py`, and `__init__.py` → `worker_recovery.py` for WorkerStillRunning poison state, unfinished-turn artifacts, refresh request, startup rehydration, the boot-time notification baseline for a pending recovery (`lifecycle._start`, before `_heartbeat_runtime_ready`), and the one-shot request-prompt notice; `src/lingtai/cli.py::run` → `worker_recovery.has_pending_worker_hang_recovery_prompt` to withhold the refresh-success kick-start on a poison-recovery relaunch. Unsafe paths fail closed when poisoned: `_sync_notifications`, `_heal_pending_tool_calls`, `_inject_notification_pair`, `_handle_request`, `_handle_tc_wake`, and the pre-sleep heal all return early (and request refresh) instead of touching the interface.
 - `prompt.py` → `tools.py` (via `agent._refresh_tool_inventory_section()`).
 - All submodules read agent attributes (`agent._config`, `agent._session`, `agent._chat`, `agent._notification_fp`, `agent._notification_live_holder`, etc.) — the agent object is the shared state.
-- **One-shot notification delivery.** `__init__.py` owns `_notification_delivered_source_signatures` / `_notification_delivered_system_events` / `_notification_delivered_events`, the shared delivered identity that `_sync_notifications_locked` (IDLE/ASLEEP pair) and `meta_block.attach_active_notifications` (ACTIVE final carrier, serialized under the same `_notification_sync_lock`) both consult via `pending_notification_payloads` and commit via `commit_delivered_notification_sources` only after a delivery succeeded (blocked, unstable, no-carrier, degraded, or failed attempts never count). Molt (`tools/context/_molt.py`), rebuild and redacted-replay resync (`_recover_pending_tool_result`) retain already-delivered identity within this agent process; only wire/fingerprint bookkeeping resets. Known email/daemon/IM aggregates are projected by record identity/material content before rendering. It is in-memory only, so a new Agent/process restart may deliver surviving notification files again; no crash exactly-once guarantee exists. Pinned by `tests/test_notification_one_shot.py`.
+- **One-shot notification delivery.** `__init__.py` owns `_notification_delivered_source_signatures` / `_notification_delivered_system_events` / `_notification_delivered_events`, the shared delivered identity that `_sync_notifications_locked` (IDLE/ASLEEP pair) and `meta_block.attach_active_notifications` (ACTIVE final carrier, serialized under the same `_notification_sync_lock`) both consult via `pending_notification_payloads` and commit via `commit_delivered_notification_sources` only after a delivery succeeded (blocked, unstable, no-carrier, degraded, or failed attempts never count). Molt (`tools/context/_molt.py`), rebuild and redacted-replay resync (`_recover_pending_tool_result`) retain already-delivered identity within this agent process; only wire/fingerprint bookkeeping resets. Known email/daemon/IM aggregates are projected by record identity/material content before rendering. It is in-memory only, so a new Agent/process restart may deliver surviving notification files again; no crash exactly-once guarantee exists. Pinned by `retired-test:test_notification_one_shot`.
 - `messaging.py` imports `from ..message import _make_message, MSG_REQUEST` only. (`MSG_TC_WAKE` is no longer posted from `messaging.py` itself — it never imports it; the kernel sync owns wake transitions.)
 - `tools.py` reads the injected intrinsic modules off `agent._intrinsic_modules` (populated by `_wire_intrinsics` from `BaseAgent(intrinsics=...)`); imports `from ..config import tool_prose_section_enabled`, `from ..llm import FunctionSchema`, `from ..tool_glossary import append_tool_glossary`.
 - `turn.py` imports `from ..state import AgentState`, `from ..loop_guard import LoopGuard`, `from ..safety_limits import ACTIVE_TURN_TOOL_CALL_EMERGENCY_LIMIT`, and `from ..tool_executor import ToolExecutor`. `LoopGuard` now gets its total-call emergency fuse from kernel-owned `safety_limits.py`, not from `manifest.max_turns` / `AgentConfig.max_turns`; `turn.py` records each tool-call batch before dispatch so final tool results can expose the post-batch ACTIVE-turn progress counter.

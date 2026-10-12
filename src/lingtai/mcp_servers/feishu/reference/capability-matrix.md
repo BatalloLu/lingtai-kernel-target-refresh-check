@@ -5,7 +5,6 @@ related_files:
 - src/lingtai/mcp_servers/feishu/_family.py
 - src/lingtai/mcp_servers/feishu/plugin.py
 - src/lingtai/mcp_servers/feishu/settings.py
-- tests/test_feishu_settings.py
 maintenance: |
   Keep this compact inventory aligned with Feishu's composed action family,
   read-only settings provider, owner manual, and focused tests. Put procedures

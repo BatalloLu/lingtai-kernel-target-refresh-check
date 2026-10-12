@@ -16,8 +16,6 @@ related_files:
   - src/lingtai/kernel/notifications.py
   - src/lingtai/kernel/workdir.py
   - src/lingtai/CONTRACT.md
-  - tests/test_nudge_prompts.py
-  - tests/test_kernel_version_nudge.py
   - ENVIRONMENT_VARIABLES.md
 maintenance: |
   Keep related_files as repo-relative paths to real files. Include neighboring
@@ -28,6 +26,8 @@ maintenance: |
   Capability mentions in any document require explicit bidirectional
   related_files mapping to the implementing code (see root ## Maintenance).
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Nudge
 
 Nudge is the kernel policy layer for periodic, read-only findings. It renders
@@ -43,7 +43,7 @@ the ordinary Notification Store channel; it does not create a second transport.
   kind and appends only new kinds; `_modify` makes equal entries a no-op,
   preventing heartbeat order churn from changing the publication timestamp
   (`src/lingtai/kernel/nudge/__init__.py:751-805`,
-  `tests/test_nudge_policy.py`).
+  `retired-test:test_nudge_policy`).
   New built-in producer entries carry fixed `nudge_channel` metadata:
   `release_version` for `kernel_version`, `source_integrity` for
   `source_drift`, `configuration_staleness` for `init_config_shape`, and

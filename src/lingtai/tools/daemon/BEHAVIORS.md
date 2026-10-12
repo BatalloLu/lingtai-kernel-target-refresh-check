@@ -13,13 +13,7 @@ related_files:
   - src/lingtai/tools/daemon/manual/reference/cli-backends/SKILL.md
   - src/lingtai/tools/daemon/manual/reference/cli-backends/reference/backends/claude-p/SKILL.md
   - src/lingtai/tools/daemon/manual/reference/cli-backends/reference/backends/qwen-code/SKILL.md
-  - tests/test_daemon_check.py
-  - tests/test_daemon_check_historical.py
-  - tests/test_daemon_claude_p_submanual.py
-  - tests/test_daemon_qwen_code_submanual.py
-  - tests/test_daemon_per_batch_limits.py
   - tests/test_daemon_attention_delay.py
-  - tests/test_daemon_settings.py
   - src/lingtai/kernel/base_agent/__init__.py
   - src/lingtai/tools/daemon/supervisor_runtime.py
 maintenance: |
@@ -36,6 +30,8 @@ maintenance: |
   update it whenever row ownership, defaults, configurability, or manual
   section pointers change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Daemon Behavior Tests
 
 LABT v1. These are self-contained agent-executable behavioral tests for the
@@ -398,7 +394,7 @@ a maintained flag catalog.
   checkpoints and terminal completion
   ([CONTRACT.md](CONTRACT.md#3-daemon_common-provides-cooperative-checkpoints-and-terminal-completion))
 - **supersedes**: `tests/test_daemon_checkpoint.py` and
-  `tests/test_daemon_run_dir.py::test_checkpoint_inbox_backfills_pre_checkpoint_live_state`
+  `retired-test:test_daemon_run_dir::test_checkpoint_inbox_backfills_pre_checkpoint_live_state`
 - **runner**: any LingTai agent with the `daemon` tool and a common-MCP CLI backend
 - **prerequisites**: a live detached CLI run whose launch path mounts
   `daemon_common` (`claude-p`/`claude-code`, Codex, OpenCode, Qwen, or Kimi)

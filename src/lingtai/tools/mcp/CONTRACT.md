@@ -11,9 +11,6 @@ related_files:
   - src/lingtai/tools/mcp/BEHAVIORS.md
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
   - src/lingtai/adapters/tool_plugin_host.py
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_mcp_settings.py
-  - tests/test_mcp_builtin_plugin_package.py
   - src/lingtai/tools/mcp/skills/mcp-manual/SKILL.md
   - src/lingtai/tools/mcp/skills/mcp-manual/reference/runtime-and-identity.md
   - src/lingtai/services/mcp_registry.py
@@ -37,6 +34,8 @@ maintenance: |
   declaration, transport, or registry route; use `plugin_registry.read_plugin`
   as the only manifest/containment reader and never add a tools-local helper.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # MCP capability contract
 
@@ -235,39 +234,38 @@ Do not change any of the following; documented for reviewers only.
 
 | Claim | Source | Test |
 |---|---|---|
-| The capability renders the registry into the `mcp` prompt section | `src/lingtai/tools/mcp/__init__.py` (`_reconcile`) | `tests/test_mcp_capability.py::test_mcp_capability_renders_registry_into_prompt` |
-| `info` returns a health snapshot | `src/lingtai/tools/mcp/__init__.py` (`_reconcile`) | `tests/test_mcp_capability.py::test_mcp_show_action_returns_health_snapshot`, `tests/test_tool_family_mcp_migration_parity.py::test_info_returns_health_snapshot_without_manual_body` |
-| Unknown actions return a `{status: error}` dict | `src/lingtai/tools/mcp/__init__.py` (`handle_mcp`) | `tests/test_mcp_capability.py::test_mcp_show_unknown_action_returns_error`, `tests/test_tool_family_mcp_migration_parity.py::test_unknown_action_envelope_preserves_shape_with_current_actions` |
-| Public name/actions and the LTP v2 envelope are exact on both wires | `src/lingtai/tools/mcp/__init__.py` (`get_schema`) | `tests/test_tool_family_mcp_migration_parity.py::test_schema_exposes_exact_public_actions_and_envelope`, `::test_schema_survives_chat_and_responses_wires` |
-| All actions declare a strict-empty `input`; extra input fails before handler I/O | `src/lingtai/tools/mcp/__init__.py` (`_EMPTY_INPUT`, `_build_family`) | `tests/test_tool_family_mcp_migration_parity.py::test_all_actions_declare_canonical_strict_empty_input`, `::test_extra_input_field_is_rejected_before_any_io`, `::test_schema_only_and_dispatching_families_declare_identical_children` |
-| `manual` returns the exact body/path with no registry rescan and no double wrap | `src/lingtai/tools/mcp/__init__.py` (`_flatten_manual_result`) | `tests/test_tool_family_mcp_migration_parity.py::test_manual_returns_exact_body_and_path`, `::test_manual_performs_no_registry_rescan_or_mutation`, `::test_manual_result_is_not_double_wrapped` |
-| `settings` returns only the two MCP-owned rows, fully redacts `init.mcp`, and writes nothing | `src/lingtai/tools/mcp/settings.py` | `tests/test_mcp_settings.py` |
-| init.json `addons: [...]` triggers append-only decompression | `src/lingtai/services/mcp_registry.py` | `tests/test_mcp_capability.py::test_addons_list_triggers_decompression`, `::test_decompress_is_idempotent` |
-| Duplicate / invalid registry lines are dropped | `src/lingtai/services/mcp_registry.py` | `tests/test_mcp_capability.py::test_registry_drops_duplicates_by_name`, `::test_registry_drops_invalid_lines` |
-| `mcp` is declared statically, with a reserved official name and only two required host ports | `src/lingtai/tools/mcp/__init__.py` (`DECLARATION`) | `tests/test_tool_plugin_declaration.py::test_mcp_declaration_is_static_and_needs_no_agent`, `::test_mcp_is_reserved_and_declares_only_the_ports_it_consumes` |
-| Boot claims the official name and mounts exactly one `mcp` tool; a foreign declaration cannot take it | `src/lingtai/tools/mcp/__init__.py` (`setup`) | `tests/test_tool_plugin_declaration.py::test_boot_claims_the_official_name_and_mounts_exactly_one_mcp_tool`, `::test_a_foreign_declaration_cannot_take_the_live_mcp_name` |
-| The family never receives the `Agent`; binding alone activates and mounts nothing | `src/lingtai/tools/mcp/__init__.py` (`_bind`, `_reconcile`) | `tests/test_tool_plugin_declaration.py::test_host_facade_and_bound_plugin_never_expose_the_agent`, `::test_bind_alone_activates_nothing_and_mounts_nothing` |
+| The capability renders the registry into the `mcp` prompt section | `src/lingtai/tools/mcp/__init__.py` (`_reconcile`) | `retired-test:test_mcp_capability::test_mcp_capability_renders_registry_into_prompt` |
+| `info` returns a health snapshot | `src/lingtai/tools/mcp/__init__.py` (`_reconcile`) | `retired-test:test_mcp_capability::test_mcp_show_action_returns_health_snapshot`, `retired-test:test_tool_family_mcp_migration_parity::test_info_returns_health_snapshot_without_manual_body` |
+| Unknown actions return a `{status: error}` dict | `src/lingtai/tools/mcp/__init__.py` (`handle_mcp`) | `retired-test:test_mcp_capability::test_mcp_show_unknown_action_returns_error`, `retired-test:test_tool_family_mcp_migration_parity::test_unknown_action_envelope_preserves_shape_with_current_actions` |
+| Public name/actions and the LTP v2 envelope are exact on both wires | `src/lingtai/tools/mcp/__init__.py` (`get_schema`) | `retired-test:test_tool_family_mcp_migration_parity::test_schema_exposes_exact_public_actions_and_envelope`, `::test_schema_survives_chat_and_responses_wires` |
+| All actions declare a strict-empty `input`; extra input fails before handler I/O | `src/lingtai/tools/mcp/__init__.py` (`_EMPTY_INPUT`, `_build_family`) | `retired-test:test_tool_family_mcp_migration_parity::test_all_actions_declare_canonical_strict_empty_input`, `::test_extra_input_field_is_rejected_before_any_io`, `::test_schema_only_and_dispatching_families_declare_identical_children` |
+| `manual` returns the exact body/path with no registry rescan and no double wrap | `src/lingtai/tools/mcp/__init__.py` (`_flatten_manual_result`) | `retired-test:test_tool_family_mcp_migration_parity::test_manual_returns_exact_body_and_path`, `::test_manual_performs_no_registry_rescan_or_mutation`, `::test_manual_result_is_not_double_wrapped` |
+| `settings` returns only the two MCP-owned rows, fully redacts `init.mcp`, and writes nothing | `src/lingtai/tools/mcp/settings.py` | `retired-test:test_mcp_settings` |
+| init.json `addons: [...]` triggers append-only decompression | `src/lingtai/services/mcp_registry.py` | `retired-test:test_mcp_capability::test_addons_list_triggers_decompression`, `::test_decompress_is_idempotent` |
+| Duplicate / invalid registry lines are dropped | `src/lingtai/services/mcp_registry.py` | `retired-test:test_mcp_capability::test_registry_drops_duplicates_by_name`, `::test_registry_drops_invalid_lines` |
+| `mcp` is declared statically, with a reserved official name and only two required host ports | `src/lingtai/tools/mcp/__init__.py` (`DECLARATION`) | `retired-test:test_tool_plugin_declaration::test_mcp_declaration_is_static_and_needs_no_agent`, `::test_mcp_is_reserved_and_declares_only_the_ports_it_consumes` |
+| Boot claims the official name and mounts exactly one `mcp` tool; a foreign declaration cannot take it | `src/lingtai/tools/mcp/__init__.py` (`setup`) | `retired-test:test_tool_plugin_declaration::test_boot_claims_the_official_name_and_mounts_exactly_one_mcp_tool`, `::test_a_foreign_declaration_cannot_take_the_live_mcp_name` |
+| The family never receives the `Agent`; binding alone activates and mounts nothing | `src/lingtai/tools/mcp/__init__.py` (`_bind`, `_reconcile`) | `retired-test:test_tool_plugin_declaration::test_host_facade_and_bound_plugin_never_expose_the_agent`, `::test_bind_alone_activates_nothing_and_mounts_nothing` |
 | Identity is attached only when present and secrets are stripped | `src/lingtai/tools/mcp/__init__.py` (`_registered_entry`) / service | `tests/test_mcp_identity_discovery.py::test_show_action_includes_identity_when_present`, `::test_secret_fields_are_stripped_from_accounts` |
 
 ## Verification matrix
 
 | Invariant | Automated test | Manual check | Risk if broken |
 |---|---|---|---|
-| Registry renders into the prompt | `tests/test_mcp_capability.py::test_mcp_capability_renders_registry_into_prompt` | Add a registry line, inspect the `mcp` prompt section | Registered MCPs invisible to the model |
-| Tool is read-only (no mutation) | `tests/test_mcp_capability.py::test_mcp_show_action_returns_health_snapshot` | Call `info`, confirm `mcp_registry.jsonl` unchanged | Signpost promise violated; surprise mutations |
-| Unknown actions handled | `tests/test_mcp_capability.py::test_mcp_show_unknown_action_returns_error` | Call `mcp(action="foo")` | Silent mis-dispatch |
-| Public action order is exact | `tests/test_tool_family_mcp_migration_parity.py::test_real_agent_registers_exactly_one_public_mcp_tool` | Inspect the composed `mcp` schema's `action.enum` | Duplicate, misplaced, or renamed model-facing actions |
-| Invalid input fails before any registry/manual I/O | `tests/test_tool_family_mcp_migration_parity.py::test_extra_input_field_is_rejected_before_any_io` | Call `mcp` with a bogus `input` field, confirm no registry read | Signpost promise violated; wasted or surprising I/O |
-| Settings is five-field SHOW only | `tests/test_mcp_settings.py` | Call settings twice around an authorized init edit; verify ordered rows and redaction | Secret/config leakage or a hidden writer |
-| Addon decompression is idempotent | `tests/test_mcp_capability.py::test_decompress_is_idempotent` | Boot twice with the same `addons`, diff the registry | Duplicate registry growth |
+| Registry renders into the prompt | `retired-test:test_mcp_capability::test_mcp_capability_renders_registry_into_prompt` | Add a registry line, inspect the `mcp` prompt section | Registered MCPs invisible to the model |
+| Tool is read-only (no mutation) | `retired-test:test_mcp_capability::test_mcp_show_action_returns_health_snapshot` | Call `info`, confirm `mcp_registry.jsonl` unchanged | Signpost promise violated; surprise mutations |
+| Unknown actions handled | `retired-test:test_mcp_capability::test_mcp_show_unknown_action_returns_error` | Call `mcp(action="foo")` | Silent mis-dispatch |
+| Public action order is exact | `retired-test:test_tool_family_mcp_migration_parity::test_real_agent_registers_exactly_one_public_mcp_tool` | Inspect the composed `mcp` schema's `action.enum` | Duplicate, misplaced, or renamed model-facing actions |
+| Invalid input fails before any registry/manual I/O | `retired-test:test_tool_family_mcp_migration_parity::test_extra_input_field_is_rejected_before_any_io` | Call `mcp` with a bogus `input` field, confirm no registry read | Signpost promise violated; wasted or surprising I/O |
+| Settings is five-field SHOW only | `retired-test:test_mcp_settings` | Call settings twice around an authorized init edit; verify ordered rows and redaction | Secret/config leakage or a hidden writer |
+| Addon decompression is idempotent | `retired-test:test_mcp_capability::test_decompress_is_idempotent` | Boot twice with the same `addons`, diff the registry | Duplicate registry growth |
 | Secrets never reach the prompt | `tests/test_mcp_identity_discovery.py::test_secret_fields_are_stripped_from_accounts` | Add an identity with a secret field, inspect `info` output | Credential leakage into the prompt |
 
 Run before merging:
 
-```bash
-python -m pytest tests/test_mcp_settings.py tests/test_mcp_capability.py tests/test_mcp_identity_discovery.py \
-  tests/test_tool_family_mcp_migration_parity.py tests/test_signpost_tool_descriptions.py \
-  tests/test_tool_plugin_declaration.py -q
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_mcp_capability, test_mcp_identity_discovery, test_mcp_settings, test_signpost_tool_descriptions, test_tool_family_mcp_migration_parity, test_tool_plugin_declaration.
 ```
 
 ## Schema and glossary ownership

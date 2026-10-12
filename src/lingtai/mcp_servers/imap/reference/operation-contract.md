@@ -7,8 +7,6 @@ related_files:
 - src/lingtai/mcp_servers/imap/service.py
 - src/lingtai/mcp_servers/imap/_family.py
 - src/lingtai/mcp_servers/imap/settings.py
-- tests/test_imap_settings.py
-- tests/test_imap_toolfamily_ltpv2.py
 maintenance: |
   Keep this deep IMAP operation reference aligned with the strict family
   branches, manager side effects, multi-account ID resolution, attachment

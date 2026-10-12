@@ -21,13 +21,7 @@ related_files:
   - src/lingtai/kernel/meta_block.py
   - src/lingtai/kernel/base_agent/__init__.py
   - src/lingtai/kernel/base_agent/CONTRACT.md
-  - tests/test_notification_tool.py
-  - tests/test_notification_one_shot.py
-  - tests/test_notification_settings.py
-  - tests/test_notification_delay_alarm.py
   - tests/test_daemon_attention_delay.py
-  - tests/test_system_dismiss.py
-  - tests/test_tools_package_data.py
   - src/lingtai/tools/notification/glossary-en.md
   - src/lingtai/tools/notification/glossary-zh.md
   - src/lingtai/tools/notification/glossary-wen.md
@@ -49,6 +43,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Notification Tool Contract
 
 ## Purpose
@@ -350,7 +346,7 @@ than dispatched, so it is not a second inbound adapter.
 
 ## Contract tests
 
-`tests/test_tool_plugin_declaration.py` proves the live official mount, package manual, and rejection of the removed dismiss action; `tests/test_notification_one_shot.py` proves one-shot delivery (attach once, changed/new events delivered, aggregate event/message deltas and unchanged presentation churn, no-ack on no-carrier/unstable/failed injection, concurrent publication, delay, real molt lifecycle retention, IDLE/ACTIVE transitions share identity, producer bytes and history untouched, explicit `check` stays a full read); `tests/test_notification_tool.py` proves the
+`retired-test:test_tool_plugin_declaration` proves the live official mount, package manual, and rejection of the removed dismiss action; `retired-test:test_notification_one_shot` proves one-shot delivery (attach once, changed/new events delivered, aggregate event/message deltas and unchanged presentation churn, no-ack on no-carrier/unstable/failed injection, concurrent publication, delay, real molt lifecycle retention, IDLE/ACTIVE transitions share identity, producer bytes and history untouched, explicit `check` stays a full read); `retired-test:test_notification_tool` proves the
 ordered eight-action schema, the closed LTP v2 root, each action's strict input
 branch and its `allOf` action/input correlation, Chat/Responses wire parity,
 the `manual` branch matching the shared ManualTool child, canonical
@@ -359,14 +355,14 @@ fixed path, no-double-wrap flattening, read-only state/log behavior, check
 placeholder shape, removed-dismiss-action rejection with no side effects, hook add/drop/edit/list
 lifecycle and whitelist gating,
 cross-action rejection before I/O, `_tc_id` tolerance, the kernel summarize
-allowlist entry, Core guards, and absence of system compatibility aliases. `tests/test_daemon_attention_delay.py` covers the daemon-target attention mask, hook-channel wake independence, bounded expiry wake, and fail-open delay state. `tests/test_notification_delay_alarm.py`
+allowlist entry, Core guards, and absence of system compatibility aliases. `tests/test_daemon_attention_delay.py` covers the daemon-target attention mask, hook-channel wake independence, bounded expiry wake, and fail-open delay state. `retired-test:test_notification_delay_alarm`
 proves consumer filtering for coherent/voluntary reads, early cancellation,
 replacement, durable expiry/recovery idempotence, alarm priority and conservative
-statistics, and `delay-alarm` refusal. `tests/test_system_dismiss.py` pins the retained private Core
-dismiss helper. `tests/test_notification_settings.py` proves
+statistics, and `delay-alarm` refusal. `retired-test:test_system_dismiss` pins the retained private Core
+dismiss helper. `retired-test:test_notification_settings` proves
 the exact five-field rows and keys, live environment/System-v2 precedence,
 defaults, strict input, comment targets, whole-action failure, no mutation,
-family opt-in, and unchanged check. `tests/test_tools_package_data.py` verifies
+family opt-in, and unchanged check. `retired-test:test_tools_package_data` verifies
 tool and documentation package data. Architecture, Anatomy drift, glossary, and skill
 validators cover the linked document and manual graphs.
 

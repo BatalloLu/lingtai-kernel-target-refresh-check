@@ -36,12 +36,6 @@ related_files:
   - src/lingtai/tools/bash/bash_policy.json
   - src/lingtai/tools/bash/CONTRACT.md
   - src/lingtai/tools/bash/manual/SKILL.md
-  - tests/test_bash_async.py
-  - tests/test_execution_workspace.py
-  - tests/test_shell_tool_plugin_declaration.py
-  - tests/test_shell_progressive_disclosure.py
-  - tests/test_shell_settings.py
-  - tests/test_layers_bash.py
   - src/lingtai/tools/bash/glossary-en.md
   - src/lingtai/tools/bash/glossary-zh.md
   - src/lingtai/tools/bash/glossary-wen.md
@@ -54,7 +48,6 @@ related_files:
   - src/lingtai/tools/daemon/ANATOMY.md
   - src/lingtai/tools/daemon/execution_host.py
   - src/lingtai/tools/daemon/shell_prompt_events.py
-  - tests/test_daemon_shell_prompt_events.py
   - tests/test_daemon_detached_supervisor.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. Include neighboring

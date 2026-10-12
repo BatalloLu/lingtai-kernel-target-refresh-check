@@ -15,6 +15,8 @@ maintenance: |
   lingtai tool behavior clause changes, update the guarding LABT here in the
   same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # LingTai Capability Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -32,7 +34,7 @@ commands must run from the repo root with the project's Python.
 - **estimate**: ≈ 15 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_context_ownership_redesign.py tests/test_pad_lingtai_split.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Call `lingtai(action="manual", input={}, reasoning="probe")` and record the flat `{status, manual, manual_path}` result.
 3. Call `lingtai(action="update", input={}, reasoning="probe")` and `lingtai(action="load", input={}, reasoning="probe")`; record both results and confirm no file mutation occurred.
 

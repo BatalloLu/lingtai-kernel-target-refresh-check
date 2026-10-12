@@ -22,13 +22,6 @@ related_files:
 - src/lingtai/mcp_servers/wechat/reference/media.md
 - src/lingtai/mcp_servers/wechat/reference/setup.md
 - src/lingtai/mcp_servers/wechat/notification_header.md
-- tests/test_wechat_toolfamily_ltpv2.py
-- tests/test_wechat_media_validation.py
-- tests/test_wechat_login.py
-- tests/test_wechat_settings.py
-- tests/test_wechat_config_resolution.py
-- tests/test_wechat_notification_metadata.py
-- tests/test_wechat_notification_no_reread.py
 - ENVIRONMENT_VARIABLES.md
 maintenance: |
   Tracks the WeChat MCP action catalog and its progressive-disclosure safety,

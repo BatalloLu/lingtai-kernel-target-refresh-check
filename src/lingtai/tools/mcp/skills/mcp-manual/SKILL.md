@@ -18,7 +18,6 @@ related_files:
 - src/lingtai/tools/mcp/skills/mcp-manual/reference/troubleshooting.md
 - src/lingtai/tools/mcp/skills/mcp-manual/reference/runtime-and-identity.md
 - src/lingtai/tools/mcp/skills/mcp-manual/scripts/find_readme.py
-- tests/test_mcp_settings.py
 maintenance: |
   Keep this short router aligned with the routed references, installed manual layout, and mcp description; update when MCP behavior, setup ownership, or safety boundaries change.
 ---

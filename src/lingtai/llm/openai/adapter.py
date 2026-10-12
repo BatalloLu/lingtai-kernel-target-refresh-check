@@ -377,8 +377,8 @@ def _codex_identity_headers() -> dict[str, str]:
     The shipped default is explicit LingTai identity. The official-Codex-CLI
     app-name identity is available only when ``_CODEX_IMPERSONATE_OFFICIAL_CLI``
     is explicitly enabled for local protocol comparisons. The originator and
-    User-Agent are always resolved together so they agree. See
-    ``tests/test_codex_prompt_cache_key.py`` for the request-level guardrails.
+    User-Agent are always resolved together so they agree. The request-level
+    pytest guardrails in ``test_codex_prompt_cache_key`` were retired 2026-10-12.
     """
     return {"originator": _CODEX_ORIGINATOR, "User-Agent": _lingtai_user_agent()}
 
@@ -3780,7 +3780,7 @@ class _StandaloneCompactionMixin:
     builds the next compact request's ``input`` (``_prepare_compact_request``).
     Extracted from ``CodexResponsesSession`` (PR #926); Codex is its only
     host today — see PR #926 for the original design rationale and
-    ``tests/test_codex_standalone_compaction.py`` for the behavior contract.
+    the retired pytest suite ``test_codex_standalone_compaction`` (2026-10-12).
 
     The host class supplies two seams:
       * ``_compaction_prefix_input(entries)`` — how a list of canonical

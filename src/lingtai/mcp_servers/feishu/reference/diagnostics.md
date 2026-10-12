@@ -6,7 +6,6 @@ related_files:
 - src/lingtai/mcp_servers/feishu/manager.py
 - src/lingtai/mcp_servers/feishu/service.py
 - src/lingtai/mcp_servers/feishu/settings.py
-- tests/test_feishu_settings.py
 maintenance: |
   Keep this symptom-led runbook aligned with Feishu startup, admission,
   message, Task Card, and settings diagnostics. Start from redacted state and

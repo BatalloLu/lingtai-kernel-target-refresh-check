@@ -8,7 +8,6 @@ related_files:
   - src/lingtai/tools/plugin/ANATOMY.md
   - src/lingtai/tools/plugin/BEHAVIORS.md
   - src/lingtai/tools/plugin/manual/SKILL.md
-  - tests/test_plugin_tool.py
   - src/lingtai/services/plugin_registry.py
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
   - src/lingtai/adapters/tool_plugin_host.py
@@ -27,6 +26,8 @@ maintenance: |
   Agent Plugins version this kernel understands is pinned in the service as a
   canonical identifier — bump it here and there together, never independently.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # Plugin capability contract
 
@@ -314,50 +315,50 @@ Do not change any of the following; documented for reviewers only.
 
 | Claim | Source | Test |
 |---|---|---|
-| The static official declaration is reserved, uses only the three narrow ports, and preserves real info/settings/manual dispatch | `src/lingtai/tools/plugin/__init__.py` (`DECLARATION`, `_bind`) | `tests/test_tool_plugin_declaration.py::test_official_plugin_mount_uses_only_catalog_state_and_real_dispatch` |
-| The capability renders discovered plugins into the `plugin` prompt section | `src/lingtai/tools/plugin/__init__.py` (`_reconcile`) | `tests/test_plugin_tool.py::test_plugin_capability_renders_catalog_into_prompt` |
-| `info` returns a health snapshot without the manual body | `src/lingtai/tools/plugin/__init__.py` (`_reconcile`) | `tests/test_plugin_tool.py::test_info_returns_catalog_snapshot` |
-| Unknown actions return a `{status: error}` dict, including the unhashable case | `src/lingtai/tools/plugin/__init__.py` (`handle_plugin`) | `tests/test_plugin_tool.py::test_unknown_action_returns_error_envelope` |
-| Public name/actions and the LTP v2 envelope are exact | `src/lingtai/tools/plugin/__init__.py` (`get_schema`) | `tests/test_plugin_tool.py::test_schema_exposes_exact_public_actions_and_envelope` |
-| All three actions remain strict-empty | `src/lingtai/tools/plugin/__init__.py` (`_EMPTY_INPUT`, `_build_family`) | `tests/test_plugin_tool.py::test_all_actions_declare_strict_empty_input`, `::test_schema_only_and_dispatching_families_declare_identical_children` |
-| Settings exposes one exact redacted five-field `manifest.plugins` row from configured roots, leaves registry state unchanged, and fails whole-action when current truth is unavailable | `src/lingtai/tools/plugin/settings.py` (`plugin_setting_rows`) | `tests/test_plugin_tool.py::test_settings_exact_redacted_inventory_failure_and_unchanged_info` |
-| A `../` escape is rejected under §4.1 | `src/lingtai/services/plugin_registry.py` (`resolve_contained`) | `tests/test_plugin_tool.py::test_containment_rejects_dotdot_escape` |
-| A symlink escape is rejected under §4.1 | `src/lingtai/services/plugin_registry.py` (`resolve_contained`) | `tests/test_plugin_tool.py::test_containment_rejects_symlink_escape` |
-| A missing/invalid `plugin.json` rejects the whole plugin | `src/lingtai/services/plugin_registry.py` (`read_plugin`) | `tests/test_plugin_tool.py::test_invalid_manifest_rejects_whole_plugin` |
-| An escaping component is skipped without rejecting the plugin | `src/lingtai/services/plugin_registry.py` (`_scan_skills`, `_scan_mcp_servers`) | `tests/test_plugin_tool.py::test_escaping_skill_is_skipped_but_plugin_survives` |
-| A skipped skill is absent from the protected Plugin field, not merely from the report | `src/lingtai/services/plugin_registry.py` (`_scan_skills`), `src/lingtai/tools/plugin/__init__.py` (`_registered_entries`, `_reconcile`) | `tests/test_plugin_tool.py::test_escaping_skill_is_absent_from_the_plugin_field`, `::test_registration_records_each_validated_skill_dir_on_the_agent` |
-| A nested skill is reported exactly as it is listed | `src/lingtai/services/plugin_registry.py` (`_walk_skills`) | `tests/test_plugin_tool.py::test_nested_skills_are_reported_exactly_as_they_are_listed` |
-| Containment is not bypassed by omitting the `./` prefix | `src/lingtai/services/plugin_registry.py` (`_expand_plugin_path`) | `tests/test_plugin_tool.py::test_containment_is_not_bypassed_by_omitting_the_dot_slash`, `::test_values_that_are_not_plugin_relative_paths_still_pass_through` |
-| `env`/`cwd`/`headers` are carried into the registry record | `src/lingtai/services/plugin_registry.py` (`to_registry_record`) | `tests/test_plugin_tool.py::test_env_and_cwd_are_carried_into_the_registry_record`, `::test_http_headers_are_validated_and_carried`, `::test_carried_fields_do_not_break_idempotence` |
-| The shipped boot flow registers once and is idempotent | `src/lingtai/agent.py` (`__init__`, `_register_declared_plugins`) | `tests/test_plugin_tool.py::test_cli_shaped_boot_registers_once_and_is_idempotent`, `::test_minimal_construction_does_not_wipe_plugin_records`, `::test_declaring_capabilities_without_plugins_still_uninstalls` |
-| An inherited (discovery-only) plugin registers nothing | `src/lingtai/tools/plugin/__init__.py`, `src/lingtai/services/plugin_registry.py` | `tests/test_plugin_tool.py::test_discovery_only_plugin_installs_nothing` |
-| `manifest.plugins` is canonical and the capability key is its alias | `src/lingtai/services/plugin_registry.py` (`declared_plugin_paths`) | `tests/test_plugin_tool.py::test_manifest_plugins_is_the_canonical_declaration_key`, `::test_capability_paths_alias_is_still_honored` |
-| A declared plugin's skill is listed in the protected Plugin field, not the vanilla skills catalog | `src/lingtai/tools/plugin/__init__.py` (`_registered_entries`, `_reconcile`) | `tests/test_plugin_tool.py::test_declared_plugin_skill_appears_in_the_plugin_field` |
-| A declared plugin's MCP server gets a `source="plugin:<name>"` registry record | `src/lingtai/services/plugin_registry.py` (`register_plugins`, `to_registry_record`) | `tests/test_plugin_tool.py::test_declared_plugin_mcp_server_lands_in_the_registry` |
-| A path escape is rejected at registration, not merely displayed | `src/lingtai/services/plugin_registry.py` (`resolve_server_spec`) | `tests/test_plugin_tool.py::test_path_escape_is_rejected_at_registration_time`, `::test_containment_covers_args_not_just_command` |
-| Undeclaring a plugin prunes its records and its skills | `src/lingtai/services/plugin_registry.py` (`prune_plugin_records`) | `tests/test_plugin_tool.py::test_undeclaring_a_plugin_prunes_its_registry_records`, `::test_uninstalling_removes_the_skill_from_the_catalog` |
-| Registration never overwrites a record it does not own | `src/lingtai/services/plugin_registry.py` (`register_plugins`) | `tests/test_plugin_tool.py::test_registration_never_overwrites_a_record_it_does_not_own` |
-| Registration is idempotent and convergent | `src/lingtai/services/plugin_registry.py` (`register_plugins`) | `tests/test_plugin_tool.py::test_registration_is_idempotent`, `::test_a_changed_spec_replaces_the_record_rather_than_duplicating_it` |
-| The shipped example plugin registers end to end | `docs/examples/agent-plugins/hello-lingtai/plugin.json` | `tests/test_plugin_tool.py::test_the_shipped_example_plugin_registers_end_to_end` |
-| All three glossary languages ship and validate | `src/lingtai/tools/plugin/glossary-{en,zh,wen}.md` | `tests/test_plugin_tool.py::test_glossary_resources_present_and_valid` |
+| The static official declaration is reserved, uses only the three narrow ports, and preserves real info/settings/manual dispatch | `src/lingtai/tools/plugin/__init__.py` (`DECLARATION`, `_bind`) | `retired-test:test_tool_plugin_declaration::test_official_plugin_mount_uses_only_catalog_state_and_real_dispatch` |
+| The capability renders discovered plugins into the `plugin` prompt section | `src/lingtai/tools/plugin/__init__.py` (`_reconcile`) | `retired-test:test_plugin_tool::test_plugin_capability_renders_catalog_into_prompt` |
+| `info` returns a health snapshot without the manual body | `src/lingtai/tools/plugin/__init__.py` (`_reconcile`) | `retired-test:test_plugin_tool::test_info_returns_catalog_snapshot` |
+| Unknown actions return a `{status: error}` dict, including the unhashable case | `src/lingtai/tools/plugin/__init__.py` (`handle_plugin`) | `retired-test:test_plugin_tool::test_unknown_action_returns_error_envelope` |
+| Public name/actions and the LTP v2 envelope are exact | `src/lingtai/tools/plugin/__init__.py` (`get_schema`) | `retired-test:test_plugin_tool::test_schema_exposes_exact_public_actions_and_envelope` |
+| All three actions remain strict-empty | `src/lingtai/tools/plugin/__init__.py` (`_EMPTY_INPUT`, `_build_family`) | `retired-test:test_plugin_tool::test_all_actions_declare_strict_empty_input`, `::test_schema_only_and_dispatching_families_declare_identical_children` |
+| Settings exposes one exact redacted five-field `manifest.plugins` row from configured roots, leaves registry state unchanged, and fails whole-action when current truth is unavailable | `src/lingtai/tools/plugin/settings.py` (`plugin_setting_rows`) | `retired-test:test_plugin_tool::test_settings_exact_redacted_inventory_failure_and_unchanged_info` |
+| A `../` escape is rejected under §4.1 | `src/lingtai/services/plugin_registry.py` (`resolve_contained`) | `retired-test:test_plugin_tool::test_containment_rejects_dotdot_escape` |
+| A symlink escape is rejected under §4.1 | `src/lingtai/services/plugin_registry.py` (`resolve_contained`) | `retired-test:test_plugin_tool::test_containment_rejects_symlink_escape` |
+| A missing/invalid `plugin.json` rejects the whole plugin | `src/lingtai/services/plugin_registry.py` (`read_plugin`) | `retired-test:test_plugin_tool::test_invalid_manifest_rejects_whole_plugin` |
+| An escaping component is skipped without rejecting the plugin | `src/lingtai/services/plugin_registry.py` (`_scan_skills`, `_scan_mcp_servers`) | `retired-test:test_plugin_tool::test_escaping_skill_is_skipped_but_plugin_survives` |
+| A skipped skill is absent from the protected Plugin field, not merely from the report | `src/lingtai/services/plugin_registry.py` (`_scan_skills`), `src/lingtai/tools/plugin/__init__.py` (`_registered_entries`, `_reconcile`) | `retired-test:test_plugin_tool::test_escaping_skill_is_absent_from_the_plugin_field`, `::test_registration_records_each_validated_skill_dir_on_the_agent` |
+| A nested skill is reported exactly as it is listed | `src/lingtai/services/plugin_registry.py` (`_walk_skills`) | `retired-test:test_plugin_tool::test_nested_skills_are_reported_exactly_as_they_are_listed` |
+| Containment is not bypassed by omitting the `./` prefix | `src/lingtai/services/plugin_registry.py` (`_expand_plugin_path`) | `retired-test:test_plugin_tool::test_containment_is_not_bypassed_by_omitting_the_dot_slash`, `::test_values_that_are_not_plugin_relative_paths_still_pass_through` |
+| `env`/`cwd`/`headers` are carried into the registry record | `src/lingtai/services/plugin_registry.py` (`to_registry_record`) | `retired-test:test_plugin_tool::test_env_and_cwd_are_carried_into_the_registry_record`, `::test_http_headers_are_validated_and_carried`, `::test_carried_fields_do_not_break_idempotence` |
+| The shipped boot flow registers once and is idempotent | `src/lingtai/agent.py` (`__init__`, `_register_declared_plugins`) | `retired-test:test_plugin_tool::test_cli_shaped_boot_registers_once_and_is_idempotent`, `::test_minimal_construction_does_not_wipe_plugin_records`, `::test_declaring_capabilities_without_plugins_still_uninstalls` |
+| An inherited (discovery-only) plugin registers nothing | `src/lingtai/tools/plugin/__init__.py`, `src/lingtai/services/plugin_registry.py` | `retired-test:test_plugin_tool::test_discovery_only_plugin_installs_nothing` |
+| `manifest.plugins` is canonical and the capability key is its alias | `src/lingtai/services/plugin_registry.py` (`declared_plugin_paths`) | `retired-test:test_plugin_tool::test_manifest_plugins_is_the_canonical_declaration_key`, `::test_capability_paths_alias_is_still_honored` |
+| A declared plugin's skill is listed in the protected Plugin field, not the vanilla skills catalog | `src/lingtai/tools/plugin/__init__.py` (`_registered_entries`, `_reconcile`) | `retired-test:test_plugin_tool::test_declared_plugin_skill_appears_in_the_plugin_field` |
+| A declared plugin's MCP server gets a `source="plugin:<name>"` registry record | `src/lingtai/services/plugin_registry.py` (`register_plugins`, `to_registry_record`) | `retired-test:test_plugin_tool::test_declared_plugin_mcp_server_lands_in_the_registry` |
+| A path escape is rejected at registration, not merely displayed | `src/lingtai/services/plugin_registry.py` (`resolve_server_spec`) | `retired-test:test_plugin_tool::test_path_escape_is_rejected_at_registration_time`, `::test_containment_covers_args_not_just_command` |
+| Undeclaring a plugin prunes its records and its skills | `src/lingtai/services/plugin_registry.py` (`prune_plugin_records`) | `retired-test:test_plugin_tool::test_undeclaring_a_plugin_prunes_its_registry_records`, `::test_uninstalling_removes_the_skill_from_the_catalog` |
+| Registration never overwrites a record it does not own | `src/lingtai/services/plugin_registry.py` (`register_plugins`) | `retired-test:test_plugin_tool::test_registration_never_overwrites_a_record_it_does_not_own` |
+| Registration is idempotent and convergent | `src/lingtai/services/plugin_registry.py` (`register_plugins`) | `retired-test:test_plugin_tool::test_registration_is_idempotent`, `::test_a_changed_spec_replaces_the_record_rather_than_duplicating_it` |
+| The shipped example plugin registers end to end | `docs/examples/agent-plugins/hello-lingtai/plugin.json` | `retired-test:test_plugin_tool::test_the_shipped_example_plugin_registers_end_to_end` |
+| All three glossary languages ship and validate | `src/lingtai/tools/plugin/glossary-{en,zh,wen}.md` | `retired-test:test_plugin_tool::test_glossary_resources_present_and_valid` |
 
 ## Verification matrix
 
 | Invariant | Automated test | Manual check | Risk if broken |
 |---|---|---|---|
-| Catalog renders into the prompt | `tests/test_plugin_tool.py::test_plugin_capability_renders_catalog_into_prompt` | Drop a plugin on a configured path, inspect the `plugin` prompt section | Discovered plugins invisible to the model |
-| Tool is read-only (registration is boot-only) | `tests/test_plugin_tool.py::test_info_reports_registration_but_never_performs_it` | Add a plugin after boot, call `info`, confirm it reports as `discovered` and the registry is unchanged | A model-facing action could mount third-party code |
-| An inherited path never registers | `tests/test_plugin_tool.py::test_discovery_only_plugin_installs_nothing` | Drop a plugin on a skills path, confirm `mcp_registry.jsonl` is untouched | Silent third-party MCP registration from a directory drop |
-| Uninstall prunes exactly what the plugin owns | `tests/test_plugin_tool.py::test_pruning_leaves_records_the_plugin_system_does_not_own` | Undeclare a plugin with a hand-written record alongside; confirm only the plugin's line goes | Data loss in a human-owned registry |
-| Unknown actions handled | `tests/test_plugin_tool.py::test_unknown_action_returns_error_envelope` | Call `plugin(action="foo")` | Silent mis-dispatch |
-| `../` and symlink escapes rejected | `tests/test_plugin_tool.py::test_containment_rejects_dotdot_escape`, `::test_containment_rejects_symlink_escape` | Point a plugin's `mcp.json` `command` outside its root | Plugin-declared path reaches outside its own root |
-| Invalid input fails before any scan | `tests/test_plugin_tool.py::test_extra_input_field_is_rejected` | Call `plugin` with a bogus `input` field | Wasted or surprising I/O from a malformed call |
+| Catalog renders into the prompt | `retired-test:test_plugin_tool::test_plugin_capability_renders_catalog_into_prompt` | Drop a plugin on a configured path, inspect the `plugin` prompt section | Discovered plugins invisible to the model |
+| Tool is read-only (registration is boot-only) | `retired-test:test_plugin_tool::test_info_reports_registration_but_never_performs_it` | Add a plugin after boot, call `info`, confirm it reports as `discovered` and the registry is unchanged | A model-facing action could mount third-party code |
+| An inherited path never registers | `retired-test:test_plugin_tool::test_discovery_only_plugin_installs_nothing` | Drop a plugin on a skills path, confirm `mcp_registry.jsonl` is untouched | Silent third-party MCP registration from a directory drop |
+| Uninstall prunes exactly what the plugin owns | `retired-test:test_plugin_tool::test_pruning_leaves_records_the_plugin_system_does_not_own` | Undeclare a plugin with a hand-written record alongside; confirm only the plugin's line goes | Data loss in a human-owned registry |
+| Unknown actions handled | `retired-test:test_plugin_tool::test_unknown_action_returns_error_envelope` | Call `plugin(action="foo")` | Silent mis-dispatch |
+| `../` and symlink escapes rejected | `retired-test:test_plugin_tool::test_containment_rejects_dotdot_escape`, `::test_containment_rejects_symlink_escape` | Point a plugin's `mcp.json` `command` outside its root | Plugin-declared path reaches outside its own root |
+| Invalid input fails before any scan | `retired-test:test_plugin_tool::test_extra_input_field_is_rejected` | Call `plugin` with a bogus `input` field | Wasted or surprising I/O from a malformed call |
 
 Run before merging:
 
-```bash
-python -m pytest tests/test_plugin_tool.py tests/test_signpost_tool_descriptions.py \
-  tests/test_agent_capabilities.py -q
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_plugin_tool, test_signpost_tool_descriptions.
 ```
 
 ## Schema and glossary ownership

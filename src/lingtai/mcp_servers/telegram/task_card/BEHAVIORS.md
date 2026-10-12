@@ -15,6 +15,8 @@ maintenance: |
   telegram task-card projection behavior clause changes, update the guarding
   LABT here in the same change.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Telegram Task Card Projection Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -35,7 +37,7 @@ the project's Python.
 - **estimate**: ≈ 20 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_telegram_task_card_programmable.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. In `<scratch>`, set `taskcard/status` to exact `active` with a nonempty body and project the card; then set status to a missing/unreadable value and project again; record both compositions.
 3. Re-project with identical body bytes and confirm no transport update occurs (diff-only); set status to exact `inactive` twice and confirm the second projection delivers nothing further.
 
@@ -57,7 +59,7 @@ Pass when the suite passes and the active/diff-only observations hold. Fail on p
 - **estimate**: ≈ 2 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_telegram_task_card_event_tail.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Project one tool-call group whose notification carrier reports `current_call.output`, `current_call.thinking`, cache miss/rate, and session context.
 3. Project one pure-text group whose `llm_response` reports `output_tokens` and `thinking_tokens`, then repeat without a thinking field.
 4. Project text, tool-only and mixed `llm_response.stream_timing` with first actual output 1.2s, generation interval 4s and 180 non-reasoning output tokens; then omit timing or final usage.
@@ -87,7 +89,7 @@ Pass when both normalized usage paths render the same parenthesized reasoning co
 - **estimate**: ≈ 2 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_telegram_task_card_event_tail.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Project an existing successful `tool_result` followed by `apriori_summary_generated`, plus its already-recorded `source=summarize_apriori` token-ledger row, all sharing one `tool_call_id`.
 3. Repeat with missing, malformed, mismatched, and unsuccessful inputs, and restart-rehydrate the valid case.
 
@@ -109,7 +111,7 @@ Pass when only fully correlated existing data produces the second line in the re
 - **estimate**: ≈ 2 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_telegram_task_card_programmable.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Project an active `taskcard/taskcard.md` body containing ATX heading and subheading lines, `**bold**`, inline backtick code, nested unordered/task-list items, and an ordered item onto a resident that already has automatic content.
 3. Repeat with raw HTML, `<`, `>`, `&`, and unmatched bold/backtick delimiters; inspect both the provider text and the shared resident slot.
 
@@ -131,7 +133,7 @@ Pass when supported Markdown renders without visible source markers, unsafe inpu
 - **estimate**: approximately 2 minutes
 
 ### Steps
-1. Run `python -m pytest -q tests/test_telegram_task_card_api_cost.py -k 'claude_cli or response_model_absent'`.
+1. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed**.
 2. Inspect the exact-model fixture: requested `opus`, returned `claude-sonnet-5-5`. Confirm the billing event/projected row uses the returned id, keeps the requested alias distinct, and prices by exact catalog key.
 3. Check missing, malformed, conflicting and multi-model fixtures plus a non-Claude control; no guessed model mapping or configuration mutation occurs.
 

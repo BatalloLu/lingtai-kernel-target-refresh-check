@@ -9,14 +9,14 @@ related_files:
 - src/lingtai/tools/mcp/skills/mcp-manual/SKILL.md
 - pyproject.toml
 - tests/test_mcp_sdk_v2_contract.py
-- tests/test_mcp_capability.py
-- tests/test_mcp_v2_adapter_metadata.py
 maintenance: |
   Tracks the officially supported MCP SDK range, the negotiated protocol
   version, and the SDK-versus-LingTai ownership split. Update it whenever the
   `mcp` dependency range changes, the client/server handler shape changes, or
   the tool-metadata sidecar contract changes.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # MCP protocol compatibility
 
@@ -183,5 +183,5 @@ defects.
 * `src/lingtai/services/ANATOMY.md` — client internals and state.
 * `src/lingtai/mcp_servers/ANATOMY.md` — curated server layout.
 * `tests/test_mcp_sdk_v2_contract.py` — executable form of this reference.
-* `tests/test_mcp_capability.py` / `tests/test_mcp_v2_adapter_metadata.py` —
+* `retired-test:test_mcp_capability` / `retired-test:test_mcp_v2_adapter_metadata` —
   Agent and task-daemon argument-boundary regressions.

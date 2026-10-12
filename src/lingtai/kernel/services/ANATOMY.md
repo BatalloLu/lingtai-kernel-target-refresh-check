@@ -9,8 +9,6 @@ related_files:
   - src/lingtai/kernel/services/__init__.py
   - src/lingtai/kernel/services/logging.py
   - src/lingtai/kernel/services/mail.py
-  - tests/test_services_logging.py
-  - tests/test_services_mail.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. Include neighboring
   ANATOMY.md files so the anatomy graph stays connected rather than isolated;

@@ -21,7 +21,6 @@ related_files:
   - src/lingtai/tools/daemon/supervisor_runtime.py
   - src/lingtai/kernel/refresh_watcher/watcher_program.py
   - tests/_notification_store_helpers.py
-  - tests/test_notification_delay_alarm.py
   - tests/test_notification_store.py
 maintenance: |
   <!-- CANONICAL-MAINTENANCE v2 BEGIN -->

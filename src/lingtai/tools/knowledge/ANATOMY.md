@@ -10,8 +10,6 @@ related_files:
   - src/lingtai/tools/tool_family/ANATOMY.md
   - src/lingtai/tools/tool_family/CONTRACT.md
   - src/lingtai/tools/CONTRACT.md
-  - tests/test_knowledge.py
-  - tests/test_tool_family_knowledge_migration_parity.py
   - src/lingtai/tools/knowledge/glossary-en.md
   - src/lingtai/tools/knowledge/glossary-zh.md
   - src/lingtai/tools/knowledge/glossary-wen.md

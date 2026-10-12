@@ -821,7 +821,7 @@ def build_schema_row(row: SchemaRow):
 # for the official endpoint and a compatible ``base_url`` alike, turn 2 replays
 # the FULL canonical history and sends NO ``previous_response_id``.
 #
-# This does not duplicate ``tests/test_openai_responses_stateless.py`` (which
+# This does not duplicate ``retired-test:test_openai_responses_stateless`` (which
 # exhaustively characterizes the stateless session in isolation); it pins the one
 # thing the ledger must own — that the *production selection* through
 # ``LLMService`` yields this wire.

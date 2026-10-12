@@ -12,14 +12,14 @@ related_files:
   - src/lingtai/tools/tool_family/CONTRACT.md
   - src/lingtai/tools/context/CONTRACT.md
   - src/lingtai/intrinsic_skills/lingtai-manual/SKILL.md
-  - tests/test_context_ownership_redesign.py
-  - tests/test_pad_lingtai_split.py
 maintenance: |
   This component contract is governed by root CONTRACT.md. Keep the paired
   ANATOMY.md, manual, schema, glossary resources, and focused tests in sync.
   Bump contract_version for breaking changes. Version 2 makes the public family
   a manual-only signpost and removes update/load without aliases.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 
 # LingTai capability contract
 
@@ -88,9 +88,9 @@ and active `context.rebuild`.
 
 Focused evidence:
 
-```bash
-python -m pytest -q tests/test_context_ownership_redesign.py \
-  tests/test_pad_lingtai_split.py
+```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_context_ownership_redesign, test_pad_lingtai_split.
 ```
 
 The tests pin the manual-only schema and dispatch, strict retired-action

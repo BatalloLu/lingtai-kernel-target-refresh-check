@@ -13,7 +13,6 @@ related_files:
   - src/lingtai/adapters/acp/server.py
   - src/lingtai/cli_acp.py
   - src/lingtai/venv_resolve.py
-  - tests/test_venv_resolve.py
   - src/lingtai/cli_puffo_v0.py
   - src/lingtai/cli.py
   - src/lingtai/kernel/turns.py
@@ -29,28 +28,17 @@ related_files:
   - src/lingtai/kernel/base_agent/lifecycle.py
   - src/lingtai/kernel/base_agent/ANATOMY.md
   - src/lingtai/kernel/base_agent/CONTRACT.md
-  - tests/test_acp_stdio.py
-  - tests/test_resident_acp_socket.py
-  - tests/test_puffo_v0_profile.py
-  - tests/test_puffo_admission_witness.py
-  - tests/test_driver_authority_adapter.py
-  - tests/test_correlated_turns.py
-  - tests/test_execution_workspace.py
-  - tests/test_turn_events.py
-  - tests/test_turn_permissions.py
-  - tests/test_provider_admission.py
-  - tests/test_tool_executor.py
-  - tests/test_session_mcp.py
   - tests/test_process_match.py
   - tests/test_lifecycle_daemon_shutdown.py
   - tests/test_lingtai_facade.py
-  - tests/test_tools_package_data.py
 maintenance: |
   Keep related_files as repo-relative paths to real files and keep the parent
   src/lingtai Anatomy edge reciprocal. Update this Anatomy with the ACP Contract,
   behavior task, manual, adapter, composition root, Core turn boundary, and tests
   whenever structure or ownership changes. See lingtai-dev-guide for details.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # ACP local driving adapters
 
 Local Agent Client Protocol v1 driving Adapter. This is a governed component
@@ -131,7 +119,7 @@ co-located [`CONTRACT.md`](CONTRACT.md), and its operator/developer procedure is
   reuses the active virtualenv when no explicit source override is present,
   and delegates validation to `../../venv_resolve.py`. Its bootstrap subprocesses
   route stdout to stderr and fail on an unavailable published version pin
-  (startup coverage in ACP001 and `tests/test_venv_resolve.py`),
+  (startup coverage in ACP001 and `retired-test:test_venv_resolve`),
   composes the existing Agent, consumes the typed bounded stop proof, and hard-
   exits on incomplete quiescence so no later Python state write can race teardown.
   For both Puffo profiles, it consumes the one launcher-injected Driver authority
@@ -158,10 +146,10 @@ co-located [`CONTRACT.md`](CONTRACT.md), and its operator/developer procedure is
   They contain no ACP vocabulary.
 - `../../services/session_mcp.py` — atomic outer stdio overlay: start/list all,
   collision preflight, one publication, explicit lease, and rollback/close.
-- `tests/test_acp_stdio.py` / `tests/test_puffo_v0_profile.py` / `tests/test_correlated_turns.py` /
-  `tests/test_turn_events.py` / `tests/test_turn_permissions.py` / `tests/test_tool_executor.py` /
+- `tests/test_acp_stdio.py` / `retired-test:test_puffo_v0_profile` / `tests/test_correlated_turns.py` /
+  `retired-test:test_turn_events` / `retired-test:test_turn_permissions` / `retired-test:test_tool_executor` /
   `tests/test_process_match.py` — wire, Core settlement, and duplicate-host
-  conformance evidence. `tests/test_tools_package_data.py` pins wheel/sdist
+  conformance evidence. `retired-test:test_tools_package_data` pins wheel/sdist
   inclusion of this component's governed docs.
 
 ## Connections

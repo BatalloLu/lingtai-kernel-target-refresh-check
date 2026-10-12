@@ -20,8 +20,6 @@ related_files:
 - src/lingtai/kernel/base_agent/__init__.py
 - src/lingtai/tools/avatar/manual/SKILL.md
 - src/lingtai/intrinsic_skills/psyche-manual/reference/settings/SKILL.md
-- tests/test_psyche_family.py
-- tests/test_avatar_rules.py
 maintenance: |
   Keep this short router aligned with the psyche Contract/Anatomy, installed
   domain manuals, settings anchors, and retirement guidance. Put

@@ -36,7 +36,6 @@ related_files:
   - dev-guide-skill/SKILL.md
   - src/lingtai/intrinsic_skills/lingtai-kernel-anatomy/SKILL.md
   - src/lingtai/kernel/meta_block.py
-  - tests/test_runtime_guidance_globals.py
   - tests/test_architecture_documents.py
 maintenance: |
   This file is the normative root of the distributed code interface definition

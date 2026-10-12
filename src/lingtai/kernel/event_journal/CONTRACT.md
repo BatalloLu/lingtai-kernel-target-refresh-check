@@ -13,7 +13,6 @@ related_files:
   - src/lingtai/kernel/services/logging.py
   - src/lingtai/agent.py
   - src/lingtai/cli.py
-  - tests/test_event_journal.py
 maintenance: |
   <!-- CANONICAL-MAINTENANCE v2 BEGIN -->
   This component contract is governed by the root CONTRACT.md. Keep
@@ -28,6 +27,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Structured Event Journal
 
 ## Purpose
@@ -80,7 +81,7 @@ provenance only after primary success.
 
 ## Contract tests
 
-`tests/test_event_journal.py` runs the production adapter through a shared factory
+`retired-test:test_event_journal` runs the production adapter through a shared factory
 and proves order, exact byte offsets, immediate flush visibility, close behavior,
 redaction in both stores, primary-failure ordering, SQLite fail-open behavior,
 raw-Core non-composition, outer-wrapper defaults, CLI injection, and negative

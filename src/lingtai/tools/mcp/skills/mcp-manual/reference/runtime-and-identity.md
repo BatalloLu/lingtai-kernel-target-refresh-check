@@ -4,8 +4,6 @@ related_files:
 - src/lingtai/tools/mcp/__init__.py
 - src/lingtai/services/mcp_registry.py
 - src/lingtai/tools/mcp/CONTRACT.md
-- tests/test_mcp_identity_discovery.py
-- tests/test_tool_family_mcp_migration_parity.py
 maintenance: |
   Owns identity projection, installed-manual paths, launcher ownership, and venv/source provenance; update when those contracts change.
 ---

@@ -12,8 +12,6 @@ related_files:
   - src/lingtai/mcp_servers/telegram/task_card/resident.py
   - src/lingtai/mcp_servers/telegram/SKILL.md
   - src/lingtai/mcp_servers/telegram/manager.py
-  - tests/test_telegram_task_card_last_message.py
-  - tests/test_telegram_reaction_states.py
 maintenance: |
   LABT v2, migrated 2026-08 (CONVERT_BEHAVIOR) from
   tests/test_telegram_task_card_last_message.py (C001) and

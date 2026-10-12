@@ -16,7 +16,6 @@ related_files:
 - src/lingtai/tools/system/CONTRACT.md
 - src/lingtai/tools/system/ANATOMY.md
 - src/lingtai/tools/system/settings.py
-- tests/test_system_declared_plugin.py
 - src/lingtai/kernel/nudge/ANATOMY.md
 - src/lingtai/intrinsic_skills/system-manual/reference/llm-adapters/SKILL.md
 - src/lingtai/intrinsic_skills/system-manual/reference/subs-pool/SKILL.md
@@ -28,7 +27,6 @@ related_files:
 - src/lingtai/llm/openai/adapter.py
 - src/lingtai/intrinsic_skills/system-manual/reference/tool-plugin-settings/SKILL.md
 - src/lingtai/intrinsic_skills/system-manual/reference/settings-inventory/SKILL.md
-- tests/test_skills.py
 maintenance: |
   Tracks the routed source/resources it summarizes; keep refresh-precheck as the
   single refresh-transaction owner and runtime-update-checks as the update,

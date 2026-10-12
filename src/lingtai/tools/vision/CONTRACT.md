@@ -16,11 +16,6 @@ related_files:
   - src/lingtai/tools/tool_family/CONTRACT.md
   - src/lingtai/kernel/tool_plugin/CONTRACT.md
   - src/lingtai/adapters/tool_plugin_host.py
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_tool_family_vision_migration.py
-  - tests/test_vision_capability.py
-  - tests/test_vision_settings.py
-  - tests/test_inherit_fallback.py
 maintenance: |
   Keep this contract aligned with the Vision declaration, owner Anatomy,
   Behaviors/LABTs, installed manual, and family-specific tests. Bump the version
@@ -28,6 +23,8 @@ maintenance: |
   schema composition and envelope dispatch build on the generic tool_family
   package; keep that link current when either boundary changes.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Vision capability contract
 
 `vision` is an always-registered, action-separated capability. It has one public
@@ -221,12 +218,12 @@ Guarded by: [VN002](BEHAVIORS.md#behavior-vn002),
 
 - [VN001](BEHAVIORS.md#behavior-vn001) guards the five-action declaration,
   strict branches, action/input correlation, and pre-handler rejection:
-  `tests/test_tool_family_vision_migration.py`.
+  `retired-test:test_tool_family_vision_migration`.
 - [VN002](BEHAVIORS.md#behavior-vn002) guards analyze success/failure shapes,
   image-path handling, same-provider identity (effective endpoint, no
   credential leak to another endpoint), and no automatic fallback:
-  `tests/test_tool_family_vision_migration.py` and
-  `tests/test_vision_capability.py`.
+  `retired-test:test_tool_family_vision_migration` and
+  `retired-test:test_vision_capability`.
 - [VN003](BEHAVIORS.md#behavior-vn003) guards default/borrowed checks, denied
   preset references, and no image/provider call: the migration test file.
 - [VN004](BEHAVIORS.md#behavior-vn004) guards mechanical list enumeration and
@@ -240,7 +237,7 @@ Guarded by: [VN002](BEHAVIORS.md#behavior-vn002),
 - [VN007](BEHAVIORS.md#behavior-vn007) guards exact settings order and field
   order, effective current/default values, configurable semantics, stable manual
   anchors, complete redaction, no-write behavior, whole-inventory failure, and
-  ordinary analyze non-regression: `tests/test_vision_settings.py` plus the
+  ordinary analyze non-regression: `retired-test:test_vision_settings` plus the
   shared generic settings contract test.
 
 Run the focused Vision capability, service, migration, preset-routing, and

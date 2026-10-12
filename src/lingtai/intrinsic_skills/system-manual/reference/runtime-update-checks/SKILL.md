@@ -26,9 +26,6 @@ related_files:
 - src/lingtai/kernel/snapshot/ANATOMY.md
 - src/lingtai/cli.py
 - src/lingtai/venv_resolve.py
-- tests/test_kernel_version_nudge.py
-- tests/test_source_drift.py
-- tests/test_runtime_identity.py
 maintenance: |
   Keep this as the detailed owner for kernel update/nudge facts, source and
   install provenance, mismatch diagnosis, and the frozen cutover handoff.

@@ -18,11 +18,6 @@ related_files:
   - src/lingtai/tools/daemon/__init__.py
   - src/lingtai/tools/email/__init__.py
   - src/lingtai/tools/plugin/__init__.py
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_tool_family_avatar_migration.py
-  - tests/test_context_declared_tool_plugin.py
-  - tests/test_email_official_tool_plugin.py
-  - tests/test_plugin_tool.py
   - src/lingtai/mcp_servers/_plugin.py
   - src/lingtai/mcp_servers/telegram/plugin.py
   - src/lingtai/mcp_catalog.json
@@ -55,6 +50,8 @@ maintenance: |
   evidence with that family's own proof in the same change rather than leaving
   a stale pass.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # LingTai Tool Protocol (LTP) Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
@@ -72,7 +69,7 @@ repo root with the project's Python.
 - **estimate**: ≈ 20 minutes
 
 ### Steps
-1. From `<repo>`, run `python -m pytest tests/test_tool_family_wire_parity.py -q` and capture the outcome.
+1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Fetch a migrated family's advertised schema (`get_schema()` on the family) and verify the root properties are exactly `action`, `input`, `reasoning`, and `summarize` with `additionalProperties: false`, and that `reasoning`/`summarize` never appear nested under `input`.
 3. Confirm `ToolExecutor` strips root `summarize` before handler dispatch and that the root boolean survives through result post-processing on both single and parallel call paths.
 4. From `<repo>`, run `python -m pytest tests/test_tool_executor.py -q -k 'obsolete_secondary or secondary_named_handler'`. These hermetic executor probes pass the retired `secondary` key to strict Python functions on single-call and concurrent sibling-batch paths, compare it with another unexpected key, and check an explicitly accepting custom handler.
@@ -173,13 +170,10 @@ Pass when the suite passes and the closed-envelope observation holds for a real 
    Context, Daemon, Email, Plugin, Psyche, Notification, Shell, System,
    Task Card, Vision, and Web — none of which goes through packaging:
 
-   ```bash
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -c "import sys; sys.path.insert(0, 'src'); from lingtai.tools.mcp import DECLARATION as mcp; from lingtai.tools.avatar import DECLARATION as avatar; from lingtai.tools.context import DECLARATION as context; from lingtai.tools.daemon import DECLARATION as daemon; from lingtai.tools.email import DECLARATION as email; from lingtai.tools.plugin import DECLARATION as plugin; from lingtai.tools.psyche import DECLARATION as psyche; from lingtai.tools.notification import DECLARATION as notification; from lingtai.tools.bash._tool_family import DECLARATION as shell; from lingtai.tools.system import DECLARATION as system; from lingtai.tools.task_card import DECLARATION as task_card; from lingtai.tools.vision import DECLARATION as vision; from lingtai.tools.web_search import DECLARATION as web; from lingtai.kernel.tool_plugin import OFFICIAL_TOOL_PLUGIN_NAMES; declarations=(mcp, avatar, context, daemon, email, plugin, psyche, notification, shell, system, task_card, vision, web); print(tuple((d.name, d.requires) for d in declarations)); print(OFFICIAL_TOOL_PLUGIN_NAMES); print(tuple(d.name for d in declarations) == OFFICIAL_TOOL_PLUGIN_NAMES)"
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider \
-     tests/test_plugin_tool.py tests/test_task_card_notifications.py \
-     tests/test_tool_family_vision_migration.py \
-     tests/test_web_official_plugin.py tests/test_web_composition_port.py
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_plugin_tool, test_task_card_notifications, test_tool_family_vision_migration, test_web_composition_port, test_web_official_plugin.
+```
 
    Expect thirteen ordered pairs whose names are `mcp, avatar, context, daemon,
    email, plugin, psyche, notification, shell, system, task_card,
@@ -239,18 +233,10 @@ Pass when the suite passes and the closed-envelope observation holds for a real 
 7. Prove the live-collision clause is enforced at the final common model-facing
    boundary, while nonreserved replacement remains intact:
 
-   ```bash
-   grep -n "Remove any existing schema with same name" src/lingtai/kernel/base_agent/tools.py
-   PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q -p no:cacheprovider \
-     tests/test_mcp_capability.py::test_direct_generic_mount_cannot_replace_official_mcp_and_nonreserved_replaces \
-     tests/test_mcp_capability.py::test_external_mcp_cannot_replace_official_mcp_or_leave_routes \
-     tests/test_tool_plugin_declaration.py::test_a_second_different_declaration_cannot_take_a_claimed_name \
-     tests/test_tool_plugin_declaration.py::test_public_mount_bypass_cannot_publish_a_foreign_bound_plugin \
-     tests/test_tool_plugin_declaration.py::test_a_constructed_transaction_cannot_replace_the_canonical_mcp_binding \
-     tests/test_tool_plugin_declaration.py::test_clearing_the_backing_claim_cannot_admit_a_foreign_declaration \
-     tests/test_tool_plugin_declaration.py::test_public_claim_view_cannot_clear_the_live_claim_or_admit_a_foreign_declaration \
-     tests/test_mcp_capability.py::test_sealed_agent_post_preflight_failure_closes_client_and_rolls_back
-   ```
+   ```text
+Automated recipe retired by test pruning (2026-10-12).
+No replacement conformance claimed for: test_mcp_capability, test_tool_plugin_declaration.
+```
 
    Expect the selected tests to pass. Confirm `_add_tool` rebuilds
    `agent._tool_schemas` with `s.name != name`, so last registration still

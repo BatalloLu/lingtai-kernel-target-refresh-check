@@ -18,12 +18,6 @@ related_files:
   - src/lingtai/tools/registry.py
   - src/lingtai/agent.py
   - ENVIRONMENT_VARIABLES.md
-  - tests/test_tool_plugin_declaration.py
-  - tests/test_notification_settings.py
-  - tests/test_notification_tool.py
-  - tests/test_notification_delay_alarm.py
-  - tests/test_notification_sync.py
-  - tests/test_notification_one_shot.py
   - src/lingtai/tools/notification/glossary-en.md
   - src/lingtai/tools/notification/glossary-wen.md
   - src/lingtai/tools/notification/glossary-zh.md
@@ -35,6 +29,8 @@ maintenance: |
   than normalizing them. Keep related paths repo-relative, existing, and
   duplicate-free.
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Notification Tool Anatomy
 
 `src/lingtai/tools/notification/` owns the always-on public `notification`
@@ -52,7 +48,7 @@ Store, delivery, producer, hook, or delay state. Its `notification_state` host
 port reaches the existing Notification Core operations through a callback-only
 production adapter bound to the real agent.
 
-Known aggregate projection and process-local delivered identity live in `kernel/meta_block.py` and `kernel/base_agent/__init__.py`, not this family. Email/daemon/system/known IM use record IDs and material content; generic ID-less hooks use channel versions. Ordinary molt/rebuild/resync retain delivery identity; a new Agent/process restart does not persist it. Focused regression coverage is in `tests/test_notification_one_shot.py`.
+Known aggregate projection and process-local delivered identity live in `kernel/meta_block.py` and `kernel/base_agent/__init__.py`, not this family. Email/daemon/system/known IM use record IDs and material content; generic ID-less hooks use channel versions. Ordinary molt/rebuild/resync retain delivery identity; a new Agent/process restart does not persist it. Focused regression coverage is in `retired-test:test_notification_one_shot`.
 
 ## Components
 
@@ -131,15 +127,15 @@ Known aggregate projection and process-local delivered identity live in `kernel/
 
 ## Tests
 
-`tests/test_tool_plugin_declaration.py` is the compact live vertical proof: it
+`retired-test:test_tool_plugin_declaration` is the compact live vertical proof: it
 asserts claim/mount, declaration ports, package-manual retrieval, check, and the
 closed schema's rejection of the removed dismiss actions.
-`tests/test_notification_tool.py` covers the public LTP and action behavior
+`retired-test:test_notification_tool` covers the public LTP and action behavior
 (including removed-action rejection with no side effects) through a
-declaration-bound test host. `tests/test_notification_one_shot.py` pins one-shot
-delivery. `tests/test_notification_sync.py` and
-`tests/test_notification_delay_alarm.py` exercise the same host-bound dispatch
+declaration-bound test host. `retired-test:test_notification_one_shot` pins one-shot
+delivery. `retired-test:test_notification_sync` and
+`retired-test:test_notification_delay_alarm` exercise the same host-bound dispatch
 alongside the real Core synchronization and durable delay/alarm paths.
-`tests/test_notification_settings.py` proves exact five-field rows, live
+`retired-test:test_notification_settings` proves exact five-field rows, live
 environment and System-v2 precedence, defaults, manual targets, strict empty
 input, whole-action failure, no mutation, and unchanged `check` behavior.

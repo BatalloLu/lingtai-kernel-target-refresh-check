@@ -15,10 +15,6 @@ related_files:
   - src/lingtai/mcp_servers/task_card/event_projection.py
   - src/lingtai/mcp_servers/telegram/manager.py
   - src/lingtai/mcp_servers/telegram/task_card/ANATOMY.md
-  - tests/test_session_stats.py
-  - tests/test_daemon_dispatch_ledger.py
-  - tests/test_provider_admission.py
-  - tests/test_telegram_task_card_rows.py
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.
   Keep this component's ANATOMY.md and CONTRACT.md reciprocal and keep

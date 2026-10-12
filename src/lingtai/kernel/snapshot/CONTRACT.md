@@ -16,11 +16,7 @@ related_files:
   - tests/_snapshot_helpers.py
   - tests/test_snapshot.py
   - tests/test_git_init.py
-  - tests/test_heartbeat.py
   - tests/test_architecture_documents.py
-  - tests/test_runtime_identity.py
-  - tests/test_source_drift.py
-  - tests/test_deep_refresh.py
 maintenance: |
   <!-- CANONICAL-MAINTENANCE v2 BEGIN -->
   This component contract is governed by the root CONTRACT.md. Keep
@@ -35,6 +31,8 @@ maintenance: |
   Follow the root Anatomy/Contract pairing rule, report mismatches, and do not duplicate or auto-fix the rule here.
   <!-- CANONICAL-MAINTENANCE END -->
 ---
+> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+
 # Snapshot + Source Revision
 
 ## Purpose
@@ -98,8 +96,8 @@ fake implementations live in `tests/_snapshot_helpers.py`.
 `tests/test_snapshot.py` runs shared fake/production conformance and locks fixed
 initialization, exact exclusions, stage-all capture, clean no-op, failure
 translation, bounded maintenance, revision formatting, tracked-only dirty state,
-and lifecycle cadence. `tests/test_runtime_identity.py`,
-`tests/test_source_drift.py`, and `tests/test_deep_refresh.py` lock identity,
+and lifecycle cadence. `retired-test:test_runtime_identity`,
+`tests/test_source_drift.py`, and `retired-test:test_deep_refresh` lock identity,
 source digest, safe synthetic drift, and captured watcher identity handoff.
 Architecture tests reject mechanism leakage into the Core Ports.
 

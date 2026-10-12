@@ -18,15 +18,6 @@ related_files:
   - src/lingtai/kernel/tool_executor.py
   - src/lingtai/services/session_mcp.py
   - src/lingtai/kernel/base_agent/lifecycle.py
-  - tests/test_acp_stdio.py
-  - tests/test_resident_acp_socket.py
-  - tests/test_puffo_v0_profile.py
-  - tests/test_correlated_turns.py
-  - tests/test_execution_workspace.py
-  - tests/test_turn_events.py
-  - tests/test_turn_permissions.py
-  - tests/test_tool_executor.py
-  - tests/test_session_mcp.py
   - tests/test_lifecycle_daemon_shutdown.py
 maintenance: |
   Keep this manual's launch, wire, cancellation, diagnostics, scope, and

@@ -144,7 +144,7 @@ def _is_safe_field_label(label: str) -> bool:
 # never ``required``, so this is the one place a family schema must declare
 # ``reasoning`` as required. Kept as a literal copy rather than an import to
 # avoid a tools -> kernel dependency; the exact wording is a contract fact
-# proven equal by ``tests/test_tool_family_wire_parity.py``.
+# formerly checked by ``test_tool_family_wire_parity`` (retired 2026-10-12).
 _REASONING_DESCRIPTION = (
     "Brief explanation of why you are calling this tool "
     "(recorded in your diary)."

@@ -26,14 +26,6 @@ related_files:
   - src/lingtai/tools/notification/__init__.py
   - src/lingtai/kernel/meta_block.py
   - src/lingtai/kernel/notifications.py
-  - tests/test_licc_notification_contract_doc.py
-  - tests/test_mcp_inbox.py
-  - tests/test_meta_block.py
-  - tests/test_notification_sync.py
-  - tests/test_telegram_notification_read_state.py
-  - tests/test_wechat_notification_metadata.py
-  - tests/test_feishu_notification_metadata.py
-  - tests/test_whatsapp_notification_metadata.py
 review_triggers:
   - src/lingtai/services/mcp_inbox.py
   - src/lingtai/services/mcp_licc.py
