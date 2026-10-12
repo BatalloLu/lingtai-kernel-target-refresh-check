@@ -1,27 +1,22 @@
-"""Idle-episode regressions: real state/wake/molt owners, fake provider only.
+"""Simple inactivity gate; canonical context, fake provider, injected clock.
 
-No sleeps, live providers, or background Agent threads. The serialized run loop
-is driven synchronously for one turn; the injected lifecycle clock owns time.
+No live providers or background Agent loops. Historical episode coverage is
+retired, not preserved as an alternative runtime policy.
 """
-from __future__ import annotations
-
 from types import SimpleNamespace
 
 import pytest
 
-from lingtai.kernel.base_agent import BaseAgent, turn
+from lingtai.kernel.base_agent import BaseAgent
 from lingtai.kernel.base_agent.lifecycle import _maybe_notify_auto_molt
 from lingtai.kernel.config import auto_molt_idle_seconds
-from lingtai.kernel.llm.base import LLMResponse
-from lingtai.kernel.llm.interface import ChatInterface, TextBlock, ToolCallBlock, ToolResultBlock
-from lingtai.kernel.message import Message, MSG_REQUEST, MSG_TC_WAKE, MSG_USER_INPUT
-from lingtai.kernel.meta_block import commit_delivered_notification_sources
+from lingtai.kernel.llm.interface import ChatInterface, TextBlock, ToolCallBlock
 from lingtai.kernel.state import AgentState
 from lingtai.tools.context._molt import _context_molt
 from tests._agent_presence_helpers import make_test_presence_store
 from tests._lifecycle_clock_helpers import make_test_lifecycle_clock
 from tests._molt_helpers import write_session_journal
-from tests._notification_store_helpers import notification_store_for, publish_test_payload
+from tests._notification_store_helpers import notification_store_for
 from tests._service_helpers import make_mock_llm_service
 from tests._snapshot_helpers import make_test_snapshot_port, make_test_source_revision_port
 from tests._workdir_lease_helpers import make_test_lease
@@ -52,8 +47,7 @@ def idle_agent(tmp_path, monkeypatch):
 
     monkeypatch.setattr(agent._session, "ensure_session", ensure_chat)
     ensure_chat()
-    # Session persistence is unrelated to the latch; keep the canonical wire
-    # real, without asking this provider-free chat double for adapter history.
+    # Keep canonical wire state without provider adapter persistence.
     monkeypatch.setattr(agent, "_save_chat_history", lambda **kw: None)
     yield agent, clock
     agent.stop(timeout=1.0)
@@ -67,263 +61,65 @@ def _events(agent):
     ]
 
 
-def _drive_one_turn(agent, monkeypatch):
-    """Run the real dequeue/state/admission/handler path with a fake send."""
-    sends = []
-
-    def send(payload):
-        sends.append(payload)
-        agent._chat.interface.add_assistant_message([TextBlock(text="observed")])
-        return LLMResponse(text="observed")
-
-    real_handler = turn._handle_message
-
-    def one_handler(owner, msg):
-        try:
-            return real_handler(owner, msg)
-        finally:
-            owner._shutdown.set()
-
-    with monkeypatch.context() as patch:
-        patch.setattr(agent._session, "send", send)
-        patch.setattr(turn, "_handle_message", one_handler)
-        agent._shutdown.clear()
-        turn._run_loop_body(agent)
-        agent._shutdown.clear()
-    assert agent.state == AgentState.IDLE
-    return sends
-
-
-def _publish_and_deliver(agent, clock):
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 1
-    agent._sync_notifications()
-    assert not agent.inbox.empty()
-
-
-def test_reminder_own_wake_then_idle_never_repeats(idle_agent, monkeypatch):
+@pytest.mark.parametrize("tokens,elapsed,eligible", [
+    (0, 1000, False), (99999, 1000, False), (100000, 1000, False),
+    (100001, 999, False), (100001, 1000, True),
+])
+def test_strict_current_context_and_time_boundary(idle_agent, monkeypatch, tokens, elapsed, eligible):
     agent, clock = idle_agent
-    _publish_and_deliver(agent, clock)
-    episode = agent._auto_molt_episode
-    assert _drive_one_turn(agent, monkeypatch) == [None]
-    assert agent._auto_molt_episode == episode
-    clock.advance_monotonic(2000)
+    # Deliberately unrelated spending/provider snapshot must never own the gate.
+    agent._session._total_input_tokens = 9000000
+    agent._session._latest_input_tokens = 9000000
+    monkeypatch.setattr(agent._chat.interface, "estimate_context_tokens", lambda: tokens)
+    clock.advance_monotonic(elapsed)
     _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 1
-    assert agent.inbox.empty()
+    _maybe_notify_auto_molt(agent)
+    assert len(_events(agent)) == int(eligible)
     assert agent._molt_count == 0
-    assert not (agent._working_dir / "knowledge" / "session-journal").exists()
 
 
-def test_actual_molt_and_post_molt_wake_do_not_rearm(idle_agent, monkeypatch):
+def test_asleep_continuity_and_existing_sync_wake(idle_agent, monkeypatch):
     agent, clock = idle_agent
-    _publish_and_deliver(agent, clock)
-    _drive_one_turn(agent, monkeypatch)
-    episode = agent._auto_molt_episode
-    agent._set_state(AgentState.ACTIVE)
-    journal = write_session_journal(agent)
-    args = {"summary": "No pending work; wait for real input.",
-            "session_journal_path": journal, "_tc_id": "idle_molt", "keep_last": 0}
-    agent._chat.interface.add_assistant_message([
-        ToolCallBlock(id="idle_molt", name="context", args=args),
-    ])
-    result = _context_molt(agent, args)
-    assert result.get("status") == "ok"
-    assert agent._molt_count == 1
-    agent._chat.interface.add_tool_results([
-        ToolResultBlock(id="idle_molt", name="context", content=result),
-    ])
-    agent._set_state(AgentState.IDLE)
-    agent._sync_notifications()
-    assert _drive_one_turn(agent, monkeypatch) == [None]
-    assert agent._auto_molt_episode == episode
-    clock.advance_monotonic(2000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 1
-    assert agent._molt_count == 1
-
-
-@pytest.mark.parametrize("kind,sender", [(MSG_USER_INPUT, "user"), (MSG_REQUEST, "peer")])
-def test_real_new_message_rearms_one_episode(idle_agent, monkeypatch, kind, sender):
-    agent, clock = idle_agent
-    _publish_and_deliver(agent, clock)
-    _drive_one_turn(agent, monkeypatch)
-    episode = agent._auto_molt_episode
-    agent.inbox.put(Message(type=kind, sender=sender, content="new authorized work"))
-    assert len(_drive_one_turn(agent, monkeypatch)) == 1
-    assert agent._auto_molt_episode == episode + 1
-    clock.advance_monotonic(999)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 1
-    clock.advance_monotonic(1)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 2
-    agent._sync_notifications()
-    assert _drive_one_turn(agent, monkeypatch) == [None]
-    clock.advance_monotonic(2000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 2
-
-
-
-@pytest.mark.parametrize("kind,sender", [(MSG_USER_INPUT, "user"), (MSG_REQUEST, "peer")])
-def test_real_work_behind_system_request_rearms_once(idle_agent, monkeypatch, kind, sender):
-    agent, clock = idle_agent
-    _publish_and_deliver(agent, clock)
-    _drive_one_turn(agent, monkeypatch)
-    episode = agent._auto_molt_episode
-    agent.inbox.put(Message(type=MSG_REQUEST, sender="system", content="internal recovery"))
-    agent.inbox.put(Message(type=kind, sender=sender, content="new authorized work"))
-    assert len(_drive_one_turn(agent, monkeypatch)) == 1
-    assert agent._auto_molt_episode == episode + 1
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 2
-
-
-def test_admitted_correlated_task_rearms(idle_agent, monkeypatch):
-    agent, clock = idle_agent
-    _publish_and_deliver(agent, clock)
-    _drive_one_turn(agent, monkeypatch)
-    episode = agent._auto_molt_episode
-    handle = agent.submit_turn("new task", correlation_id="idle-next-task")
-    assert len(_drive_one_turn(agent, monkeypatch)) == 1
-    assert handle.done()
-    assert agent._auto_molt_episode == episode + 1
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 2
-
-
-def test_internal_system_request_does_not_rearm(idle_agent, monkeypatch):
-    agent, clock = idle_agent
-    _publish_and_deliver(agent, clock)
-    _drive_one_turn(agent, monkeypatch)
-    episode = agent._auto_molt_episode
-    agent.inbox.put(Message(type=MSG_REQUEST, sender="system", content="internal recovery"))
-    _drive_one_turn(agent, monkeypatch)
-    assert agent._auto_molt_episode == episode
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 1
-
-
-@pytest.mark.parametrize("channel", ["email", "daemon", "bash", "cron", "mcp.telegram", "mcp.peer"])
-def test_new_notification_work_rearms_but_unchanged_delivery_does_not(idle_agent, channel):
-    agent, clock = idle_agent
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    episode = agent._auto_molt_episode
-    payload = {channel: {"header": "new work", "data": {"count": 1}}}
-    commit_delivered_notification_sources(agent, payload)
-    assert agent._auto_molt_episode == episode + 1
-    commit_delivered_notification_sources(agent, payload)
-    assert agent._auto_molt_episode == episode + 1
-    agent._set_state(AgentState.ACTIVE)
-    agent._set_state(AgentState.IDLE)
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 2
-
-
-def test_old_system_work_does_not_rearm_for_new_maintenance_event(idle_agent):
-    agent, clock = idle_agent
-    old = {"event_id": "old-mail", "source": "email", "body": "delivered"}
-    commit_delivered_notification_sources(agent, {"system": {"data": {"events": [old]}}})
-    agent._set_state(AgentState.ACTIVE)
-    agent._set_state(AgentState.IDLE)
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    episode = agent._auto_molt_episode
-    auto = _events(agent)[0]
-    commit_delivered_notification_sources(agent, {"system": {"data": {"events": [old, auto]}}})
-    assert agent._auto_molt_episode == episode
-    assert agent._auto_molt_notified_since == agent._inactive_since_monotonic
-
-
-def test_new_human_notification_uses_real_sync_wake_owner(idle_agent, monkeypatch):
-    agent, clock = idle_agent
-    _publish_and_deliver(agent, clock)
-    _drive_one_turn(agent, monkeypatch)
-    episode = agent._auto_molt_episode
-    publish_test_payload(agent._working_dir, "mcp.telegram", {
-        "header": "incoming", "data": {"message_ids": ["new-human-1"]},
-    })
-    agent._sync_notifications()
-    assert agent._auto_molt_episode == episode + 1
-    assert _drive_one_turn(agent, monkeypatch) == [None]
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 2
-
-
-@pytest.mark.parametrize("source", ["email", "email.bounce", "mcp.peer", "daemon", "system.sleep_alarm"])
-def test_new_system_work_event_rearms(idle_agent, source):
-    agent, clock = idle_agent
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    episode = agent._auto_molt_episode
-    commit_delivered_notification_sources(agent, {"system": {"data": {"events": [
-        {"event_id": "work-1", "source": source, "body": "new work"},
-    ]}}})
-    assert agent._auto_molt_episode == episode + 1
-
-
-def test_failed_notification_splice_does_not_rearm(idle_agent, monkeypatch):
-    agent, clock = idle_agent
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    agent._sync_notifications()
-    # Consume the own wake without introducing new work.
-    assert agent.inbox.get_nowait().type == MSG_TC_WAKE
-    episode = agent._auto_molt_episode
-    publish_test_payload(agent._working_dir, "mcp.peer", {"header": "pending work"})
-    monkeypatch.setattr(agent, "_inject_notification_pair", lambda payloads: False)
-    monkeypatch.setattr(agent, "_heal_pending_tool_calls", lambda **kw: False)
-    agent._sync_notifications()
-    assert agent._auto_molt_episode == episode
-
-
-@pytest.mark.parametrize("channel", ["post-molt", "memory-length", "molt", "nudge", "goal", "tool_loop_guard"])
-def test_maintenance_notices_do_not_rearm(idle_agent, channel):
-    agent, clock = idle_agent
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    episode = agent._auto_molt_episode
-    commit_delivered_notification_sources(agent, {channel: {"header": "maintenance"}})
-    assert agent._auto_molt_episode == episode
-
-
-@pytest.mark.parametrize("state", [AgentState.ACTIVE, AgentState.STUCK, AgentState.SUSPENDED, AgentState.ASLEEP])
-def test_state_churn_retains_success_latch(idle_agent, state):
-    agent, clock = idle_agent
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    agent._set_state(state)
-    agent._set_state(AgentState.IDLE)
-    clock.advance_monotonic(2000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 1
-
-
-def test_idle_asleep_continuity_and_notification_wake(idle_agent, monkeypatch):
-    agent, clock = idle_agent
+    monkeypatch.setattr(agent._chat.interface, "estimate_context_tokens", lambda: 100001)
+    since = agent._inactive_since_monotonic
     clock.advance_monotonic(500)
     agent._set_state(AgentState.ASLEEP)
     agent._asleep.set()
     clock.advance_monotonic(500)
     _maybe_notify_auto_molt(agent)
+    assert agent._inactive_since_monotonic == since
+    assert len(_events(agent)) == 1
     agent._sync_notifications()
     assert not agent._asleep.is_set()
-    assert _drive_one_turn(agent, monkeypatch) == [None]
+    agent._set_state(AgentState.ACTIVE)
+    assert agent._inactive_since_monotonic is None
+    assert agent._auto_molt_notified_since is None
+
+
+@pytest.mark.parametrize("unknown", ["unloaded", "error", None])
+def test_unknown_context_does_not_create_session(idle_agent, monkeypatch, unknown):
+    agent, clock = idle_agent
+    def forbidden():
+        pytest.fail("heartbeat created a session")
+    monkeypatch.setattr(agent._session, "ensure_session", forbidden)
+    if unknown == "unloaded":
+        agent._session._chat = None
+    else:
+        def estimate():
+            if unknown == "error":
+                raise ValueError("unknown")
+            return None
+        monkeypatch.setattr(agent._chat.interface, "estimate_context_tokens", estimate)
     clock.advance_monotonic(1000)
     _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 1
+    assert not _events(agent)
+    assert agent._auto_molt_notified_since is None
 
 
-def test_publish_failure_retries_and_only_success_latches(idle_agent, monkeypatch):
+def test_failed_publish_retries_and_journal_is_still_required(idle_agent, monkeypatch):
     agent, clock = idle_agent
+    monkeypatch.setattr(agent._chat.interface, "estimate_context_tokens", lambda: 100001)
+    before = agent._chat.interface.to_dict()
     clock.advance_monotonic(1000)
     with monkeypatch.context() as patch:
         def fail(**kwargs):
@@ -332,53 +128,40 @@ def test_publish_failure_retries_and_only_success_latches(idle_agent, monkeypatc
         _maybe_notify_auto_molt(agent)
     assert agent._auto_molt_notified_since is None
     _maybe_notify_auto_molt(agent)
+    _maybe_notify_auto_molt(agent)
     assert len(_events(agent)) == 1
     assert agent._auto_molt_notified_since == agent._inactive_since_monotonic
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 1
-
-
-def test_old_publish_success_cannot_latch_later_real_episode(idle_agent, monkeypatch):
-    agent, clock = idle_agent
-    clock.advance_monotonic(1000)
-    publish = agent._enqueue_system_notification
-
-    def interleaved_publish(**kwargs):
-        result = publish(**kwargs)
-        # Model a real inbound delivery interleaving between publish and latch.
-        # Reuse the exact monotonic anchor to prove generation, not time, wins.
-        commit_delivered_notification_sources(agent, {"mcp.peer": {"header": "new work"}})
-        agent._set_state(AgentState.ACTIVE)
-        clock.set_monotonic(0)
-        agent._set_state(AgentState.IDLE)
-        return result
-
-    with monkeypatch.context() as patch:
-        patch.setattr(agent, "_enqueue_system_notification", interleaved_publish)
-        _maybe_notify_auto_molt(agent)
-    assert agent._auto_molt_notified_since is None
-    clock.set_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 2
-    assert len({event["ref_id"] for event in _events(agent)}) == 2
-
-
-def test_inactivity_never_bypasses_journal_or_forces_shed(idle_agent):
-    agent, clock = idle_agent
-    before = agent._chat.interface.to_dict()
-    clock.advance_monotonic(1000)
-    _maybe_notify_auto_molt(agent)
-    assert agent._molt_count == 0
-    assert agent._chat.interface.to_dict() == before
+    assert "valid session journal" in _events(agent)[0]["body"]
+    assert "defer the molt" in _events(agent)[0]["body"]
     result = _context_molt(agent, {"summary": "idle", "_tc_id": "missing"})
     assert "error" in result
     assert agent._molt_count == 0
     assert agent._chat.interface.to_dict() == before
-    body = _events(agent)[0]["body"]
-    assert "valid actionable molt reason" in body
-    assert "valid session journal" in body
-    assert "defer the molt" in body
-    assert "remain IDLE" in body
+
+
+def test_actual_molt_drop_reads_replacement_context(idle_agent, monkeypatch):
+    agent, clock = idle_agent
+    # Exercise the existing canonical estimator deterministically, not a new one.
+    monkeypatch.setattr("lingtai.kernel.token_counter.count_tokens", len)
+    old_chat = agent._chat
+    old_chat.interface.add_user_blocks([TextBlock(text="x" * 100001)])
+    clock.advance_monotonic(1000)
+    _maybe_notify_auto_molt(agent)
+    assert len(_events(agent)) == 1
+    agent._set_state(AgentState.ACTIVE)
+    args = {"summary": "Wait for real input.", "session_journal_path": write_session_journal(agent),
+            "_tc_id": "idle_molt", "keep_last": 0}
+    old_chat.interface.add_assistant_message([ToolCallBlock(id="idle_molt", name="context", args=args)])
+    assert _context_molt(agent, args).get("status") == "ok"
+    assert agent._chat is not old_chat
+    assert agent._chat.interface.estimate_context_tokens() < 100000
+    # Even an outdated provider snapshot cannot override the replacement wire.
+    agent._session._latest_input_tokens = 9000000
+    agent._set_state(AgentState.IDLE)
+    clock.advance_monotonic(1000)
+    _maybe_notify_auto_molt(agent)
+    assert len(_events(agent)) == 1
+    assert agent._auto_molt_notified_since is None
 
 
 @pytest.mark.parametrize("raw,expected", [(None, 1800), ("1000", 1000), ("1800", 1800),

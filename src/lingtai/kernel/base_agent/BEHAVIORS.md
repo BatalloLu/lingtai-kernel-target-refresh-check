@@ -266,25 +266,29 @@ Pass when both assertions hold and no test sends a real message. Fail if a hidde
 ### Pass / Fail
 Pass when the focused producer tests pass; fail on inferred duration or wall-time subtraction.
 
-## Behavior BA009 — one actionable inactivity molt reminder per real-work idle episode
+## Behavior BA009 — inactivity reminder requires current context above 100000
 
 - **id**: BA009
-- **title**: reminder wake, state churn and actual molt never re-arm an episode; new real work can
-- **guards**: `agent-runtime` § [Contract rules](CONTRACT.md#contract-rules), idle-episode reminder paragraph
+- **title**: continuous IDLE/ASLEEP time and strict current-context gate, never forced molt
+- **guards**: `agent-runtime` § [Contract rules](CONTRACT.md#contract-rules), inactivity-period paragraph
 - **runner**: any LingTai agent with shell access
-- **prerequisites**: this repository checkout as current directory, a test-enabled Python interpreter as `python`; no live agent/provider or shared workdir
+- **prerequisites**: this checkout as current directory, test-enabled interpreter `python`; no live agent/provider or shared workdir
 - **estimate**: ≈ 1 minute
 
 ### Steps
-1. From the repository root, run `PYTHONPATH="$PWD/src" python -m pytest -q tests/test_auto_molt_idle_episode.py`; capture the complete exit status and test summary. The tests create only temporary scratch agents, use a fake provider and injected monotonic clock, and run no background Agent loop.
-2. Run `PYTHONPATH="$PWD/src" python -m pytest -q tests/test_tc_wake.py tests/test_aed_recovery.py tests/test_molt_notification_persistence.py` for adjacent modern-wake, cancellation and notification-preservation safeguards.
+1. Run `python -m pytest -q tests/test_auto_molt_idle_episode.py` from the repository root and capture exit status/summary. Tests use temporary scratch agents, fake provider and injected clock, with no background Agent loop.
+2. Run `python -m pytest -q tests/test_tc_wake.py tests/test_aed_recovery.py tests/test_molt_notification_persistence.py` for adjacent safeguards.
 
 ### Expected evidence
-- [ ] Positive finite 1000/1800 values win; missing/malformed/nonpositive/nonfinite values use 1800.
-- [ ] Own notification wake → IDLE and actual context molt/post-molt wake do not repeat at the next threshold. IDLE↔ASLEEP and generic state churn keep the latch.
-- [ ] Fresh human/peer/task input or newly delivered communication/work-completion input re-arms exactly one next episode; unchanged mirrors and maintenance reminders do not.
-- [ ] Failed publication retries; an old successful publication cannot latch later real work, even at an identical monotonic anchor.
-- [ ] No forced molt/journal occurs; journal refusal preserves count/history. The actionable reminder teaches safe journaling and explicit unfinished-work defer, then IDLE waiting for real input.
+- [ ] Positive finite env duration wins; invalid/missing values use 1800.
+- [ ] At elapsed ≥ duration, context ≤100000 remains silent; >100000 publishes once. Before duration, even large context remains silent.
+- [ ] IDLE↔ASLEEP retains the period; leaving inactivity clears it. ASLEEP publication uses normal sync wake.
+- [ ] Unloaded/unknown context never creates a session; failed publication retries, only success latches.
+- [ ] Actual molt replaces context; a drop below the boundary suppresses the next due reminder despite stale/cumulative token counters.
+- [ ] No forced shed/journal occurs; journal refusal preserves count/history and safe guidance loads in a full Agent prompt.
 
 ### Pass / Fail
-Pass only when both commands exit zero and all evidence holds. Fail on a repeated own-wake episode, lost real-work rearm, failed-publish latch, stale success suppressing new work, forced context shed or journal-gate bypass. These hermetic regressions do not prove a live model chose to journal/molt or restore retired heartbeat-loop coverage; report that limitation separately.
+Pass only when both commands exit zero and all evidence holds. Fail on incorrect
+boundaries, session creation, failed-publish latch or journal bypass. Hermetic
+coverage does not prove live model behavior or restore retired heartbeat-loop
+coverage; report those limits separately.

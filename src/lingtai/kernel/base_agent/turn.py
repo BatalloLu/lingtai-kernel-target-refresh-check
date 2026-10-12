@@ -1403,17 +1403,6 @@ def _run_loop_body(agent) -> None:
                 )
                 continue
 
-            # Only fresh work starts another auto-molt episode. The payload-
-            # free tc_wake (including own reminder/post-molt) and internal
-            # system recovery requests must not re-arm it. This boundary is
-            # outside AED retries and after live correlated-turn admission.
-            if turn_control is not None or msg.type == MSG_USER_INPUT or (
-                msg.type == MSG_REQUEST and msg.sender != "system"
-            ):
-                rearm = getattr(agent, "_rearm_auto_molt_for_work", None)
-                if callable(rearm):
-                    rearm()
-
             # --- Process with AED (Automatic Error Detection) ---
             sleep_state = AgentState.IDLE
             handler_result = None
@@ -2114,16 +2103,6 @@ def _concat_queued_messages(agent, msg: Message) -> Message:
              for m in all_msgs]
     merged_content = "\n\n".join(parts)
     merged = _make_message(MSG_REQUEST, msg.sender, merged_content)
-    # The merged envelope keeps the first sender. Preserve real-work rearming
-    # when a system-first recovery request absorbs genuine user/peer input;
-    # the later dequeue predicate cannot recover that provenance from it.
-    if merged.sender == "system" and any(
-        m.type == MSG_USER_INPUT or (m.type == MSG_REQUEST and m.sender != "system")
-        for m in all_msgs
-    ):
-        rearm = getattr(agent, "_rearm_auto_molt_for_work", None)
-        if callable(rearm):
-            rearm()
     # A merge that absorbs the relaunch's AED redo keeps that message's id so
     # the redo stays bound by id alone (message text is never inspected).
     in_flight = getattr(agent, "_llm_worker_redo_in_flight", None)
