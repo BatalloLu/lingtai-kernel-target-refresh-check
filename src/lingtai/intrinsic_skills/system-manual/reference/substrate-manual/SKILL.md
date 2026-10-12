@@ -144,7 +144,8 @@ reminder — is owned by the first-level `notification-manual` skill.
 ### Context compression, and where `summarize` lives
 
 `system` exposes **no** `summarize` action. The three deliberate compression
-modes — a-priori `summary=true`, a-posteriori `context(action="summarize")`, and
+modes — default-on a-priori root `summarize` (explicit `false` for raw results),
+a-posteriori `context(action="summarize")`, and
 molt — are owned in full by `context-manual` → `reference/summarize-manual/SKILL.md`
 §0. Read that owner reference for rebuild boundaries, cadence, recovery, and
 the summarize-versus-molt distinction; follow current runtime guidance rather

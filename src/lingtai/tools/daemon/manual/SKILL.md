@@ -85,7 +85,11 @@ a task failure: inspect the run's trace/result and the run directory's physical
 background required validation and end expecting re-entry. Native LingTai `ask`
 reaches live runs only; terminal resume is a separate supported-CLI capability.
 
-The optional root `summarize` boolean replaces the former flat `summary` field.
+The optional root `summarize` boolean replaces the former flat `summary` field
+and defaults to `true` on migrated roots. Specify what to retain in `reasoning`;
+proactively set `summarize=false` for verbatim manuals and mandatory gates,
+exact names/paths, field presence, source, diffs, or evidence. Summaries are
+lossy and noncanonical; raw history and recovery locators remain preserved.
 LingTai workers receive `compact`: `compact(action="manual")` is read-only and
 `compact(action="run", _reason="...")` is a repeatable sole-call, nonterminal
 context reset. Do not use the unavailable parent `system.summarize`.

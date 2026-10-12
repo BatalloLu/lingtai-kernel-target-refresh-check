@@ -19,7 +19,7 @@ maintenance: |
 - `action`：必备。族中所行之事，四者择一：'run' 执行指令，'poll' 查异步任务之状，'cancel' 斩异步任务，'manual' 返已装之 shell-manual 一技。无默认。
 - `input`：必备。所择 action 专属之严格入参；诸动作之字段各不相通，跨动作之字段未及派发即被拒。
 - `reasoning`：必备。略述何以召此器（录于日记）。乃 Host 之元数据，不入 action 之参。
-- `summarize`：可选，默认 false。根层跨切之结果后处理，非 action 之参。设 true 时，此 tool 照常运行，原始结果完存于持久日志（可凭 tool_call_id 取回）；然结果入尔上下文前，先以尔 `reasoning` 字段所驱之 LLM 摘要代之——故 `reasoning` 当明言所欲存者。唯料输出甚巨（逾一万字符）且无需精确原文时，方设 true。需精确之行/文件/diff/stderr 原文者，留 false。摘要非权威；原始结果逾五十万字符，则不生摘要，尔得一拒辞，指向所存之原始结果。
+- `summarize`：可选，省略则 true；欲取原始结果，明设 false。根层跨切之结果后处理，非 action 之参。设 true 时，此 tool 照常运行，原始结果完存于持久日志（可凭 tool_call_id 取回）；然结果入尔上下文前，先以尔 `reasoning` 字段所驱之 LLM 摘要代之——故 `reasoning` 当明言所欲存者。无需精确原文者可留默认摘要；欲逐字据证者，主动设 false。需精确之行/文件/diff/stderr 原文者，留 false。摘要非权威；原始结果逾五十万字符，则不生摘要，尔得一拒辞，指向所存之原始结果。
 - `input.command`（唯 run）：欲执行之指令
 - `input.timeout`（唯 run）：超时秒数，传 null 即用默认三十；唯同步执行时生效
 - `input.working_dir`（唯 run）：指令之工作目录，传 null 或空字符串即用 agent 工作目录。须在 agent 工作目录沙箱之内；沙箱外路径会被拒。若需操作外部仓库/路径，请令 working_dir 保持为 agent 目录，并在 command 中显式 cd，如 cd /absolute/path && ...

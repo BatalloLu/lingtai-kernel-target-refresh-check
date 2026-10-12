@@ -1,6 +1,6 @@
 ---
 name: tool-family
-contract_version: 4
+contract_version: 5
 root_contract: CONTRACT.md
 related_files:
   - src/lingtai/tools/tool_family/ANATOMY.md
@@ -111,7 +111,13 @@ actually honors it is a separate, per-family allowlist decision
 (`kernel/tool_result_summary.py` `_LTP_V2_MIGRATED_FAMILIES`) that this
 package does not own or enforce. Today `web`, `mcp`, `plugin`, `vision`,
 `avatar`, `shell`, `notification`, `system`, `daemon`, `email`,
-`task_card`, `context`, and `psyche` are on that allowlist, so `summarize` is
+`task_card`, `context`, `psyche`, and the kernel-shipped curated roots
+`telegram`, `feishu`, `imap`, `wechat`, `whatsapp`, and `cloud_mail` are on that
+allowlist. Their root control defaults to `true` in both schema and runtime;
+explicit canonical `false` always requests raw presentation, even alongside
+legacy `summary=true`. Present null/malformed values retain literal-True
+semantics and dispatch validation; unrelated external domain fields are not
+reinterpreted. Guarded by [LP003](../BEHAVIORS.md#behavior-lp003). Thus `summarize` is
 meaningful for the families that use this infrastructure; a family adopting
 `ToolFamily` without also joining the kernel allowlist would advertise a
 model-visible `summarize` control that the kernel silently ignores —

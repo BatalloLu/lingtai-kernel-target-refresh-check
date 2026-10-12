@@ -24,6 +24,7 @@ related_files:
   - src/lingtai/services/plugin_registry.py
   - src/lingtai/kernel/base_agent/tools.py
   - src/lingtai/kernel/tool_executor.py
+  - src/lingtai/kernel/tool_result_summary.py
   - tests/test_tool_executor.py
   - scripts/check_docs_governance.py
   - tests/test_architecture_documents.py
@@ -71,7 +72,7 @@ repo root with the project's Python.
 ### Steps
 1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Fetch a migrated family's advertised schema (`get_schema()` on the family) and verify the root properties are exactly `action`, `input`, `reasoning`, and `summarize` with `additionalProperties: false`, and that `reasoning`/`summarize` never appear nested under `input`.
-3. Confirm `ToolExecutor` strips root `summarize` before handler dispatch and that the root boolean survives through result post-processing on both single and parallel call paths.
+3. Confirm family dispatch validates and strips root `summarize` before child dispatch, while `ToolExecutor` retains the root control through result post-processing on both single and parallel call paths.
 4. From `<repo>`, run `python -m pytest tests/test_tool_executor.py -q -k 'obsolete_secondary or secondary_named_handler'`. These hermetic executor probes pass the retired `secondary` key to strict Python functions on single-call and concurrent sibling-batch paths, compare it with another unexpected key, and check an explicitly accepting custom handler.
 
 ### Expected evidence
@@ -375,3 +376,55 @@ lines, in the task report. This task performs no writes: creating a plugin
 package or editing a contract to make an assertion pass are forbidden side
 effects; the pytest node IDs named in steps 4, 7, and 9 are read-only
 verification and are the only code the task runs.
+
+## Behavior LP003 — default-on root summaries preserve proactive exact-raw opt-out
+
+- **id**: LP003
+- **title**: migrated roots default to a-priori summary; explicit false preserves raw evidence
+- **guards**: `lingtai-tool-protocol` § [Envelope](CONTRACT.md#envelope),
+  `tool-family` § [Behavior](tool_family/CONTRACT.md#behavior), and
+  `daemon-contract` § [A-priori summary composition](daemon/CONTRACT.md#a-priori-summary-composition)
+- **runner**: any LingTai agent with `shell` access to this repository
+- **prerequisites**: candidate checkout at `<repo>` with its repository virtual
+  environment and installed development dependencies; no live provider, MCP
+  server, channel credentials, or running agent is required. Run commands from
+  `<repo>`. Read this task and mandatory manuals with root `summarize=false`.
+- **estimate**: ≈ 5 minutes
+
+### Steps
+
+1. From `<repo>`, run `.venv/bin/python -m pytest -q tests/test_tool_executor.py -k apriori_default`.
+2. Inspect the successful probe assertions: exact migrated roots are `web`,
+   `mcp`, `plugin`, `vision`, `avatar`, `shell`, `notification`, `system`,
+   `daemon`, `email`, `task_card`, `context`, `psyche`, `telegram`, `feishu`,
+   `imap`, `wechat`, `whatsapp`, and `cloud_mail`. No arbitrary external root
+   becomes a presentation control merely by exposing a field named `summarize`.
+3. Inspect `src/lingtai/tools/tool_family/__init__.py` and
+   `src/lingtai/mcp_servers/cloud_mail/_family.py`: both root schemas advertise
+   boolean `summarize` with `default: true`, proactive explicit false for raw
+   manuals/mandatory gates, exact names/paths/fields, source/diffs/evidence,
+   and a retention specification in `reasoning`.
+
+### Expected evidence
+
+- [ ] Step 1 exits zero; omission invokes the summarizer for tiny receipts on
+  actual single/concurrent consumers and daemon-local recovery locators.
+- [ ] Explicit canonical false wins even alongside legacy `summary=true`;
+  raw durable records precede summary generation and are not rewritten.
+- [ ] Null/malformed values retain literal-True control semantics and the
+  existing parser error contract. Parser/tool failures remain exact.
+- [ ] All six curated real schemas and manual dispatchers agree with the
+  executor default, including Cloud Mail's independently composed schema.
+- [ ] Context's `summarize` action and agent-authored `input.items[].summary`
+  remain domain data. Unrelated `Context.summarize` is not reinterpreted.
+- [ ] Missing summary gateway remains fail-closed with preserved raw recovery,
+  not a hidden size bypass or fail-open raw fallback.
+
+### Pass / Fail
+
+Pass only with the zero-exit focused probes and the advertised schema checks.
+Fail if omission returns raw on a migrated root, canonical false is overridden,
+raw history is replaced, required manuals lose their explicit opt-out guidance,
+or an unrelated domain field changes meaning. These are hermetic presentation
+probes, not proof of live-provider startup, pricing, or full prompt construction;
+those acceptance gates belong to the integrating parent/reviewer.

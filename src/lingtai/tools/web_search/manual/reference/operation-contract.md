@@ -27,7 +27,9 @@ matters. It documents existing actions; it adds no action or capability.
 ## Action envelope and first-call rules
 
 The closed root is required `action`, `input`, and `reasoning`, plus optional
-boolean `summarize` (default `false`). Action branches are strict: `search`
+boolean `summarize` (default `true`; proactively set `false` when raw results
+are required, including manuals, exact references/paths, field presence, source,
+or evidence). Action branches are strict: `search`
 input is exactly `{"query":"..."}`; `settings` and `manual` input are `{}`;
 browse has required `url`, `link_ref`, `cursor`, `extract`, and `max_chars`,
 with unused optionals represented as JSON `null`; `extract` accepts only

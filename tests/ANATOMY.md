@@ -190,7 +190,10 @@ graph.
   post-molt context, journal refusal, env parsing and full Agent prompt loading.
   It does not restore retired heartbeat/notification matrices.
 - Reduced `test_tool_executor.py` retains the accepted ordinary serial/parallel
-  unexpected-key and explicit custom-handler boundaries. Reduced
+  unexpected-key and explicit custom-handler boundaries, plus LP003
+  default-on a-priori presentation probes: actual single/concurrent executor,
+  daemon-local locators, curated schema/dispatch, literal control precedence,
+  parser failures, and Context domain isolation. Reduced
   `test_context_pressure_reminder.py` plus `test_context_pressure_streak.py`
   retain numeric thresholds, canonical ownership and fresh-round integration.
 

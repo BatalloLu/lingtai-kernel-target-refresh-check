@@ -1,6 +1,6 @@
 ---
 name: lingtai-tool-protocol
-contract_version: 2
+contract_version: 3
 root_contract: CONTRACT.md
 related_files:
   - src/lingtai/tools/ANATOMY.md
@@ -102,7 +102,7 @@ schema is a closed object whose root properties are exactly:
 - `action` — selects one named action port within the family;
 - `input` — the one strict input object for the selected action;
 - `reasoning` — the top-level rationale for this tool call; and
-- `summarize` — the root boolean opting this call's result into
+- `summarize` — the root boolean controlling this call's default-on result
   post-processing.
 
 `action` and `input` are the family/action contract. `reasoning` and `summarize`
@@ -151,7 +151,14 @@ is emitted. Guarded by [LP001](BEHAVIORS.md#behavior-lp001).
 - Nested `input` MUST NOT contain `reasoning`, `_reasoning`, or `summarize`.
 - `reasoning` is root-only cross-cutting metadata and is never part of an
   action's independent implementation input.
-- `summarize` is a root-only boolean, absent or false by default. It is universal
+- `summarize` is a root-only boolean with JSON Schema `default: true`; omission
+  enables a-priori summarization. Explicit `false` requests raw presentation
+  (subject to existing caps/spills). Agents MUST proactively set it to `false`
+  whenever raw results are required: verbatim manuals and mandatory gates, exact
+  names/paths, field presence, source, diffs, or evidence. With summary enabled,
+  `reasoning` MUST specify the retention contract. Generated summaries are lossy
+  and noncanonical, not replacements for preserved raw evidence. Guarded by
+  [LP003](BEHAVIORS.md#behavior-lp003). It is universal
   cross-cutting result post-processing for every migrated family, not an action
   implementation argument. A family MUST NOT read `summarize` as action input.
 - The envelope MUST retain the root boolean through result post-processing, on
@@ -193,10 +200,11 @@ is emitted. Guarded by [LP001](BEHAVIORS.md#behavior-lp001).
   family, selecting one shared guidance profile rather than restating the whole
   rule. The profiles are:
   - **bulky-result** — the family or action has predictably large output. Its
-    manual says when `summarize=true` helps, and when exact raw text, IDs, or
-    paths mean it should stay false.
+    manual explains default-on summarization and when exact raw text, IDs, or
+    paths require an explicit `summarize=false`.
   - **short-result** — output is normally small. Its manual says `summarize` is
-    available but normally unnecessary, and to leave it false.
+    on by default but normally unnecessary, and to explicitly set it false
+    for exact receipts.
   A family whose actions differ MAY assign profiles per action. Calls to `manual`
   itself normally use `summarize=false`, so exact procedure and critical
   constraints are not summarized away; each manual SHOULD say so.
