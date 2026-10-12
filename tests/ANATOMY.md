@@ -125,6 +125,7 @@ related_files:
   - tests/test_tc_wake.py
   - tests/test_auto_molt_idle_episode.py
   - tests/test_telegram_task_card_transport.py
+  - tests/test_apriori_summary_session_cost.py
   - tests/test_token_ledger.py
   - tests/test_tool_executor.py
   - tests/test_tool_result_recovery.py

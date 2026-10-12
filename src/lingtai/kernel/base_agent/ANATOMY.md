@@ -1,5 +1,6 @@
 ---
 related_files:
+  - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - src/lingtai/tools/context/manual/SKILL.md
   - src/lingtai/kernel/base_agent/BEHAVIORS.md
@@ -75,6 +76,15 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
 > **History note:** the former `soul_flow.py` wire-splice logic moved to the legacy TCInbox, which is now retired. The Soul subsystem had already been removed; old patches remain historical context.
 
 ## Components
+
+- `turn.py::_build_apriori_summarizer_fn` captures the helper's API id,
+  requested model and molt generation around the existing untracked one-shot
+  `create_session().send()` path. `_record_apriori_summary_usage` uses canonical
+  normalized usage/billing to append the existing `summarize_apriori` lifetime
+  ledger row and independently log `apriori_summary_usage` v1. The receipt is a
+  supplemental display lane, not a SessionManager parent snapshot/counter.
+  Guarded by [BA010](BEHAVIORS.md#behavior-ba010); procedure and coverage caveats
+  are in the [Telegram manual](../../mcp_servers/telegram/task_card/SKILL.md).
 
 - `kernel/turns.py` `correlated_retry_message` validates the original live/current
   control and origin before translating an in-loop recovery request; the

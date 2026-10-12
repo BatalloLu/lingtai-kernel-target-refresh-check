@@ -680,7 +680,85 @@ class TaskCardEventProjection:
         return dict(projected)
 
     @classmethod
+    def project_apriori_usage(cls, event: dict[str, Any]) -> dict[str, Any] | None:
+        """Validated own-Agent summary receipt, never a parent-round carrier."""
+        if (
+            event.get("type") != "apriori_summary_usage"
+            or event.get("schema") != "lingtai.apriori_summary.usage/v1"
+            or event.get("source") != "summarize_apriori"
+            or "em_id" in event or "run_id" in event
+            or not isinstance(event.get("api_call_id"), str)
+            or not event["api_call_id"]
+            or checked_count(event.get("molt_count")) is None
+        ):
+            return None
+        counts = {key: checked_count(event.get(key)) for key in (
+            "input_tokens", "output_tokens", "cached_tokens",
+        )}
+        valid = event.get("estimated") is not True and all(value is not None for value in counts.values())
+        valid = valid and counts["cached_tokens"] <= counts["input_tokens"]
+        bill = cls._project_billing_facts(
+            event, counts["input_tokens"], counts["cached_tokens"],
+        ) if valid else None
+        return {
+            "counts": counts if valid else None, "bill": bill or None,
+            "tool_call_id": event.get("tool_call_id") if isinstance(event.get("tool_call_id"), str) else None,
+        }
+
+    @classmethod
     def reduce_session_usage_event(
+        cls, state: dict[str, Any] | None, event: dict[str, Any], *,
+        event_order: int | None = None,
+    ) -> dict[str, Any]:
+        """Keep helper receipts beside (not inside) authoritative parent snapshots."""
+        result = cls._reduce_parent_session_usage_event(state, event, event_order=event_order)
+        generation = result.get("molt_count")
+        receipt = cls.project_apriori_usage(event)
+        # A bounded replay can begin with a helper before its first parent
+        # snapshot. Its generation may fence helper facts, but cannot create
+        # parent metadata, context, or a parent API index.
+        if generation is None and receipt is not None and not result.get("awaiting_new_generation"):
+            generation = result["molt_count"] = event["molt_count"]
+        same_generation = (
+            generation == (state or {}).get("molt_count")
+            or (state or {}).get("molt_count") is None
+        ) and not result.get("awaiting_new_generation")
+        helpers = dict((state or {}).get("summary_receipts") or {}) if same_generation else {}
+        gaps = dict((state or {}).get("summary_gaps") or {}) if same_generation else {}
+        excluded = dict((state or {}).get("summary_excluded_tools") or {}) if same_generation else {}
+        known = (state or {}).get("molt_count")
+        molt = checked_count(event.get("molt_count"))
+        if event.get("type") == "psyche_molt" and (
+            molt is None or known is None or molt > known
+        ):
+            helpers, gaps, excluded = {}, {}, {}
+        if receipt is not None and not result.get("awaiting_new_generation"):
+            tool_id = receipt.get("tool_call_id")
+            if event["molt_count"] == generation:
+                helpers.setdefault(event["api_call_id"], receipt)
+            elif event["molt_count"] < generation and tool_id:
+                # A slow helper can settle after a molt. Its following outcome
+                # belongs to the captured old generation, not the new SESSION.
+                excluded[tool_id] = True
+                gaps.pop(tool_id, None)
+        # Existing outcome events prove a summary was attempted/returned, not
+        # its usage. Missing receipts (including exceptions with no normalized
+        # response) invalidate aggregate coverage, never invent a zero bill.
+        if event.get("type") in {
+            "apriori_summary_generated", "apriori_summary_empty", "apriori_summary_failed",
+        } and "em_id" not in event and "run_id" not in event:
+            tool_id = event.get("tool_call_id")
+            if isinstance(tool_id, str) and tool_id and tool_id not in excluded:
+                gaps[tool_id] = True
+        for helper in helpers.values():
+            gaps.pop(helper.get("tool_call_id"), None)
+        result["summary_receipts"] = helpers
+        result["summary_gaps"] = gaps
+        result["summary_excluded_tools"] = excluded
+        return result
+
+    @classmethod
+    def _reduce_parent_session_usage_event(
         cls,
         state: dict[str, Any] | None,
         event: dict[str, Any],
@@ -888,7 +966,37 @@ class TaskCardEventProjection:
     def session_usage_metadata(state: dict[str, Any] | None) -> dict[str, Any]:
         """Return a detached safe metadata projection from reducer state."""
         metadata = (state or {}).get("metadata")
-        return dict(metadata) if isinstance(metadata, dict) else {}
+        metadata = dict(metadata) if isinstance(metadata, dict) else {}
+        if not metadata:
+            return metadata
+        if (state or {}).get("source") != "v1":
+            return metadata
+        receipts = list(((state or {}).get("summary_receipts") or {}).values())
+        if not receipts and not (state or {}).get("summary_gaps"):
+            return metadata
+        # Every accepted receipt represents an actual returned response, even
+        # without usage. A missing receipt cannot establish an API-call count.
+        if "api_calls" in metadata:
+            metadata["api_calls"] += len((state or {}).get("summary_receipts") or {})
+        if (state or {}).get("summary_gaps") or any(r.get("counts") is None for r in receipts):
+            for key in ("input_tokens", "output_tokens", "cached_tokens",
+                        "session_cache_rate", "cache_miss_tokens",
+                        "avg_input_tokens_per_api_call", "cache_miss_remaining_tokens"):
+                metadata.pop(key, None)
+            if (state or {}).get("summary_gaps"):
+                metadata.pop("api_calls", None)
+            return metadata
+        for receipt in receipts:
+            for key in ("input_tokens", "output_tokens", "cached_tokens"):
+                metadata[key] += receipt["counts"][key]
+        total = metadata["input_tokens"]
+        cached = metadata["cached_tokens"]
+        metadata["session_cache_rate"] = round(cached / total, 5) if total else 0.0
+        metadata["avg_input_tokens_per_api_call"] = int(round(total / metadata["api_calls"]))
+        metadata["cache_miss_tokens"] = total - cached
+        if "cache_miss_budget" in metadata:
+            metadata["cache_miss_remaining_tokens"] = max(metadata["cache_miss_budget"] - (total - cached), 0)
+        return metadata
 
     @staticmethod
     def decode_event_line(raw: bytes) -> dict[str, Any] | None:

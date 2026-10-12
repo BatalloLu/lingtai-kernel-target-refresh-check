@@ -1,5 +1,6 @@
 ---
 related_files:
+  - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/BEHAVIORS.md
   - src/lingtai/mcp_servers/telegram/task_card/CONTRACT.md
   - src/lingtai/mcp_servers/telegram/task_card/resident.py
@@ -165,7 +166,16 @@ onto its one tracked resident Task Card target per account+chat.
   `llm_response`'s bill facts once per since-molt `api_call_index` (molt
   resets); `session_cost_text` prices them at render with each round's own
   model through `estimate_parts` and marks gaps or unknown/lower-bound totals `partial`, and unknown
-  allocations `?` (contract behavior 15).
+  allocations `?` (contract behavior 15). The shared SESSION reducer owns
+  `summary_receipts` keyed by helper API id, `summary_gaps` keyed by tool id,
+  and `summary_excluded_tools` fencing outcomes of late old-generation helpers;
+  `project_apriori_usage` validates own-Agent v1 generation/count/billing facts.
+  `session_usage_metadata` adds these only to detached display totals, keeping
+  authoritative parent snapshots and all latest-round lanes unchanged.
+  `fold_session_cost` consumes the same deduplicated receipt bills rather than
+  scanning/recharging lifetime ledger rows. Both Telegram event ingestion sites
+  feed usage receipts and existing summary outcomes to the reducer. Guarded by
+  [TT006](BEHAVIORS.md#behavior-tt006) and `tests/test_apriori_summary_session_cost.py`.
 - `SKILL.md` — packaged Telegram-facing manual/procedure material for this
   component.
 - Retained legacy files in this package (`controller.py`, `_family.py`,

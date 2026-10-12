@@ -5,6 +5,7 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
+  - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/CONTRACT.md
   - src/lingtai/mcp_servers/telegram/task_card/ANATOMY.md
   - src/lingtai/mcp_servers/telegram/task_card/resident.py
@@ -144,3 +145,28 @@ Pass when supported Markdown renders without visible source markers, unsafe inpu
 
 ### Pass / Fail
 Pass only when all pinned regressions pass. Fail on alias-based guessed pricing, raw metadata leakage, or changed model selection.
+
+## Behavior TT006 — own-Agent summary receipts supplement since-molt SESSION exactly once
+
+- **id**: TT006
+- **title**: own-Agent summary receipts supplement since-molt SESSION exactly once
+- **guards**: `telegram-task-card-projection` § [Behavior rule 15](CONTRACT.md#behavior)
+- **supersedes**: `tests/test_apriori_summary_session_cost.py` (complements hermetic regression coverage)
+- **runner**: any LingTai agent with shell access to this repository
+- **prerequisites**: checkout containing `tests/test_apriori_summary_session_cost.py`; repository Python environment with pytest and package dependencies; no Telegram account or provider credentials required
+- **estimate**: ≈ 2 minutes
+
+### Steps
+1. From the repository root run `.venv/bin/python -m pytest -q tests/test_apriori_summary_session_cost.py` and capture its full outcome. The suite uses fake normalized responses, offline public Sonnet 4 list-price fixtures and temporary event journals, never provider/catalog network calls.
+2. Inspect the fixture with one main response (1000 input, 100 output) and one helper (1000 input, 200 output, 200 cache reads, 100 established 5m writes and `cache_write_1h_tokens=0`); repeat the helper receipt and a notification carrier.
+3. Inspect the actual Telegram manager live-append/rehydrate comparison, missing/malformed counts, missing receipt outcomes, missing write-TTL evidence (still partial after a receipt closes the coverage gap), unknown price/tier and molt/stale-generation cases.
+
+### Expected evidence
+- [ ] The full focused suite passes without live provider/network/daemon activity.
+- [ ] SESSION reports 2 calls, 2000 input, 300 output, 200 cached, cache miss 1800 and cache rate .1, with no duplicate charges from receipt replay or carriers.
+- [ ] At public USD/million prices 3 input, 15 output, .30 reads and 3.75 writes, Cost remains the single existing row: `total ~$0.0100 · in $0.0051 · write $0.0004 · read <$0.0001 · out $0.0045` (estimate, not invoice proof).
+- [ ] Parent context remains 1000 of 200000 (.005); parent snapshot/index, TPS/stream timing, Δ and per-round cache/input/output facts are unchanged.
+- [ ] Molt resets counts and cost; daemon/other-run/wrong-generation receipts do not count. Missing receipt/count/price evidence stays unknown or partial, never fabricated `$0`; requested-tier and stale-price qualifications retain their existing meaning.
+
+### Pass / Fail
+Pass only with the passing suite and all expected evidence. Fail on a changed layout/symbol/subtotal, lifetime or child spend entering SESSION, duplicate billing, overwritten parent-round metadata, unknown prices becoming zero, or a live/network side effect.
