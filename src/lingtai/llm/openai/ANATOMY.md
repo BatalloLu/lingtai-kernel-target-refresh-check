@@ -676,9 +676,9 @@ All four `send` / `send_stream` paths in this file accept `None` as the "the cal
 
 Implementation: the input-dispatch ladder at the top of each canonical-replay method treats `None` as "no adapter-owned input to append." In stateless Responses (every `openai` Responses session) `_snapshot_interface(None)` returns no rollback snapshot and `_request_input` serializes the already-staged interface through `to_responses_input`, so notification-style `(ToolCallBlock, ToolResultBlock)` pairs ride on the same request and are not removed on failure (`adapter.py:3005-3009`, `adapter.py:3090-3096`). In the base non-replay mode `_convert_input(None)` remains `[]` (`adapter.py:2948`).
 
-### Pre-request hook (mid-turn tc_inbox drain — dormant)
+### Generic pre-request hook
 
-All four `send` / `send_stream` paths in this file fire `self.pre_request_hook(self._interface)` after committing the message to the canonical interface but before the API call. Historically the kernel installed `BaseAgent._drain_tc_inbox_for_hook` here so involuntary tool-call pairs (mail notifications) spliced into the wire chat mid-turn. After the `.notification/` redesign (`fadbabf`/`d2da97e`) the hook is still installed but the queue is always empty in production; ACTIVE notifications now defer to the post-turn IDLE synthetic-pair path rather than mutating tool results at send time. Phase 3 will remove the hook entirely. Three regimes (preserved for historical context and future re-use):
+The adapter send paths retain the optional caller-owned `pre_request_hook(self._interface)` after committing input and before provider I/O. BaseAgent no longer installs a legacy notification drain; modern notifications use direct canonical splice plus `send(None)`. Existing hook serialization regimes remain unchanged:
 
 - **`OpenAIChatSession.send` / `send_stream`** — canonical-interface; the hook splices into the same interface that's about to be serialized via `_build_messages()`. Spliced pair appears in this same API request. Same-turn delivery.
 - **`OpenAIResponsesSession.send` / `send_stream`** — stateless replay mode (every `openai` Responses session) reserializes `to_responses_input(self._interface)` after the hook, so hook-spliced pairs ride on the same request (`adapter.py:3097`, `adapter.py:3163`).

@@ -2600,8 +2600,7 @@ class OpenAIChatSession(ChatSession):
         else:
             raise TypeError(f"Unsupported message type: {type(message)}")
 
-        # 1b. Pre-request hook — kernel-side splice point for mid-turn
-        # tc_inbox drains. Wire tail is user[tool_results] or user[text],
+        # 1b. Caller-owned pre-request hook. Wire tail is tool results or text,
         # so any (call, result) pair the hook splices is appended at a
         # safe boundary and rides along on this same API request.
         if self.pre_request_hook is not None:
@@ -4384,9 +4383,8 @@ class CodexResponsesSession(_StandaloneCompactionMixin, OpenAIResponsesSession):
     ) -> bool:
         """Bind the owner's snapshot provider; no-op off the authorized route.
 
-        Deliberately a dedicated slot: the single ``pre_request_hook`` is owned
-        by the kernel Task Card inbox drain and is neither read nor overwritten
-        here.
+        Deliberately a dedicated slot: the caller-owned ``pre_request_hook``
+        is neither read nor overwritten here.
         """
         if self._effort_descriptor is None:
             return False

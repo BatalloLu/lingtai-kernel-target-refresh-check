@@ -420,8 +420,7 @@ class AnthropicChatSession(ChatSession):
         else:
             raise TypeError(f"Unsupported message type: {type(message)}")
 
-        # Pre-request hook — safe boundary for kernel-side splices (mid-turn
-        # tc_inbox drain). Tail is now user[tool_results] or user[text], so
+        # Caller-owned pre-request hook. Tail is now tool results or text, so
         # has_pending_tool_calls() returns False; any (call, result) pair
         # the hook splices in will be included in this same API request.
         if self.pre_request_hook is not None:

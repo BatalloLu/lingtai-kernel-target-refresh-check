@@ -1804,8 +1804,6 @@ def test_tc_wake_error_logs_empty_response_diagnostics(tmp_path):
 
     agent = SimpleNamespace(
         _chat=SimpleNamespace(interface=iface),
-        _tc_inbox=SimpleNamespace(drain=lambda: [], enqueue=lambda item: None),
-        _appendix_ids_by_source={},
         _dispatch_tool=lambda *a, **kw: None,
         service=SimpleNamespace(make_tool_result=lambda *a, **kw: None),
         _config=SimpleNamespace(provider="test", language="en"),
