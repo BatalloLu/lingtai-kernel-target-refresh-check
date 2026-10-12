@@ -148,7 +148,12 @@ frontmatter. Validation and keep-list checks occur before snapshot/archive/wipe
 or count mutation. The true system-forced `context_forget` path remains distinct
 and synthesizes its own model-visible call/result pair. Durable history and
 summary paths remain under `history/` and `system/summaries/`; notification files
-survive the shed.
+survive the shed. Eligible inactivity is an actionable safe-boundary molt reason,
+not a forced shed or automatic journal. Preserve unfinished authorized work and
+explicitly defer the molt; after an inactivity molt with no real work remaining,
+reorient then stay IDLE until real input. The runtime owns the one-shot episode
+and no-rearm promise ([BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009));
+context lifecycle and its post-molt notice do not start another episode.
 
 ## Evidence
 
