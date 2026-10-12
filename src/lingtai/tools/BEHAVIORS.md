@@ -28,6 +28,8 @@ related_files:
   - src/lingtai/mcp_catalog.json
   - src/lingtai/services/plugin_registry.py
   - src/lingtai/kernel/base_agent/tools.py
+  - src/lingtai/kernel/tool_executor.py
+  - tests/test_tool_executor.py
   - scripts/check_docs_governance.py
   - tests/test_architecture_documents.py
 maintenance: |
@@ -73,11 +75,13 @@ repo root with the project's Python.
 1. From `<repo>`, run `python -m pytest tests/test_tool_family_wire_parity.py -q` and capture the outcome.
 2. Fetch a migrated family's advertised schema (`get_schema()` on the family) and verify the root properties are exactly `action`, `input`, `reasoning`, and `summarize` with `additionalProperties: false`, and that `reasoning`/`summarize` never appear nested under `input`.
 3. Confirm `ToolExecutor` strips root `summarize` before handler dispatch and that the root boolean survives through result post-processing on both single and parallel call paths.
+4. From `<repo>`, run `python -m pytest tests/test_tool_executor.py -q -k 'obsolete_secondary or secondary_named_handler'`. These hermetic executor probes pass the retired `secondary` key to strict Python functions on single-call and concurrent sibling-batch paths, compare it with another unexpected key, and check an explicitly accepting custom handler.
 
 ### Expected evidence
 - [ ] Step 1: the wire-parity suite passes, pinning envelope correlation on both Chat Completions and Responses wires.
 - [ ] Step 2: the schema's root is closed with exactly the four properties; no `parameters`/`payload` alias appears; action branches are closed per action.
 - [ ] Step 3: `_reasoning` never appears in the model-facing schema or nested `input`; raw output is durably recorded before any visible summary replacement, and tool errors stay exact and unmodified.
+- [ ] Step 4: unexpected `secondary` produces the ordinary dispatch `TypeError`, including null/false values, without invoking the strict function body or a nested tool. A valid sibling still succeeds; a custom handler explicitly accepting the name receives it unchanged as data. No deprecated-ignore event or normalization-log field remains.
 
 ### Pass / Fail
 Pass when the suite passes and the closed-envelope observation holds for a real migrated family. Fail on an extra root property, on `reasoning`/`summarize` leaking into `input`, or on a summary replacing the recorded raw output; record the evidence trail in the task report.
