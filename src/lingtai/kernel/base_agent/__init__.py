@@ -525,6 +525,12 @@ class BaseAgent:
         self._current_turn_control: Any | None = None
         self._state = AgentState.IDLE
         self._idle_since_monotonic: float | None = self._lifecycle_clock.monotonic_seconds()
+        # Continuous IDLE/ASLEEP inactivity period for the one-shot auto-molt
+        # reminder (lifecycle._maybe_notify_auto_molt). Distinct from the
+        # IDLE-only anchor above: IDLE<->ASLEEP keeps it, any other state
+        # clears it. Process-local monotonic seconds, never persisted.
+        self._inactive_since_monotonic: float | None = self._idle_since_monotonic
+        self._auto_molt_notified_since: float | None = None
         self._started_at: str = ""
         self._last_usage = None  # UsageMetadata from last LLM call, for ledger
         self._created_at: str = ""
@@ -1264,6 +1270,23 @@ class BaseAgent:
             self._idle_since_monotonic = self._lifecycle_clock.monotonic_seconds()
         elif old == AgentState.IDLE:
             self._idle_since_monotonic = None
+
+        # Inactivity period (IDLE and/or ASLEEP) for the auto-molt reminder:
+        # IDLE<->ASLEEP switches keep the period; entering it from any other
+        # state starts it, and leaving it for ACTIVE/STUCK/SUSPENDED clears it
+        # and re-arms the one-shot latch.
+        inactive_states = (AgentState.IDLE, AgentState.ASLEEP)
+        if new_state in inactive_states:
+            if old not in inactive_states:
+                self._inactive_since_monotonic = (
+                    self._idle_since_monotonic
+                    if new_state == AgentState.IDLE
+                    else self._lifecycle_clock.monotonic_seconds()
+                )
+                self._auto_molt_notified_since = None
+        else:
+            self._inactive_since_monotonic = None
+            self._auto_molt_notified_since = None
 
         # Issue #164 — watchdog bookkeeping. A state transition is itself
         # forward progress, so reset the no-progress clock. The

@@ -52,6 +52,7 @@ related_files:
   - tests/test_adapter_registry.py
   - tests/test_aed_recovery.py
   - tests/test_aed_tool_pairing.py
+  - tests/test_auto_molt_notification.py
   - tests/test_agent.py
   - tests/test_agent_capabilities.py
   - tests/test_agent_config_hydration.py

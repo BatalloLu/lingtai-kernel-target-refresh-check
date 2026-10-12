@@ -2,6 +2,8 @@
 related_files:
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - tests/test_lifecycle_clock.py
+  - tests/test_auto_molt_notification.py
+  - src/lingtai/tools/context/manual/SKILL.md
   - src/lingtai/kernel/base_agent/BEHAVIORS.md
   - src/lingtai/kernel/base_agent/CONTRACT.md
   - src/lingtai/tools/system/CONTRACT.md
@@ -160,6 +162,8 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
   `idle_elapsed_s` on the existing `agent_state` event only on IDLE exit,
   subtracting the process-local `_idle_since_monotonic` before clearing it.
   Guarded by [BA008](BEHAVIORS.md#behavior-ba008).
+
+- `_inactive_since_monotonic` / `_auto_molt_notified_since` — process-local inactivity-period anchor and one-shot latch, maintained only in `_set_state` (IDLE↔ASLEEP keeps, ACTIVE/STUCK/SUSPENDED clears) and consumed by `lifecycle.py::_maybe_notify_auto_molt`, which the heartbeat calls after the hidden idle timeout and before `_fire_sleep_alarm_if_due`/`_sync_notifications`. Threshold: `config.py::auto_molt_idle_seconds`. Separate from `_idle_since_monotonic`. Guarded by [BA009](BEHAVIORS.md#behavior-ba009).
 
 - `_event_journal` is optional injected process-local ownership. Raw Core instances may leave it `None`; storage state belongs to the selected outer adapter (`base_agent/__init__.py:409`, `base_agent/__init__.py:1058-1059`).
 - `identity.py` mutates `.agent.json` (manifest) and `system/system.md` (identity prompt section) via `_build_manifest` (`base_agent/identity.py:76-114`) and `_update_identity` (`base_agent/identity.py:48-65`). The manifest now includes a sanitized `llm` block (`provider`, `model`, `base_url`) read from the live `LLMService` via `_safe_llm_from_service` (`base_agent/identity.py:117-154`). The wrapper subclass extends with `preset` (active/default/allowed) read from `init.json` and re-applies the LLM safelist for defense-in-depth — see `src/lingtai/agent.py`. The identity prose renderer (`base_agent/__init__.py:137-243` inside `_build_identity_section`) folds both blocks into the cached system-prompt prefix only when present, so bare BaseAgent instances stay quiet. It renders `created_at` ("born") but deliberately omits `started_at`: session start changes on every process restart, including a plain refresh with no source/config change, and would otherwise invalidate the cached prefix. `started_at` remains in the manifest and disk identity state — only this prompt render omits it.
