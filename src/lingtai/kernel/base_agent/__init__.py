@@ -524,12 +524,13 @@ class BaseAgent:
         self._current_turn_control: Any | None = None
         self._state = AgentState.IDLE
         self._idle_since_monotonic: float | None = self._lifecycle_clock.monotonic_seconds()
-        # Continuous IDLE/ASLEEP inactivity period for the one-shot auto-molt
-        # reminder (lifecycle._maybe_notify_auto_molt). Distinct from the
-        # IDLE-only anchor above: IDLE<->ASLEEP keeps it, any other state
-        # clears it. Process-local monotonic seconds, never persisted.
+        # One auto-molt reminder per idle episode, not per ACTIVE transition.
+        # Only new inbound work re-arms it; its own wake/molt cannot do so.
+        # The generation also rejects a stale publish after new work arrives.
+        # All three fields are process-local, never persisted.
         self._inactive_since_monotonic: float | None = self._idle_since_monotonic
         self._auto_molt_notified_since: float | None = None
+        self._auto_molt_episode = 0
         self._started_at: str = ""
         self._last_usage = None  # UsageMetadata from last LLM call, for ledger
         self._created_at: str = ""
@@ -1233,6 +1234,22 @@ class BaseAgent:
 
         request_cooperative_cancel(self, self_sleep=self_sleep)
 
+    def _rearm_auto_molt_for_work(self) -> None:
+        """New inbound work owns the next idle episode, not lifecycle churn."""
+        with self._notification_sync_lock:
+            self._auto_molt_episode += 1
+            self._inactive_since_monotonic = None
+            self._auto_molt_notified_since = None
+
+    def _note_auto_molt_notification_work(self, pending: dict) -> None:
+        """Re-arm only for newly delivered work, including notification inboxes."""
+        from .lifecycle import _auto_molt_notification_has_work
+
+        # Partial legacy test doubles may inherit this method without owning
+        # episode state. Real BaseAgent construction always installs it.
+        if hasattr(self, "_auto_molt_episode") and _auto_molt_notification_has_work(pending):
+            self._rearm_auto_molt_for_work()
+
     def _set_state(self, new_state: AgentState, reason: str = "") -> None:
         """Transition to a new state.
 
@@ -1264,22 +1281,18 @@ class BaseAgent:
         elif old == AgentState.IDLE:
             self._idle_since_monotonic = None
 
-        # Inactivity period (IDLE and/or ASLEEP) for the auto-molt reminder:
-        # IDLE<->ASLEEP switches keep the period; entering it from any other
-        # state starts it, and leaving it for ACTIVE/STUCK/SUSPENDED clears it
-        # and re-arms the one-shot latch.
-        inactive_states = (AgentState.IDLE, AgentState.ASLEEP)
-        if new_state in inactive_states:
-            if old not in inactive_states:
+        # A synthetic wake, recovery state churn, and molt all belong to the
+        # same episode. Only fresh inbound work clears this anchor/latch.
+        with self._notification_sync_lock:
+            if (
+                new_state in (AgentState.IDLE, AgentState.ASLEEP)
+                and self._inactive_since_monotonic is None
+            ):
                 self._inactive_since_monotonic = (
                     self._idle_since_monotonic
                     if new_state == AgentState.IDLE
                     else self._lifecycle_clock.monotonic_seconds()
                 )
-                self._auto_molt_notified_since = None
-        else:
-            self._inactive_since_monotonic = None
-            self._auto_molt_notified_since = None
 
         # Issue #164 — watchdog bookkeeping. A state transition is itself
         # forward progress, so reset the no-progress clock. The

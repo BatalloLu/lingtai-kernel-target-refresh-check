@@ -123,6 +123,7 @@ related_files:
   - tests/test_snapshot.py
   - tests/test_task_card_resident_shared.py
   - tests/test_tc_wake.py
+  - tests/test_auto_molt_idle_episode.py
   - tests/test_telegram_task_card_transport.py
   - tests/test_token_ledger.py
   - tests/test_tool_executor.py
@@ -182,6 +183,10 @@ graph.
   canonical-wire wake and generic adapter-hook regressions.
   `test_notification_sync.py` is only their existing 70-line helper closure;
   its former notification matrices are retired, not restored.
+- `test_auto_molt_idle_episode.py` covers idle-episode ownership across real
+  dequeue/wake/molt seams, work-delivery rearm, publication retry/race, journal
+  refusal, threshold validation and hermetic full Agent prompt construction.
+  It does not restore the retired full heartbeat/notification matrices.
 - Reduced `test_tool_executor.py` retains the accepted ordinary serial/parallel
   unexpected-key and explicit custom-handler boundaries. Reduced
   `test_context_pressure_reminder.py` plus `test_context_pressure_streak.py`

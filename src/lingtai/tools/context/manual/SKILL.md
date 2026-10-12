@@ -2,8 +2,8 @@
 name: context-manual
 description: |
   Use for an unfamiliar or consequential context operation, session journaling, handoff, or context-loss recovery; routine calls can follow the schema.
-version: 2.3.0
-last_changed_at: "2026-09-29T00:00:00Z"
+version: 2.4.0
+last_changed_at: "2026-10-12T00:00:00Z"
 related_files:
 - src/lingtai/tools/context/__init__.py
 - src/lingtai/tools/context/_molt.py
@@ -40,12 +40,12 @@ Before a deliberate molt:
 
 Molt preserves durable files and source reconstruction: it archives/snapshots the old conversation, rebuilds the fresh prompt, and publishes a post-molt notification. It does not delete durable stores. Molt for sustained pressure, an explicit human reset, confusion, or a long-inactivity reminder as described below—not merely task completion. Tending stores need not create gratuitous edits or new skills.
 
-A `system.auto_molt` notification means only that you have been idle or asleep for a long period (default 1800 s, `LINGTAI_AUTO_MOLT_IDLE_SECONDS`); it is a permitted prompt to consider a molt, not completion and not a forced reset. Follow the steps above at a safe boundary, and if authorized work is unfinished, record it and defer rather than discard it. Each inactivity period sends one reminder. Its ordinary notification wake can start a paid LLM turn and reset the period; returning to inactivity re-arms it even if no molt occurred. The process-local timer resets on restart, and a fresh or empty conversation is also eligible.
+An eligible `system.auto_molt` notification is a valid actionable molt reason after long IDLE/ASLEEP inactivity (default 1800 s, `LINGTAI_AUTO_MOLT_IDLE_SECONDS`), not task completion and not a forced reset. At a safe idle boundary, follow the steps above: tend only changed durable stores, write a valid session journal, then molt once. If authorized work is unfinished, explicitly preserve its state/authority/next action and defer the molt rather than discard context. After post-molt reorientation, remain IDLE until human input or other real work arrives; do not invent work from the reminder or handoff. One reminder is sent per idle episode, even if the molt is deferred. Its own synthetic wake, normal state churn, molt, and post-molt or maintenance notices do not re-arm it. New human/peer/task input or newly delivered communication/work-completion events can start the next episode; the runtime [episode contract](../../../kernel/base_agent/CONTRACT.md#contract-rules) owns exact source semantics. The timer/latch are process-local and reset on restart; a fresh or empty conversation is eligible. A notification wake may start an ordinary paid LLM turn, but the kernel never forces context discard or generates a journal.
 
 Ordinary molt/rebuild retains notification delivery identity within this agent process: already delivered events do not automatically replay. Carry still-needed message content and routing IDs in your authorized handoff; new post-molt notices and new producer events still deliver. A new Agent/process restart starts fresh bookkeeping, not cross-crash exactly-once.
 
 ## After a molt
 
-Read the post-molt notification/`summary_path`, current prompt/Pad, journal index, and new producer messages. Treat the briefing as context, not a command to run blindly. Re-check IDs and evidence paths. After reorientation, explicitly choose `continue`, `defer`, or `obsolete` and record that decision in your session journal/pad. The post-molt notification is delivered once and is not re-attached automatically; there is no notification dismiss action, and delivery does not mean any human task is completed (`notification(action="check")` rereads it deliberately). Resume through the originating channel/tool; a saved briefing or provider replay is not proof of delivery.
+Read the post-molt notification/`summary_path`, current prompt/Pad, journal index, and new producer messages. An inactivity-triggered molt with no remaining authorized work ends in IDLE waiting for human input or other real work; its own post-molt notice is reorientation, not new work. Treat the briefing as context, not a command to run blindly. Re-check IDs and evidence paths. After reorientation, explicitly choose `continue`, `defer`, or `obsolete` and record that decision in your session journal/pad. The post-molt notification is delivered once and is not re-attached automatically; there is no notification dismiss action, and delivery does not mean any human task is completed (`notification(action="check")` rereads it deliberately). Resume through the originating channel/tool; a saved briefing or provider replay is not proof of delivery.
 
 The action `summarize` records Context history; the optional root `summarize` boolean only presents results. They are not the same input. Use `psyche(action="manual", input={}, reasoning="load durable-store routes")` for store ownership; durable writes go through `shell` (verify the old text exists exactly once before replacing, and read the file back afterwards), and may wait for the next natural molt or reload; rebuild only under the rare exception above.

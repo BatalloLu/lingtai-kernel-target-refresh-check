@@ -152,7 +152,8 @@ if process exit + file consumption are observed.
 - **guards**: `context-contract` § Molt safety invariants
   ([CONTRACT.md](CONTRACT.md#molt-safety-invariants)) — durable history and
   summary paths remain under `history/` and `system/summaries/`; notification
-  files survive the shed
+  files survive the shed; inactivity is actionable without bypassing this gate.
+  The one-shot episode is guarded by [BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009).
 - **supersedes**: `tests/test_molt_notification_persistence.py::test_notification_files_survive_agent_molt`
 - **runner**: any LingTai agent with `context` and `shell` tools
 - **prerequisites**: a **disposable executor agent** — this LABT performs a real

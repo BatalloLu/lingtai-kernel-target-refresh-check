@@ -22,6 +22,7 @@ related_files:
   - tests/test_aed_recovery.py
   - tests/test_notification_sync.py
   - tests/test_tc_wake.py
+  - tests/test_auto_molt_idle_episode.py
   - tests/test_cli_worker_poison_recovery.py
   - tests/test_worker_hang_aed_redo.py
   - tests/test_perform_refresh_handshake.py
@@ -265,23 +266,25 @@ Pass when both assertions hold and no test sends a real message. Fail if a hidde
 ### Pass / Fail
 Pass when the focused producer tests pass; fail on inferred duration or wall-time subtraction.
 
-## Behavior BA009 — continuous IDLE/ASLEEP inactivity yields one molt reminder per period, never a forced molt
+## Behavior BA009 — one actionable inactivity molt reminder per real-work idle episode
 
 - **id**: BA009
-- **title**: continuous IDLE/ASLEEP inactivity yields one molt reminder per period, never a forced molt
-- **guards**: `agent-runtime` § [Contract rules](CONTRACT.md#contract-rules), inactivity-period reminder paragraph
+- **title**: reminder wake, state churn and actual molt never re-arm an episode; new real work can
+- **guards**: `agent-runtime` § [Contract rules](CONTRACT.md#contract-rules), idle-episode reminder paragraph
 - **runner**: any LingTai agent with shell access
-- **prerequisites**: checkout of this repository and its test Python; no live agent or provider
+- **prerequisites**: this repository checkout as current directory, a test-enabled Python interpreter as `python`; no live agent/provider or shared workdir
 - **estimate**: ≈ 1 minute
 
 ### Steps
-1. **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** from the repository root.
+1. From the repository root, run `PYTHONPATH="$PWD/src" python -m pytest -q tests/test_auto_molt_idle_episode.py`; capture the complete exit status and test summary. The tests create only temporary scratch agents, use a fake provider and injected monotonic clock, and run no background Agent loop.
+2. Run `PYTHONPATH="$PWD/src" python -m pytest -q tests/test_tc_wake.py tests/test_aed_recovery.py tests/test_molt_notification_persistence.py` for adjacent modern-wake, cancellation and notification-preservation safeguards.
 
 ### Expected evidence
-- [ ] The default and malformed/nonpositive/nonfinite environment values resolve to 1800 seconds; a valid value wins.
-- [ ] IDLE↔ASLEEP switching keeps one period and publishes one `system.auto_molt` event at the threshold; ACTIVE/STUCK/SUSPENDED clears it and a later period re-arms.
-- [ ] A failed publish is retried and the success latch is set only after it succeeds.
-- [ ] The real heartbeat loop publishes the event without molting, and the existing notification sync wakes an ASLEEP agent.
+- [ ] Positive finite 1000/1800 values win; missing/malformed/nonpositive/nonfinite values use 1800.
+- [ ] Own notification wake → IDLE and actual context molt/post-molt wake do not repeat at the next threshold. IDLE↔ASLEEP and generic state churn keep the latch.
+- [ ] Fresh human/peer/task input or newly delivered communication/work-completion input re-arms exactly one next episode; unchanged mirrors and maintenance reminders do not.
+- [ ] Failed publication retries; an old successful publication cannot latch later real work, even at an identical monotonic anchor.
+- [ ] No forced molt/journal occurs; journal refusal preserves count/history. The actionable reminder teaches safe journaling and explicit unfinished-work defer, then IDLE waiting for real input.
 
 ### Pass / Fail
-Pass when the focused suite passes. Fail if switching IDLE↔ASLEEP resets the period, a period reminds twice, a failed publish latches, or the heartbeat itself molts, refreshes, or cancels work.
+Pass only when both commands exit zero and all evidence holds. Fail on a repeated own-wake episode, lost real-work rearm, failed-publish latch, stale success suppressing new work, forced context shed or journal-gate bypass. These hermetic regressions do not prove a live model chose to journal/molt or restore retired heartbeat-loop coverage; report that limitation separately.
