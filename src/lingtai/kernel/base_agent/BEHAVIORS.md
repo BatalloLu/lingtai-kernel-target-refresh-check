@@ -5,6 +5,7 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
+  - tests/test_apriori_summary_session_cost.py
   - src/lingtai/kernel/base_agent/CONTRACT.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
   - src/lingtai/kernel/base_agent/lifecycle.py
@@ -292,3 +293,27 @@ Pass only when both commands exit zero and all evidence holds. Fail on incorrect
 boundaries, session creation, failed-publish latch or journal bypass. Hermetic
 coverage does not prove live model behavior or restore retired heartbeat-loop
 coverage; report those limits separately.
+
+## Behavior BA010 — returned summary usage is recorded independently of summary text validation
+
+- **id**: BA010
+- **title**: returned summary usage is recorded independently of summary text validation
+- **guards**: `agent-runtime` § [A-priori summary usage receipts](CONTRACT.md#a-priori-summary-usage-receipts)
+- **supersedes**: `tests/test_apriori_summary_session_cost.py` (complements hermetic regression coverage)
+- **runner**: any LingTai agent with shell access to this repository
+- **prerequisites**: checkout containing `tests/test_apriori_summary_session_cost.py`; repository Python environment with pytest and package dependencies; no live provider credentials required
+- **estimate**: ≈ 2 minutes
+
+### Steps
+1. From the repository root run `.venv/bin/python -m pytest -q tests/test_apriori_summary_session_cost.py -k 'actual_returned or captured_generation or default_summary or accounting_sink or thrown_exception'` and capture the full outcome.
+2. Inspect the assertions for a returned normalized response with 1000 input, 200 output, 30 thinking, 200 cache-read tokens, 100 writes and 230 billable-output tokens, exact returned model `claude-sonnet-4-20250514` and requested `priority`.
+3. Verify the same usage is recorded for useful, empty, None and invalid-list summary text; inspect independent journal/ledger failure cases and a thrown exception without a normalized response.
+
+### Expected evidence
+- [ ] All selected hermetic tests pass without network/provider/daemon activity.
+- [ ] The journal receipt and lifetime ledger share the helper API id, captured molt generation and canonical billing evidence; arbitrary provider metadata is absent.
+- [ ] A molt/config change during send cannot reattribute returned usage; journal failure does not suppress ledger attempt and ledger failure cannot break content handling.
+- [ ] Missing/false/truthy-nonboolean summary controls do not call a provider; throws produce only the existing failure outcome, not invented usage or a zero charge.
+
+### Pass / Fail
+Pass only with successful selected tests and every assertion above verified. Fail on loss of returned usage due to text validation, fabricated exception usage, parent SessionManager mutation, a changed default summary policy, or any live provider/network side effect.

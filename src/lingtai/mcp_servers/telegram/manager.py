@@ -3395,6 +3395,10 @@ class TelegramManager:
                             round_delta_events.append(event)
                         if event.get("type") in {
                             "llm_response",
+                            "apriori_summary_usage",
+                            "apriori_summary_generated",
+                            "apriori_summary_empty",
+                            "apriori_summary_failed",
                             "notification_block_injected",
                             "psyche_molt",
                         }:
@@ -3581,6 +3585,10 @@ class TelegramManager:
                 input_deltas[event["api_call_id"]] = input_delta
             if event.get("type") in {
                 "llm_response",
+                "apriori_summary_usage",
+                "apriori_summary_generated",
+                "apriori_summary_empty",
+                "apriori_summary_failed",
                 "notification_block_injected",
                 "psyche_molt",
             }:

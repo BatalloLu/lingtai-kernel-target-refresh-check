@@ -3,6 +3,7 @@ name: telegram-task-card-projection
 contract_version: 15
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/ANATOMY.md
   - src/lingtai/mcp_servers/telegram/task_card/BEHAVIORS.md
   - src/lingtai/mcp_servers/telegram/task_card/resident.py
@@ -258,7 +259,9 @@ semantics live here. The public producer contract lives in
 15. Telegram alone adds one SESSION row directly after Session's existing rows:
     `Cost · total ~$<total> · in $<input> · write $<write> · read $<read> · out $<output>` (HTML `<b>Cost</b> · …`). It
     sums, over the since-molt main `llm_response` rounds whose v1 snapshot the
-    shared reducer accepted, the same `estimate_parts` list-price estimate as
+    shared reducer accepted plus own-Agent `apriori_summary_usage` v1 receipts
+    from `source=summarize_apriori` in that same captured generation, the same
+    `estimate_parts` list-price estimate as
     rule 9, each round priced at its own recorded billing model (never the
     current model over aggregate tokens). Each `(molt_count, api_call_index)`
     counts once across multi-tool groups, replays, re-broadcasts, `/taskcard N`
@@ -275,6 +278,18 @@ semantics live here. The public producer contract lives in
     Per-call lines and non-Telegram frames are unchanged.
     Ordinary input and writes are disjoint allocations of cache-miss cost;
     absent write counts leave both allocations `?` even if the total is known.
+    Helper receipts count once by their own API id, not parent round index or
+    a tool-result/carrier id. Their counts supplement detached SESSION totals
+    (API calls/input/output/cache and derived aggregate rates/budget remaining),
+    never the accepted parent snapshot, latest context, TPS, Δ, cache-hit row or
+    per-call lines. Daemon-attributed receipts (`em_id`/`run_id`) are rejected.
+    A returned receipt without valid counts contributes one known response but
+    leaves aggregate tokens unknown; an observed generated/empty/failed outcome
+    without its receipt leaves aggregate coverage unknown and Cost partial.
+    Throws do not establish normalized usage or an actual response count.
+    Live append and bounded replay use the same reducer and molt reset. Completely
+    unobserved history is not recovered by inference from the lifetime ledger.
+    These supplementary semantics are guarded by [TT006](BEHAVIORS.md#behavior-tt006).
 
 ## Port
 
@@ -356,12 +371,17 @@ this component.
     trigger Telegram `429 Too Many Requests` throttling.
 16. Telegram must not derive SESSION totals by summing its bounded event window,
     scanning the token ledger, or reading Agent Session state directly. It may
-    only reduce versioned `llm_response` snapshots and legacy carriers already in
-    its bounded event tail through the shared pure projector. Restart rehydrate
+    only reduce versioned `llm_response` snapshots, legacy carriers, and captured
+    own-Agent `apriori_summary_usage` v1 receipts already in its bounded event
+    tail through the shared pure projector. The projector supplements detached
+    SESSION display totals with deduplicated same-generation helper receipts;
+    parent snapshots, per-call index, context, TPS, and Delta remain unchanged. Restart rehydrate
     applies the existing event window to SESSION events even when the recent tail
     has no projectable activity rows; it must not retain or scan the full history
     merely to recover an older visible row. The behavior 15 Cost row is the only
-    Telegram-side sum: per-round bill facts fold beside the same reducer over the
+    Telegram-owned monetary sum; token/count supplementation belongs to the
+    shared projector, not a second Telegram accumulator. Per-round bill facts
+    fold beside that same reducer over the
     same live-append and bounded-rehydrate inputs, are priced in memory at
     render, and any coverage it cannot prove is shown as partial instead of being
     repaired by a wider scan or a new store.

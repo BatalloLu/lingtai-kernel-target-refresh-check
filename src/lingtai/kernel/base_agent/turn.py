@@ -2482,7 +2482,10 @@ def _make_tool_executor(agent, guard: LoopGuard) -> ToolExecutor:
     )
 
 
-def _record_apriori_summary_usage(agent, response, tool_name, tool_call_id) -> None:
+def _record_apriori_summary_usage(
+    agent, response, tool_name, tool_call_id, *, api_call_id=None, molt_count=None,
+    requested_model=None,
+) -> None:
     """Append the a-priori summarizer call's token usage to the MAIN ledger.
 
     The one-shot summarizer session is created with ``tracked=False`` and is
@@ -2497,11 +2500,39 @@ def _record_apriori_summary_usage(agent, response, tool_name, tool_call_id) -> N
     so all of this is wrapped in try/except — mirroring the main-loop hook in
     ``base_agent/__init__.py``. Only the safe Codex account attribution
     field is projected from ``usage.extra``; arbitrary provider metadata is
-    omitted.
+    omitted. The independent v1 journal receipt lets SESSION consumers include
+    own-Agent helper usage without overwriting the latest parent round. Usage
+    is recorded before text validation; exceptions without a normalized return
+    have no usage to record.
     """
     try:
+        from ..llm.base import checked_count
+        from ..session import _usage_billing_for_event
+
         usage = getattr(response, "usage", None)
-        if usage is None:
+        generation = molt_count if molt_count is not None else getattr(agent, "_molt_count", None)
+        call_id = getattr(response, "api_call_id", None) or api_call_id
+        counts = {
+            key: checked_count(getattr(usage, key, None))
+            for key in ("input_tokens", "output_tokens", "thinking_tokens", "cached_tokens")
+        }
+        model = requested_model or getattr(getattr(agent, "_config", None), "model", None) or getattr(
+            getattr(agent, "service", None), "model", None
+        )
+        billing = _usage_billing_for_event(usage, model)
+        # A separate receipt lane: never advance the parent SessionManager or
+        # replace latest input/context, stream timing, or its API-call index.
+        try:
+            agent._log(
+                "apriori_summary_usage", schema="lingtai.apriori_summary.usage/v1",
+                source=APRIORI_SUMMARY_LEDGER_SOURCE, api_call_id=call_id,
+                molt_count=generation, tool_name=tool_name, tool_call_id=tool_call_id,
+                usage_billing=billing, **counts,
+            )
+        except Exception:
+            # Journal and lifetime ledger are independent accounting sinks.
+            logger.warning("Failed to log a-priori summary usage receipt")
+        if usage is None or any(counts[key] is None for key in counts):
             return
         working_dir = getattr(agent, "_working_dir", None)
         if working_dir is None:
@@ -2523,6 +2554,9 @@ def _record_apriori_summary_usage(agent, response, tool_name, tool_call_id) -> N
                 "tool_name": tool_name,
                 "tool_call_id": tool_call_id,
                 "apriori_tool_result_summary": True,
+                "api_call_id": call_id,
+                "molt_count": generation,
+                "usage_billing": billing,
                 **safe_codex_usage_extra(getattr(usage, "extra", None)),
             },
         )
@@ -2582,8 +2616,15 @@ def _build_apriori_summarizer_fn(agent):
             tracked=False,
             provider=provider,
         )
+        import uuid
+
+        api_call_id = f"api_{uuid.uuid4().hex[:12]}"
+        generation = getattr(agent, "_molt_count", None)
         response = session.send(user_prompt)
-        _record_apriori_summary_usage(agent, response, tool_name, tool_call_id)
+        _record_apriori_summary_usage(
+            agent, response, tool_name, tool_call_id,
+            api_call_id=api_call_id, molt_count=generation, requested_model=model,
+        )
         return getattr(response, "text", "") or ""
 
     return _summarize

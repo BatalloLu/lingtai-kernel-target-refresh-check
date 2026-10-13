@@ -3,6 +3,7 @@ name: agent-runtime
 contract_version: 1
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - src/lingtai/tools/context/manual/SKILL.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
@@ -661,6 +662,24 @@ Automatic notification delivery composes the [Notification contract](../../tools
    immediately preceding batch; an empty response at turn start or after a
    later unrelated batch remains a recovery event. Guarded by
    [BA007](BEHAVIORS.md#behavior-ba007).
+
+### A-priori summary usage receipts
+
+The existing untracked summary session returns normalized `LLMResponse.usage`.
+`turn.py` records actual returned usage before validating summary text, including
+empty or invalid summary output. Its additive journal receipt has
+`type=apriori_summary_usage`, `schema=lingtai.apriori_summary.usage/v1`,
+`source=summarize_apriori`, the helper's own `api_call_id`, captured `molt_count`,
+`tool_name`/`tool_call_id`, normalized token counts and canonical `usage_billing`.
+The same API id/generation/billing evidence accompanies the existing lifetime
+ledger row; neither sink failure may break summary content handling or prevent
+an independent attempt at the other sink. Arbitrary provider metadata is omitted.
+No main SessionManager counter/index/latest-context/streaming snapshot is changed.
+Thrown exceptions supply no normalized usage contract: do not inspect SDK
+exceptions, fabricate usage, or charge zero. The existing failed outcome exposes
+an unknown coverage gap to the consumer. Default summary policy and sibling
+parallelism are unchanged. Guarded by [BA010](BEHAVIORS.md#behavior-ba010);
+consumer procedure is the [Telegram manual](../../mcp_servers/telegram/task_card/SKILL.md).
 
 ## Contract tests
 

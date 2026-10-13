@@ -158,7 +158,15 @@ Cost · total ~$0.1234 · in $0.0200 · write $0.0100 · read $0.0034 · out $0.
 ```
 
 Each main-Agent API response since the last molt is counted once (however many
-tool calls it made) and priced at the model that made it. A molt starts a new
+tool calls it made), including actual returned one-shot a-priori summary calls
+recorded as `apriori_summary_usage` v1 receipts. Each is priced with its own
+canonical billing model, cache-write/read and billable-output facts. The helper's
+API id is distinct from the parent call that requested the tool; duplicate
+receipts, tool-result carriers and summary presentation rows do not add charges.
+Empty or invalid summary text does not erase usage actually returned by a provider.
+SESSION cumulative counts include these observed same-generation helper receipts;
+latest parent context, TPS, Δ and cache/input/output per-call lines do not change.
+There is still one Cost row and no summary subtotal. A molt starts a new
 total. Daemon and other-Agent calls are not included. The total is only shown as
 complete (`~`) when this Telegram process has seen every response of the
 current session with priced facts. After a restart or refresh it rebuilds only
@@ -167,6 +175,16 @@ from the existing bounded event tail, so an older session shows
 responses with missing usage, billing facts, model or price. With nothing
 priceable it shows `total ? · in ? · write ? · read ? · out ? · partial`. It is never shown as `$0` for
 unknown history, and it is still a list-price estimate, not a bill.
+
+A returned response without valid normalized usage leaves aggregate token totals
+unknown (not zero); a missing receipt associated with an existing generated,
+empty or failed summary outcome also leaves aggregate response count unknown
+and Cost partial. Provider exceptions have no neutral normalized usage contract:
+no SDK exception payload is inspected and no fictional `$0` charge is emitted.
+No call is charged for a cap refusal or absent summarizer. Bounded replay can only
+recover observed receipts/outcomes; wholly absent historical helper facts remain
+an explicit scope gap, not proof of a complete session or an invoice. SESSION is
+this Agent's current since-molt view, not lifetime, child or other-Agent spend.
 
 The SESSION line splits ordinary input, cache writes, cache reads and output without double charging. Unknown write counts keep input/write allocation unknown even when the combined total is known.
 

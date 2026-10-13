@@ -11,7 +11,8 @@ billing, and not batch/flex/routed-tier or discounted prices; a round that
 requested any other tier is unknown, and search, grounding and image fixed fees
 are not included. The SESSION
 ``Cost`` row sums the same per-round estimates over the since-molt responses
-this process has observed, and says ``partial`` whenever any is missing.
+this process has observed, including deduplicated own-Agent a-priori summary
+receipts in that generation, and says ``partial`` whenever any is missing.
 """
 
 from __future__ import annotations
@@ -458,7 +459,9 @@ def fold_session_cost(
     reducer accepted, so replays, multi-tool groups and rejected/older
     snapshots never double count or contribute a bad bill. A response the
     reducer had to invalidate on is ``unaccounted``. A new generation (molt)
-    starts empty and a molt of unknown generation drops the facts. ``latest``
+    starts empty and a molt of unknown generation drops the facts. Helper
+    bills come from the same reducer's API-id-deduplicated receipt lane;
+    missing-receipt outcomes keep coverage partial. ``latest``
     follows the reducer's index, so an unseen response leaves a gap. Either
     keeps the total partial. Mutates and returns the caller-owned ``cost``.
     """
@@ -471,6 +474,11 @@ def fold_session_cost(
     index = session.get("api_call_index")
     if type(index) is int:
         cost["latest"] = max(cost["latest"], index)
+    cost["summary_bills"] = {
+        call_id: receipt["bill"]
+        for call_id, receipt in (session.get("summary_receipts") or {}).items()
+    }
+    cost["summary_gap"] = bool(session.get("summary_gaps"))
     if event.get("type") != "llm_response":
         return cost
     accepted = TaskCardEventProjection.project_llm_response_session_usage(event)
@@ -545,13 +553,16 @@ def session_cost_text(
     if not isinstance(cost, dict):
         return ""
     bills = cost.get("bills") or {}
-    partial = bool(cost.get("unaccounted")) or len(bills) != cost.get("latest")
+    partial = bool(cost.get("unaccounted") or cost.get("summary_gap")) or len(bills) != cost.get("latest")
+    # Helper API ids are separate from parent round indices. Neither carriers
+    # nor multiple successful/error presentation events can charge them twice.
+    all_bills = [*bills.values(), *(cost.get("summary_bills") or {}).values()]
     sums = dict.fromkeys(("total", "in", "write", "read", "out"), 0.0)
     known: set[str] = set()
     short: set[str] = set()  # some round's part is unknown or only a floor
     stale = False
     entries: dict[str, tuple[str, dict[str, float | None] | None]] = {}
-    for bill in bills.values():
+    for bill in all_bills:
         model = bill.get("model") if isinstance(bill, dict) else None
         if isinstance(model, str) and model not in entries:
             status, entry, _as_of = (catalog or CATALOG).lookup(model)
@@ -595,7 +606,7 @@ def session_cost_text(
     )
     if partial or "total" in short:
         text += " · partial"
-    if any(isinstance(b, dict) and b.get("service_tier") == "priority" for b in bills.values()):
+    if any(isinstance(b, dict) and b.get("service_tier") == "priority" for b in all_bills):
         text += " · requested-tier est."  # some round REQUESTED priority; not proof it applied
     if stale:
         text += " · stale prices"
