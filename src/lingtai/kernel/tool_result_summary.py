@@ -246,24 +246,12 @@ def _resolve_raw_log_path(raw_log_path: str | None) -> str:
     return normalized or EVENTS_LOG_RELPATH
 
 
-def _retrieval_hint(
-    tool_call_id: str | None,
-    *,
-    raw_log_path: str | None = None,
-) -> str:
-    cid = tool_call_id or "<unknown>"
-    log_path = _resolve_raw_log_path(raw_log_path)
+def _retrieval_hint() -> str:
+    """Keep loss/provenance guidance here; retrieval details live in raw_locator."""
     return (
-        f"This is a runtime-GENERATED summary of the original tool result — it is "
-        f"NOT canonical and may be incomplete or inaccurate. The full original "
-        f"result was preserved before summarization and is NOT in your context.\n"
-        f"To retrieve the full original, grep events.jsonl by tool_call_id:\n"
-        f"  grep '{cid}' <workdir>/{log_path}\n"
-        f"  # or use: lingtai-agent log query (see sqlite-log-query manual)\n"
-        f"If you need a different slice of the original, narrow the tool call "
-        f"(e.g. tighter grep/read range) and rerun with summary=false, or "
-        f"delegate extraction to a daemon/subagent with the tool_call_id and "
-        f"the exact question."
+        "Runtime-generated, noncanonical and lossy; may be incomplete or inaccurate. "
+        "Raw original is preserved outside context; retrieve via raw_locator. "
+        "For exact output, rerun narrowly with summarize=false."
     )
 
 
@@ -339,7 +327,7 @@ def build_summary_replacement(
         "canonical": False,
         "raw_preserved": True,
         "raw_locator": _raw_locator(tool_call_id, raw_log_path, raw_event_type),
-        "retrieval_hint": _retrieval_hint(tool_call_id, raw_log_path=raw_log_path),
+        "retrieval_hint": _retrieval_hint(),
     }
 
 
@@ -377,7 +365,7 @@ def build_cap_refusal(
             f"was NOT generated and the raw result was deliberately NOT placed "
             f"into your context. The full original is preserved."
         ),
-        "retrieval_hint": _retrieval_hint(tool_call_id, raw_log_path=raw_log_path),
+        "retrieval_hint": _retrieval_hint(),
         "how_to_narrow": (
             "Re-run with a narrower request (tighter grep pattern / smaller read "
             "range / more specific command) so the raw result is under the cap, "
@@ -430,7 +418,7 @@ def build_summary_error(
             "raw result was deliberately NOT placed into your context to honor "
             "summary=true. The full original is preserved."
         ),
-        "retrieval_hint": _retrieval_hint(tool_call_id, raw_log_path=raw_log_path),
+        "retrieval_hint": _retrieval_hint(),
     }
 
 
