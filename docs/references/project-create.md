@@ -66,20 +66,11 @@ containers fail with exit 1 and a JSON error on stderr; do not reinterpret them
 as empty projects. The caller must consume exactly one accepted stdout object
 and a successful exit before using the observation.
 
-`startup_readiness` contains `reason`, `needs_rehydration`, sorted `agents` and
-`orchestrators` directory identities, and ordered `init_evidence`. Init evidence
-has `directory_name`, `presence` (present/absent/stat_failed), and null `failure`
-except for minimal native stat failure facts (`path_b64`, `native_errno`,
-`native_winerror`). A successful stat counts even a directory as present; no
-init content is read. Startup excludes dot helpers, humans and malformed members
-without removing them from general membership. Reasons are not_initialized,
-ready, cannot_stat_init, mixed_init, no_agents, no_orchestrator and
-multiple_orchestrators. Stat failure takes precedence over mixed init, which
-precedes orchestrator refusal. Refusals remain exit-0 observations, not success
-authorizing launch; only ready accepts the old existing-network checks.
-All-absent with agents indicates rehydration (also retained on orchestrator
-refusal); it never runs a wizard or writes init. Mixed with/missing lists come
-from the ordered presence evidence. Go owns the original user error prose.
+Use `startup_readiness` as ordered stat-only evidence, not init validation: even a directory
+counts present. Stat failure beats mixed init, then orchestrator refusal; exit-0 refusals do not
+authorize launch. All-absent agents indicate rehydration, even on orchestrator refusal, without
+wizard/writes. Go owns error prose; fields, eligible identities and mixed lists are defined in the
+[startup readiness contract](../../src/lingtai/kernel/project/CONTRACT.md#startup-readiness).
 
 This is read-only sequential evidence, not a lease, a process scan, or an
 atomic snapshot. Do not authorize launch, cleanup or mutation solely from it.
@@ -116,22 +107,14 @@ instead of null. Never serialize exception strings, credentials or documents.
 Core owns eligibility/order and readiness, stops at the first failed stat, and
 never invokes the kernel native init stat in this mode. No second stat/fallback.
 
-Accept the final inspected object only after complete transcript correlation,
-closed shape/identity/reason validation, exit 0 and empty stderr. Callback-only
-member directory_name_b64, readiness agents_b64/orchestrators_b64, and init-item
-sequence/directory_name_b64 preserve authoritative native identity, including
-surrogate-bearing labels; ordinary requests/results stay unchanged. On matched
-cannot_stat_init, display the retained ORIGINAL Go error with the old wrapper
-once, preserving operation, path spelling and unwrap chain. Do not infer a
-Windows operation from codes. Exact schemas and consumer validation obligations
-are in the [inspection exchange contract](../../src/lingtai/kernel/project/CONTRACT.md#synchronous-native-init-observation-exchange).
-
-EOF/malformed/mismatched/private ack stops: prior intermediate frames are not
-success; only one structured static stderr terminal/exit 1 is attempted, with no
-partial readiness or retry. Missing/lost terminal is unknown. This exchange is
-read-only, not a lease, launch permission, process scan or generic filesystem
-RPC. Native Windows/name/error-chain and paired cold-CLI acceptance remain
-separate requirements, not source-authoring claims.
+Accept readiness only after closed terminal/identity/reason validation, complete ordered transcript
+correlation, exit 0 and empty stderr; native base64 identity, not surrogate-bearing display labels,
+is authoritative. On matched cannot_stat_init show the retained ORIGINAL Go error once with the
+old wrapper/path/unwrap chain; never infer a Windows operation from codes.
+EOF/malformed/mismatched/private ack stops with one attempted static stderr terminal/exit 1,
+no partial readiness or retry; intermediate frames are not success and lost terminal is unknown.
+This is read-only, not a lease/launch permission/process scan/filesystem RPC. Exact validation and
+separate native Windows/name/error-chain/cold-CLI acceptance: [inspection exchange contract](../../src/lingtai/kernel/project/CONTRACT.md#synchronous-native-init-observation-exchange).
 
 ## Approved interactive creation (Go driver)
 
@@ -248,33 +231,23 @@ joined `City, Region, Country` or `unknown`, and already-translated palette
 commands. Kernel performs only ordered literal substitutions. Use `rendering:null`
 for the old headless identity callback. Do not send credentials or a whole draft.
 
-The old ApplyRecipe error semantics determine exit/status: no old error means
-stdout `recipe_applied`, exit 0 (even if new current-reader receipt evidence is
-partial); an old actual apply failure, rejected request or unknown driver means
-one static stderr error envelope and exit 1. Do not add a launch/warning policy
-from new reader/removal evidence. Validate the
-whole envelope and child exit. Member receipts disclose prompt/init writes and
-phase errors, actual init/Psyche reader status, and `legacy_counted`; `applied`
-counts error-free processed members, `legacy_applied` is only the old count quirk.
-Neither count promises launchability. Existing callers retain their returned count using `legacy_applied` and existing warning/error behavior using top-level code. Missing/unreadable/empty optional greet
-is skipped and reported. Existing skills paths append only with existing skills;
-no new capability is installed and no owner settings are propagated.
-
-**Snapshot is always attempted after traversal, including partial apply.**
-Read its separate attempted/removal_succeeded/copied/code fields. Removal is
-best-effort and copy is not transactional; failed removal can retain extra old
-files. Removal failure alone is ignored for caller errors/exits if copy succeeds,
-as before. A copied snapshot can make the next observe equal even after member
-failure. Prompt write errors may leave truncated/partial prompt bytes; copy
-errors may leave a partial snapshot. No retries, rollback or cleanup is implied.
-Unexpected/cancelled/lost output means unknown, not no-write proof. UI selection,
-bundle copy/materialization/import, registration and lifecycle remain separately
-owned; this is not fullProject completion. See Project Contract and PRJ004 for
-acceptance scenarios. Existing declared library/language values retain Go lexical
-Join/Clean semantics, including parent/non-segment/absolute-looking values; no
-fresh-creation safe-sibling rule or five-OPS nonregular/symlink gate is imported.
-Prompt/snapshot target following and fixed init.json.tmp + rename semantics stay
-as before. This scoped caller-root Recipe authority is not general write permission.
+Validate the whole envelope and child exit. Existing callers use `legacy_applied` (the old count
+quirk) and top-level code for old errors/warnings, not `applied` (error-free members) or reader
+receipts/removal evidence as new launch/warning gates. No old error: stdout `recipe_applied`, exit 0, even with reader-only
+partial evidence; old apply/request/driver failure: one static stderr error, exit 1. Neither count
+promises launchability. Missing/unreadable/empty greet is skipped/reported; paths append only to
+existing skills, with no new capability or propagated owner settings.
+**Snapshot is always attempted after traversal, including partial apply.** Inspect its separate
+attempted/removal_succeeded/copied/code evidence: removal is best-effort, copy nontransactional;
+removal failure alone is ignored for caller error/exit if copy succeeds and may retain old files.
+A copied snapshot can make observe equal after member failure. Prompt errors can truncate/leave
+partial bytes; copy errors can leave a partial tree. Unknown/cancelled/lost output is NOT no-write
+proof; no retry/rollback/cleanup. Existing library/language strings retain Go lexical Join/Clean,
+including parent/non-segment/absolute-looking values, without fresh-creation safe-sibling or
+five-OPS nonregular/symlink gates. Prompt/snapshot target following and fixed init.json.tmp + rename
+remain unchanged; scoped caller-root Recipe authority is not general write permission.
+UI selection, bundle/materialization/import, registration/lifecycle remain separate, not fullProject.
+Schemas/phase/count policy and PRJ004: [Recipe contract](../../src/lingtai/kernel/project/CONTRACT.md#existing-local-recipe-observationapply-candidate-slice).
 
 
 ### Retain an arbitrary Go callback (synchronous driver)
@@ -305,30 +278,20 @@ with `string(decoded_template)` (not member name). Send and flush one bound ack:
 {"status":"recipe_member_rendered","sequence":1,"rendered_b64":"","rendered_bytes":0}
 ```
 
-Empty result MUST truncate/create the member prompt. Kernel finishes that member's
-prompt/skills before requesting the next; function can observe preceding writes
-and alter future init/tree/Recipe. It is not precomputed, batched or replayed.
-No callback occurs for original absent/unreadable/empty greet, no members, or
-pretraversal failure. Original template/enumeration are captured once; library
-helper conditionally reads metadata a second time AFTER greet, failure nonfatal.
-Never log templates, callback outputs or exception/panic text.
+Empty/binary results are written verbatim, including empty truncation; each prompt/skills phase
+finishes before the next callback, which can observe writes and alter future init/tree/Recipe.
+No precomputation/batching/replay; absent/unreadable/empty original greet, no members or pretraversal failure
+means no callback. Nil uses identity. Template/enumeration are captured once; the library helper
+conditionally rereads metadata AFTER greet, failure nonfatal. Never log templates/results/exception/panic text.
+Use authoritative native `directory_name_b64`, not lossy display labels; `legacy_failure` is factual
+phase/path/code/parse-offset evidence, not proof of exact Go error formatting or path permission.
+See the [rendering contract](../../src/lingtai/kernel/project/CONTRACT.md#synchronous-existing-member-rendering-extension) for closed schemas and paired native acceptance.
 
-Interactive terminal supplements ordinary receipt fields with authoritative
-per-member `directory_name_b64` and top-level `legacy_failure` (null or factual
-phase/operation/base64-native-path/errno/winerror/byte-parse-offset evidence).
-Display names may contain escaped surrogate characters; do not key membership
-by a lossy JSON/UTF-8 replacement. Native Windows/mixed-OS name/JSON semantics
-and exact Go error-message/type formatting still require paired acceptance.
-No path evidence is proof of a new path safety policy or permission.
-
-On panic/Goexit, Go MUST unwind with original semantics, close child input and
-reap child, not recover into an ApplyRecipe error/success or send a substitute
-ack. EOF/malformed/broken ack stops BEFORE pending prompt/skills and without
-snapshot. If observable, stderr exit-1 terminal is `recipe_exchange_stopped`,
-`recipe_exchange_failed`, completed receipts, pending sequence/base64 identity,
-and separate `legacy_code,legacy_failure`. `partial` means known preceding writes;
-`rejected` describes only pending-member rejection, not zero global effects.
-Callback side effects/earlier failed writes may survive and remain unknown.
-Lost terminal is unknown even after ack; ack proves rendering, NOT prompt write.
-No automatic retry/rollback/cleanup, Go filesystem fallback, timeout/thread or
-supervisor is introduced. This seam is not full Project completion or PR activation.
+On panic/Goexit preserve original unwind: close child input and reap, without recovery/substitute ack.
+EOF/malformed/broken ack stops before pending prompt/skills and WITHOUT snapshot. The observable
+exit-1 `recipe_exchange_stopped`/`recipe_exchange_failed` terminal carries completed receipts,
+pending sequence/native identity and separate `legacy_code,legacy_failure`.
+`partial` means known preceding writes; `rejected` rejects only the pending member, not global effects.
+Earlier failed writes/callback effects may survive unknown; lost terminal stays unknown even after ack,
+which proves rendering, NOT prompt write. No retry/rollback/cleanup, Go-write fallback, timeout/thread
+or supervisor; this is not full Project completion or PR activation.

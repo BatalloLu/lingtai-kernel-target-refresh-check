@@ -141,73 +141,29 @@ The public command procedure is
 
 ## Existing configuration slice
 
-`configuration.py` owns typed operation requests, specialized document/seed/write
-receipts, `ProjectConfigurationPort`, and `ProjectConfigurationUseCase` for
-initialize/configure/propagate-policy/propagate-config/rehydrate; guarded by
-PRJ003. `src/lingtai/adapters/project_configuration.py` implements sequential
-Project-local raw reads, individual atomic writes and actual init/Psyche reader
-seams. `ProjectConfigurationPort.save_policy_init` and the matching filesystem
-method persist only Core-authored policy edits without reconstruction; configured,
-config-propagated and rehydrated init writes retain their existing owner readers.
-`ConfigurationOptions` carries outer explicit/default legacy covenant paths;
-Core selects explicit, existing, then default without reading global files.
-`src/lingtai/cli_project_configuration.py` is the strict JSON stdin driver
-and outer preset/Psyche composition. `cli_project.py` only registers/dispatches
-these operations; existing create/inspect/interactive code is unchanged.
-`tests/test_project_configuration.py` shares one matrix across fake and real
-filesystem adapters. `tests/fixtures/project_configuration.json` carries the
-public preservation/authorization cases for the paired Go consumer. No runtime,
-credential, registry, lifecycle or Recipe reconciliation ownership is claimed.
-
-The narrowly scoped `cli_project._create_interactive.selected_preset_loader`
-contains ordinary kernel preset normalization diagnostics around the actual
-selected load only and restores its logger in finally (PRJ002). Actual-CLI
-legacy root-context success/mismatched-persistence regressions are authored in
-`tests/test_project_interactive_diagnostics.py`, without adapter/reader changes.
+- `ProjectConfigurationUseCase`/`ProjectConfigurationPort` and operation receipts: `src/lingtai/kernel/project/configuration.py:24-366`;
+  sequential filesystem reads/writes and owner-reader seams: `src/lingtai/adapters/project_configuration.py:68-229`.
+- Strict stdin driver/preset-Psyche composition: `src/lingtai/cli_project_configuration.py:148-199`;
+  shared fake/filesystem matrix: `tests/test_project_configuration.py`, public cases: `tests/fixtures/project_configuration.json` (PRJ003).
+- Covenant precedence and policy-only versus reader-enforcing writes belong to the
+  [configuration contract](CONTRACT.md#existing-project-configuration-candidate-slice), not this map.
+- Interactive selected-load diagnostic containment/restoration: `src/lingtai/cli_project.py:147-158`;
+  actual-CLI regressions: `tests/test_project_interactive_diagnostics.py` (PRJ002).
 
 ## Existing local Recipe observation/apply
 
-`recipe.py` owns typed observations, specialized `ProjectRecipePort`, optional
-literal greet rendering, target eligibility, additive path decisions and ordered
-`ProjectRecipeUseCase` (PRJ004). `src/lingtai/adapters/project_recipe.py` is the
-standalone filesystem realization for existing `.lingtai`, not a creation
-attempt: byte-tree evidence, local metadata/layer reads, direct prompt writes,
-normalized opaque init evidence, specialized skills writes through current
-public capability normalization and init/Psyche readers, and legacy normal-traversal always-
-attempted best-effort-remove/copy snapshot. `cli_project_recipe.py` composes those
-seams and strict stdin/stdout/stderr envelopes; `cli_project.py` registers two
-no-flag commands. Existing and synchronous thin source contracts live in `tests/test_project_recipe.py`;
-execution/Go callsites are parent-owned. Procedure remains the paired
-`docs/references/project-create.md` manual. No fresh workspace, bootstrap,
-materialization, import, registry or lifecycle owner was added.
+- Observation/apply Core and specialized Port: `src/lingtai/kernel/project/recipe.py:156-296`;
+  rendering Port/member and stopped-exchange receipts: `src/lingtai/kernel/project/recipe.py:65-153` (PRJ004).
+- Existing-filesystem realization: `src/lingtai/adapters/project_recipe.py:158-382`;
+  flushed rendering exchange: `src/lingtai/adapters/project_recipe_exchange.py:34-76`.
+- Static/new-line driver and independent bundle/destination composition: `src/lingtai/cli_project_recipe.py:27-164`;
+  static/synchronous contracts: `tests/test_project_recipe.py`.
+- Policy/ordering: [Recipe contract](CONTRACT.md#existing-local-recipe-observationapply-candidate-slice) and
+  [rendering extension](CONTRACT.md#synchronous-existing-member-rendering-extension); procedure: [manual](../../../../docs/references/project-create.md).
+- Native inspection request/decorator/transcript: `src/lingtai/adapters/project_inspection_exchange.py:56-175`;
+  callback selection: `src/lingtai/cli_project.py:111-134`; thin cases: `tests/test_project_inspection_exchange.py` (PRJ006).
+  Its read-only observation promises belong to the [inspection exchange contract](CONTRACT.md#synchronous-native-init-observation-exchange).
 
-
-The synchronous existing-member extension (PRJ004) is owned by
-`RecipeGreetRenderingPort`/immutable `RecipeMemberGreet` and specialized
-`RecipeExchangeStopped` (`src/lingtai/kernel/project/recipe.py:65-153`).
-`JsonRecipeRenderingAdapter` binds one flushed frame to one pending ack, using
-canonical base64/growing lines (`src/lingtai/adapters/project_recipe_exchange.py:34-76`).
-The existing driver composes independent bundle/destination and detects the
-closed new line form without changing valid old EOF/multiline requests
-(`src/lingtai/cli_project_recipe.py:27-164`). Core retains the original template
-and one enumeration, renders immediately before each prompt and writes even
-empty results; normal traversal alone reaches snapshot. Filesystem name bytes
-and factual native failure evidence remain outer-owned
-(`src/lingtai/adapters/project_recipe.py:18-35`, `:108-120`, `:188-213`).
-Existing static envelopes are unchanged; interactive receipts add lossless name
-identity and first legacy failure separately from diagnostic reader evidence.
-The manual remains reachable from both owner twins. This is source authoring,
-not Go consumption/acceptance or a full Project migration claim.
-
-The specialized inspection exchange (PRJ006) uses immutable `InspectionRequest`
-and construction-bound `JsonProjectInspectionAdapter`
-(`src/lingtai/adapters/project_inspection_exchange.py:56-175`). The CLI selects
-it only for explicit callback mode (`src/lingtai/cli_project.py:111-134`). The
-adapter flushes a member request, consumes one exact ack and returns existing
-`ProjectInitObservation`; it never calls the decorated init observation. It
-holds an ephemeral immutable observation transcript for terminal correlation,
-not a cache, service locator or repeat scan. Callback projection adds native
-base64 identity to members/startup arrays/evidence and sequence to evidence.
-No persistent state or filesystem writes are owned by this exchange. Thin
-protocol cases are in `tests/test_project_inspection_exchange.py`; parent owns
-execution, installed CLI and paired Go native-error acceptance.
+[PRJ002/PRJ003/PRJ004/PRJ006](BEHAVIORS.md) retain acceptance scenarios. These slices do not
+own bootstrap, import, registry or lifecycle and are not a full Project migration;
+parent owns execution, installed CLI, Go consumption and native-error acceptance.
