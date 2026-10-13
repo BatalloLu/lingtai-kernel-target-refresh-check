@@ -242,7 +242,15 @@ def test_apriori_default_omission_and_false_reach_actual_executor(name, daemon):
     assert summary["raw_locator"]["tool_call_id"] == "default"
     assert summary["raw_locator"]["event_type"] == ("daemon_tool_result" if daemon else "tool_result")
     assert summary["raw_locator"]["log"] == ("daemons/test/logs/events.jsonl" if daemon else "logs/events.jsonl")
-    assert exact["receipt"] == raw["receipt"]
+    # Recover the exact recorded original using the unchanged locator identity.
+    locator = summary["raw_locator"]
+    recovered = [fields["result"] for event, fields in logs
+                 if event == "tool_result" and fields["tool_call_id"] == locator["tool_call_id"]]
+    assert recovered == [raw]
+    assert locator["query"] == f"grep 'default' <workdir>/{locator['log']}"
+    assert "raw_locator" in summary["retrieval_hint"]
+    assert "summarize=false" in summary["retrieval_hint"]
+    assert all(exact[key] == value for key, value in raw.items())
     assert not is_apriori_summary(exact)
     # Provider proposals and durably logged raw results are not rewritten.
     assert "summarize" not in calls[0].args
@@ -448,3 +456,57 @@ def test_apriori_default_generic_family_parser_contract_is_preserved(value):
     assert result["message"] == "summarize must be a boolean"
     assert inputs == []
     assert summaries == []
+
+
+@pytest.mark.parametrize("kind", ["success", "cap", "error"])
+@pytest.mark.parametrize("daemon", [False, True])
+def test_apriori_compact_envelope_preserves_raw_locator(kind, daemon):
+    """Pure builders retain retrieval and loss boundaries on every replacement."""
+    from lingtai.kernel.tool_result_summary import (
+        APRIORI_SUMMARY_CAP, APRIORI_SUMMARY_MARKER,
+        build_cap_refusal, build_summary_error, build_summary_replacement,
+    )
+
+    log = "daemons/test/logs/events.jsonl" if daemon else "logs/events.jsonl"
+    event = "daemon_tool_result" if daemon else "tool_result"
+    common = dict(tool_name="shell", tool_call_id="call_exact",
+                  original_visible_chars=1234, raw_log_path=log, raw_event_type=event)
+    if kind == "success":
+        payload = build_summary_replacement(
+            **common, summary_text="receipt exact-id", reason="retain receipt",
+            summary_input_chars=1234, summary_input_truncated=False,
+        )
+        assert payload["generated_summary"] == "receipt exact-id"
+        assert payload["summary_kind"] == "apriori_generated"
+        assert payload["summary_reason"] == "retain receipt"
+        assert payload["summarized_at"]
+        assert payload["summary_effect"] == dict(prev_chars=1234, after_chars=16, saved_chars=1218)
+        assert payload["summary_chars"] == 16
+        assert payload["summary_input_chars"] == 1234
+    elif kind == "cap":
+        payload = build_cap_refusal(**common)
+        assert payload["summary_kind"] == "apriori_cap_refused"
+        assert payload["cap_chars"] == APRIORI_SUMMARY_CAP
+        assert payload["summary_input_chars"] == 0
+    else:
+        payload = build_summary_error(**common, error="gateway failed")
+        assert payload["summary_kind"] == "apriori_error"
+        assert payload["error"] == "gateway failed"
+        assert payload["summary_input_chars"] == 0
+    assert payload["artifact"] == APRIORI_SUMMARY_MARKER
+    assert payload["canonical"] is False
+    assert payload["raw_preserved"] is True
+    assert payload["summary_input_truncated"] is False
+    assert payload["raw_locator"] == {
+        "tool_call_id": "call_exact", "log": log, "event_type": event,
+        "query": f"grep 'call_exact' <workdir>/{log}",
+    }
+    hint = payload["retrieval_hint"]
+    assert len(hint) < 220
+    assert all(term in hint for term in (
+        "noncanonical", "lossy", "incomplete or inaccurate", "preserved outside context",
+        "raw_locator", "summarize=false",
+    ))
+    # The query/path occur once, in raw_locator, not repeated in prose.
+    assert "grep" not in hint
+    assert log not in hint
