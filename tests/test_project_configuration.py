@@ -58,6 +58,13 @@ class MemoryWorkspace(ProjectConfigurationPort):
         return ConfigurationWriteReceipt(True, True, seed.psyche_settings_json is not None,
                                          "READ_OK_WITH_IGNORED_FIELDS")
 
+    def save_policy_init(self, name, document):
+        if name == self.fail:
+            return ConfigurationWriteReceipt(code="init_write_failed")
+        member = self.observe_member(name)
+        self.members[name] = replace(member, init_present=True, init_document=copy.deepcopy(document))
+        return ConfigurationWriteReceipt(True)
+
     def save_member_init(self, name, document, *, only_absent=False):
         if name == self.fail:
             return ConfigurationWriteReceipt(code="init_write_failed")
@@ -304,3 +311,102 @@ def test_shared_policy_empty_skip_preserves_all_member_mode(tmp_path, kind):
         "", refs["selected.json"], (refs["selected.json"],))
     assert result.updated == 1 and result.failed == 0
     assert workspace.observe_member("orch-dir").init_document["manifest"]["preset"]["default"] == refs["selected.json"]
+
+
+@pytest.mark.parametrize("kind", ["memory", "filesystem"])
+def test_policy_propagation_accepts_legacy_partial_init(tmp_path, kind):
+    # The old caller accepts a parsed preset block, not a bootable init. No Pad,
+    # env, blueprint or preset file is required to maintain its authorization.
+    original = {"manifest": {"preset": {"active": "old.json", "default": "old.json",
+                "allowed": ["old.json"], "custom_policy": 9007199254740993123456789},
+                "user_manifest": True}, "covenant_file": "legacy.md",
+                "user_config": {"keep": "exact"}}
+    if kind == "memory":
+        workspace = MemoryWorkspace()
+        for name in ("alice", "carol", "selected", "human"):
+            workspace.members[name] = MemberDocuments(name, True, copy.deepcopy(original), False, None)
+        workspace.members["broken"] = MemberDocuments("broken", True, None, False, None, init_error=True)
+        workspace.members["older"] = MemberDocuments("older", True, {"manifest": {}}, False, None)
+    else:
+        for name in ("alice", "carol", "selected", "human"):
+            write(tmp_path / ".lingtai" / name / "init.json", original)
+        (tmp_path / ".lingtai/broken").mkdir()
+        (tmp_path / ".lingtai/broken/init.json").write_text("{broken")
+        write(tmp_path / ".lingtai/older/init.json", {"manifest": {}})
+        # Unrelated malformed owner settings cannot gate a policy-only edit.
+        owner = tmp_path / ".lingtai/alice/settings/psyche.json"
+        owner.parent.mkdir()
+        owner.write_text("{unrelated malformed owner")
+        def no_runtime_preset_load(*args, **kwargs):
+            raise AssertionError("policy propagation is not reconstruction")
+        workspace = FilesystemProjectConfigurationAdapter(tmp_path, load_preset=no_runtime_preset_load)
+    result = ProjectConfigurationUseCase(workspace).propagate_policy("selected", "new.json", ("new.json",))
+    assert (result.updated, result.skipped, result.failed, result.code) == (2, 3, 1, "member_document_unreadable")
+    assert result.source.reader_status == "not_read"
+    expected = copy.deepcopy(original)
+    expected["manifest"]["preset"].update(active="new.json", default="new.json", allowed=["new.json"])
+    for name in ("alice", "carol"):
+        saved = workspace.observe_member(name)
+        assert saved.init_document == expected and not saved.blueprint_present
+    for name in ("selected", "human"):
+        assert workspace.observe_member(name).init_document == original
+    if kind == "filesystem":
+        assert owner.read_text() == "{unrelated malformed owner"
+        assert (tmp_path / ".lingtai/broken/init.json").read_text() == "{broken"
+
+
+def test_policy_write_failure_continues_without_runtime_preflight(monkeypatch, tmp_path):
+    import lingtai.adapters.project_configuration as adapter
+    original = adapter._atomic_json
+    document = {"manifest": {"preset": {"active": "old", "default": "old", "allowed": ["old"]}}}
+    for name in ("alice", "carol"):
+        write(tmp_path / ".lingtai" / name / "init.json", document)
+    def fail_first(path, value, **kwargs):
+        if path.parent.name == "alice":
+            raise OSError("private write diagnostic")
+        return original(path, value, **kwargs)
+    monkeypatch.setattr(adapter, "_atomic_json", fail_first)
+    workspace = filesystem(tmp_path)
+    result = ProjectConfigurationUseCase(workspace).propagate_policy("", "new", ("new",))
+    assert (result.updated, result.failed, result.code) == (1, 1, "init_write_failed")
+    assert workspace.observe_member("alice").init_document == document
+    assert workspace.observe_member("carol").init_document["manifest"]["preset"]["default"] == "new"
+    assert "private write diagnostic" not in json.dumps(result.to_payload())
+
+
+@pytest.mark.parametrize("case", ["fresh", "existing", "explicit"])
+def test_configure_legacy_covenant_path_precedence_preserves_psyche(tmp_path, case):
+    from lingtai.tools.psyche.settings import serialize_prompt_owner_document, read_resolved_prompt_inputs
+    path = tmp_path / ".lingtai/orch"
+    default = str(tmp_path / "global/covenant/zh/covenant.md")
+    prior = str(tmp_path / "existing-covenant.md")
+    explicit = tmp_path / "explicit-covenant.md"
+    explicit.write_text("explicit Covenant")
+    if case != "fresh":
+        write(path / "init.json", {"manifest": PUBLIC_MANIFEST, "pad": "durable Pad",
+              "covenant_file": prior, "user_config": {"keep": True}})
+    owner = path / "settings/psyche.json"
+    owner.parent.mkdir(parents=True, exist_ok=True)
+    original = serialize_prompt_owner_document(covenant="durable Covenant", base_prompt="durable base")
+    owner.write_text(original)
+    write(tmp_path / "selected.json", {"description": {"summary": "fixture"}, "manifest": PUBLIC_MANIFEST})
+    env = tmp_path / "public.env"
+    env.write_text("")
+    options = {"env_file": str(env), "venv_path": "venv", "language": "zh",
+               "default_covenant_file": default}
+    payload = {"project_dir": str(tmp_path), "directory_name": "orch", "agent_name": "Display",
+               "preset_ref": str(tmp_path / "selected.json"), "keep_current": False, "options": options}
+    if case == "explicit":
+        options["covenant_file"] = str(explicit)
+        payload["prompts"] = {"covenant_file": str(explicit)}
+    result = execute("configure", payload)
+    assert not result.code and result.source.psyche_written == (case == "explicit")
+    saved = json.loads((path / "init.json").read_text())
+    assert saved["covenant_file"] == {"fresh": default, "existing": prior, "explicit": str(explicit)}[case]
+    if case != "fresh":
+        assert saved["pad"] == "durable Pad" and saved["user_config"] == {"keep": True}
+    if case != "explicit":
+        assert owner.read_text() == original
+    else:
+        prompts = read_resolved_prompt_inputs(path)
+        assert prompts.covenant == "explicit Covenant" and prompts.base_prompt == "durable base"

@@ -1,6 +1,6 @@
 ---
 name: project-creation
-contract_version: 5
+contract_version: 6
 root_contract: CONTRACT.md
 related_files:
   - src/lingtai/kernel/project/recipe.py
@@ -427,8 +427,14 @@ strict Psyche owner values with the edit and calls its public serializer. Core
 receives opaque bytes. When absent, existing owner bytes/settings routes stay
 untouched. Explicit Pad uses current `pad`, not retired comment fields. Go's
 legacy CovenantFile/CommentFile choices map to `prompts.covenant_file` and Pad
-content supplied after its selected public Recipe layer read; do not emit new
-inert prompt inputs. This operation itself does not apply a Recipe.
+content supplied after its selected public Recipe layer read. The inherited Go
+writer's supported legacy `init.covenant_file` path also remains: optional public
+option strings `covenant_file` (explicit nonempty choice) and
+`default_covenant_file` (outer language-default path) restore its exact precedence,
+explicit choice then existing nonempty path then default. Omitted fallbacks do
+not invent a path. This metadata does not activate legacy init prompt loading or
+rewrite Psyche; only an explicit `prompts` edit writes that owner document.
+This operation itself does not apply a Recipe.
 
 All terminal envelopes have exactly `status,outcome,updated,skipped,failed,code,
 error,source`. `source` has `init_written,manifest_written,psyche_written,
@@ -442,7 +448,9 @@ not whole-document transactions or runtime readiness. Skeleton updated counts
 human manifest writes. `failed` counts member failures, skipped counts no-ops.
 Only actual source reader status is exposed: `not_read`, `READ_FAILED`,
 `FULLY_EFFECTIVE`, `READ_OK_WITH_IGNORED_FIELDS`; never manufacture effectiveness.
-Propagation readers are enforced per write but not flattened into source status.
+Config propagation and rehydration readers are enforced per write but not
+flattened into source status. Policy-only propagation does not reconstruct a
+runtime or read unrelated owner settings; its receipts remain `not_read`.
 
 ### Compatibility, ordering and partial effects
 
@@ -479,8 +487,13 @@ mailbox contents nor unrelated owner documents are rewritten.
 Policy propagation iterates immediate real directories, excluding human and
 selected member, as old Go's init-based target semantics (no extra fleet/member
 manifest gate). Missing init or missing preset block is skipped; malformed/read
-or write failure is counted, traversal continues. Config propagation copies
-selected public LLM/capabilities/context_limit and nonempty env_file, strips
+or write failure is counted, traversal continues. Its specialized
+`save_policy_init` Port operation atomically persists the Core-authored edit,
+without whole-init preflight or init/Psyche readers: the old supported input is
+any parsed init with a preset block, even without Pad, env, blueprint, loadable
+preset references or valid unrelated owner settings. This is authorization
+maintenance, not proof of runtime readiness; runtime validation is unchanged.
+Config propagation copies selected public LLM/capabilities/context_limit and nonempty env_file, strips
 worker admin to false karma/nirvana and deletes top-level addons, preserves
 worker identity/pad/venv/MCP/other settings, skips unreadable/absent/no-manifest
 init, continues on write failure. Former silent errors are now explicit partial

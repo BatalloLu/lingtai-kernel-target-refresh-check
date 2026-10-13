@@ -92,7 +92,7 @@ def _configure_request(value: dict, workspace) -> ConfigureMemberRequest:
     options = value["options"]
     if not isinstance(options, dict):
         raise configuration_error("invalid_project_request")
-    text_keys = {"language", "env_file", "venv_path", "pad"}
+    text_keys = {"language", "env_file", "venv_path", "pad", "covenant_file", "default_covenant_file"}
     bool_keys = {"karma", "nirvana", "preserve_active"}
     int_keys = {"context_limit", "max_rpm", "max_aed_attempts"}
     _keys(options, {"env_file", "venv_path"}, text_keys | bool_keys | int_keys | {"addons", "mcp", "allowed_presets"})

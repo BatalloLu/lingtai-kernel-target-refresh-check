@@ -36,6 +36,9 @@ class ConfigurationOptions:
     context_limit: int = 500000
     max_rpm: int = 60
     max_aed_attempts: int = 5
+    # Legacy Go writer paths: explicit choice, then existing path, then language default.
+    covenant_file: str = ""
+    default_covenant_file: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,6 +127,10 @@ class ProjectConfigurationPort(ABC):
         """Preflight, then init, mailboxes, manifest, optional Psyche; never roll back."""
 
     @abstractmethod
+    def save_policy_init(self, directory_name: str, document: dict[str, object]) -> ConfigurationWriteReceipt:
+        """Persist a policy-only edit without requiring unrelated runtime inputs."""
+
+    @abstractmethod
     def save_member_init(self, directory_name: str, document: dict[str, object],
                          *, only_absent: bool = False) -> ConfigurationWriteReceipt:
         """Write one init and read it using current owners. Absent-only refuses races."""
@@ -198,6 +205,9 @@ def configuration_seed(request: ConfigureMemberRequest, previous: MemberDocument
                 cfg["api_key_env"] = llm["api_key_env"]
     _strip_explicit_legacy(document)
     document["manifest"] = manifest
+    covenant_file = opts.covenant_file or _reference(document.get("covenant_file")) or opts.default_covenant_file
+    if covenant_file:
+        document["covenant_file"] = covenant_file
     document["env_file"] = _reference(document.get("env_file")) or opts.env_file
     document["venv_path"] = _reference(document.get("venv_path")) or opts.venv_path
     if opts.pad is not None:
@@ -269,7 +279,7 @@ class ProjectConfigurationUseCase:
             _strip_explicit_legacy(document)
             policy.update({"active": policy.get("active") if policy.get("active") in allowed else default,
                            "default": default, "allowed": list(allowed)})
-            receipt = self.workspace.save_member_init(member.directory_name, document)
+            receipt = self.workspace.save_policy_init(member.directory_name, document)
             updated += int(receipt.init_written)
             failed += int(bool(receipt.code))
             first_code = first_code or receipt.code

@@ -196,6 +196,18 @@ class FilesystemProjectConfigurationAdapter(ProjectConfigurationPort):
             return ConfigurationWriteReceipt(init_written, manifest_written, psyche_written,
                                              reader_status, phase)
 
+    def save_policy_init(self, directory_name: str, document: dict) -> ConfigurationWriteReceipt:
+        # Policy propagation historically edits any parsed init with a preset
+        # block. It is not reconstruction: missing Pad/env/preset files or an
+        # unrelated Psyche document must not prevent authorization maintenance.
+        try:
+            path = self._member(directory_name)
+            self._safe_parent(path)
+            _atomic_json(path / "init.json", document)
+            return ConfigurationWriteReceipt(True)
+        except Exception:
+            return ConfigurationWriteReceipt(code="init_write_failed")
+
     def save_member_init(self, directory_name: str, document: dict,
                          *, only_absent: bool = False) -> ConfigurationWriteReceipt:
         written = False

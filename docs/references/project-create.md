@@ -203,6 +203,17 @@ credential/preset persistence. Keep current uses an empty preset_ref and explici
 keep_current/preserve_active, never a synthetic preset filename. Existing owner
 bytes remain unchanged unless an explicit prompt edit is requested. New prompt
 content uses Psyche's serializer; Pad replaces retired comment inputs.
+Go also projects its existing language-default covenant path as public
+`options.default_covenant_file` metadata, with an explicit nonempty legacy choice
+in `options.covenant_file`. Core preserves the old init-path precedence (explicit,
+existing nonempty, default). Fallback metadata alone never edits Psyche or reads
+that legacy file; explicit prompt edits still use the current owner serializer.
+
+Policy propagation maintains parsed preset blocks, not boot readiness. Missing
+Pad/env/blueprint/preset files or malformed unrelated Psyche do not block this
+policy-only write, and reader status stays `not_read`. Malformed init and write
+failures remain explicit partial counts while later members continue. Configure,
+config propagation and rehydrate keep their actual runtime-owner reader checks.
 
 Imported all-absent rehydrate includes selected-source configuration. Do not
 write source init first: a mixed project is refused, not automatically repaired.

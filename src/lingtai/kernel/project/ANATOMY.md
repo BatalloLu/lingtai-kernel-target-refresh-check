@@ -146,7 +146,12 @@ receipts, `ProjectConfigurationPort`, and `ProjectConfigurationUseCase` for
 initialize/configure/propagate-policy/propagate-config/rehydrate; guarded by
 PRJ003. `src/lingtai/adapters/project_configuration.py` implements sequential
 Project-local raw reads, individual atomic writes and actual init/Psyche reader
-seams. `src/lingtai/cli_project_configuration.py` is the strict JSON stdin driver
+seams. `ProjectConfigurationPort.save_policy_init` and the matching filesystem
+method persist only Core-authored policy edits without reconstruction; configured,
+config-propagated and rehydrated init writes retain their existing owner readers.
+`ConfigurationOptions` carries outer explicit/default legacy covenant paths;
+Core selects explicit, existing, then default without reading global files.
+`src/lingtai/cli_project_configuration.py` is the strict JSON stdin driver
 and outer preset/Psyche composition. `cli_project.py` only registers/dispatches
 these operations; existing create/inspect/interactive code is unchanged.
 `tests/test_project_configuration.py` shares one matrix across fake and real
