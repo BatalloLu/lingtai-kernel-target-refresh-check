@@ -12,6 +12,10 @@ related_files:
   - src/lingtai/tools/tool_family/CONTRACT.md
   - src/lingtai/tools/context/CONTRACT.md
   - src/lingtai/intrinsic_skills/pad-manual/SKILL.md
+  - src/lingtai/kernel/project/interactive_creation.py
+  - src/lingtai/adapters/project_interactive_workspace.py
+  - tests/test_project_interactive_creation.py
+  - src/lingtai/kernel/project/CONTRACT.md
 maintenance: |
   This component contract is governed by root CONTRACT.md. Keep the paired
   ANATOMY.md, manual, schemas, results, glossary resources, and focused tests in
@@ -98,3 +102,9 @@ No replacement conformance claimed for: test_context_ownership_redesign, test_pa
 These tests pin the exact action set, strict retirement, no-hot-load file and
 append behavior, delayed activation, validation-before-persistence, manual
 shape, both provider wires, and the one canonical lifecycle hook.
+
+Fresh interactive Project seeds may put the selected Recipe comment body in the
+current init `pad` seed (explicit nonempty caller Pad wins), never the retired
+`comment_file` field. This initializes durable Pad through existing startup
+composition; it does not hot-load or expand this capability's public actions.
+The Project transaction Contract owns that fresh-writer ordering.

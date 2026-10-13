@@ -11,6 +11,10 @@ related_files:
   - src/lingtai/tools/pad/glossary-zh.md
   - src/lingtai/tools/pad/glossary-wen.md
   - src/lingtai/intrinsic_skills/pad-manual/SKILL.md
+  - src/lingtai/kernel/project/interactive_creation.py
+  - src/lingtai/adapters/project_interactive_workspace.py
+  - tests/test_project_interactive_creation.py
+  - src/lingtai/kernel/project/CONTRACT.md
 maintenance: |
   Keep paths real, repo-relative, duplicate-free, and reciprocal with the paired
   Contract and parent/neighbor anatomies. Update this graph when symbols,
@@ -68,3 +72,8 @@ The public registry contains no `edit` or `load`; `_pad_load` is internal only.
 `append` never calls `_pad_load`. Durable changes become prompt-visible only
 through the shared full reconstruction path. See the paired Contract for wire,
 result, and validation promises.
+
+The fresh interactive Project Core seed carries optional Recipe comment content
+as the current init `pad` seed; its outside workspace serializes that seed.
+Existing Agent startup remains the Pad materializer, with no new public action
+or hot-load path. The linked Project Contract owns the creation transaction.

@@ -23,6 +23,9 @@ related_files:
   - src/lingtai/intrinsic_skills/psyche-manual/SKILL.md
   - src/lingtai/intrinsic_skills/psyche-manual/reference/settings/SKILL.md
   - tests/test_project_creation.py
+  - src/lingtai/adapters/project_interactive_workspace.py
+  - tests/test_project_interactive_creation.py
+  - src/lingtai/kernel/project/CONTRACT.md
 maintenance: |
   Keep paths real, repo-relative, duplicate-free, and reciprocal with the paired
   Contract and parent/neighbor anatomies. Code is the structural source of
@@ -177,3 +180,8 @@ current adapter's contribution with that adapter still owning the source.
 these keys and put desired working instructions in Pad through authorized edits.
 Neither `.rules` nor `system/rules.md` is read, consumed or injected; old files
 remain untouched. Pad is writable working memory, not security enforcement.
+
+Fresh interactive Project composition injects this serializer into
+`FilesystemInteractiveWorkspaceAdapter`; that outside adapter also invokes the
+resolved owner reader for both pending and persisted validation. Project Core
+carries owner input values but imports no Psyche implementation/schema.

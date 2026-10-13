@@ -14,6 +14,8 @@ related_files:
   - src/lingtai/adapters/posix/mail.py
   - src/lingtai/tools/system/karma.py
   - src/lingtai/tools/avatar/__init__.py
+  - src/lingtai/adapters/project_inspection.py
+  - src/lingtai/adapters/project_interactive_workspace.py
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.
   Keep this component's ANATOMY.md and CONTRACT.md reciprocal and keep

@@ -1,5 +1,8 @@
 ---
 related_files:
+  - src/lingtai/kernel/project/configuration.py
+  - src/lingtai/adapters/project_configuration.py
+  - src/lingtai/cli_project_configuration.py
   - ANATOMY.md
   - src/lingtai/BEHAVIORS.md
   - src/lingtai/__init__.py
@@ -80,6 +83,11 @@ related_files:
   - src/lingtai/kernel/session_stats/CONTRACT.md
   - tests/test_kernel_migrate.py
   - tests/test_lingtai_facade.py
+  - src/lingtai/adapters/project_inspection.py
+  - src/lingtai/kernel/project/interactive_creation.py
+  - src/lingtai/adapters/project_interactive_workspace.py
+  - src/lingtai/adapters/project_creation_recipe.py
+  - src/lingtai/adapters/project_creation_exchange.py
 maintenance: |
   Keep related_files as repo-relative paths to real files. Include neighboring
   ANATOMY.md files so the anatomy graph stays connected rather than isolated;
@@ -113,7 +121,7 @@ PyPI wrapper package — `Agent(BaseAgent)` with composable capabilities, preset
 | `adapters/lifecycle_clock.py` | The one portable production `SystemLifecycleClockAdapter` for the Core-owned `LifecycleClockPort` — direct `wall_seconds()`→`time.time()` / `monotonic_seconds()`→`time.monotonic()`, no caching or policy. Not POSIX (no filesystem/`fcntl`/platform selection), so it sits at the top of `adapters/` rather than under `adapters/posix/`; its promise/navigation are owned by the kernel `lifecycle_clock/` governed pair (`src/lingtai/kernel/lifecycle_clock/CONTRACT.md` + `ANATOMY.md`). |
 | `adapters/project_workspace.py` | Filesystem implementation of the Project Core Port: exclusively creates one fresh `.lingtai` tree, writes its seed, and applies an injected init-reader validation. |
 | `cli.py` | `lingtai-agent run <dir> [--acp-socket]` / `acp-socket-path <dir>` / `lingtai-agent acp --agent-dir <dir>` / `lingtai-agent acp --profile puffo-v0\|puffo-v1 --runtime-id <id>` / `lingtai-agent puffo-v0 provision\|revoke` / `lingtai-agent project create ...` / `lingtai-agent check-caps` / `lingtai-agent log ...` / `lingtai-agent maintenance cleanup <target>` entry points; the `run` composition root first refuses any `.change-name-incomplete` marker shape before cleanup/init/Agent construction, optionally starts the local ACP socket after Agent start, and performs a post-stop hard exit only when existing worker-poison state would otherwise keep the old process alive and block the refresh watcher |
-| `cli_project.py` | Inbound composition for one fresh `project create` seed: caller inputs, wrapper preset loading, current-reader validation, Project adapter, and output; it does not start an Agent. |
+| `cli_project.py` | Inbound composition for headless `project create`, read-only `project inspect`, and hidden prerequisite-gated `project create-interactive`; it injects outside adapters and never starts an Agent. |
 | `cli_acp.py` / `adapters/acp/puffo_v0.py` / `adapters/acp/puffo_v1.py` / `cli_puffo_v0.py` | ACP outer composition and Puffo full-tool profiles: generic ACP accepts a local existing agent directory; both Puffo profiles resolve only an operator-provisioned opaque runtime id to canonical identity/workspace and admit only authenticated ACP-origin provider turns. `puffo-v0` forces empty session MCP; `puffo-v1` accepts only the single fixed Puffo Core stdio service. The local control plane still provisions/revokes the shared binding. This is a controlled-entrypoint gate, not same-OS host isolation or runtime containment. |
 | `cli_daemon.py` | Thin `lingtai-agent daemon emanate|list|check|reclaim` driver over `services.daemon.DaemonService`; every action requires `--state-root`, native task payloads carry direct preset paths, and there is no Agent/init.json/preview compatibility route |
 | `services/daemon.py` | Reusable standalone daemon composition: owns one filesystem state root, reuses `DaemonManager` + `DaemonFamilyDispatcher`, requires direct presets for native LingTai work, and provides mutation-free durable `list`/`check` readback without constructing an Agent |
@@ -164,6 +172,7 @@ generation. The four former init keys are compatibility-known but inert. See
 **Inbound:** `lingtai-tui` calls `cli.run()` to boot agents; imports `load_preset`, `discover_presets_in_dirs` for UI. Kernel's `BaseAgent` is the parent class.
 
 **Project creation:** `cli_project` composes caller inputs, wrapper `load_preset`, the current init reader, and `FilesystemProjectWorkspaceAdapter` for `kernel.project`; it writes a seed only and never starts an Agent.
+**Interactive creation:** the same composition root injects the hidden filesystem workspace, wheel/local Recipe resources and JSON-lines prerequisite adapter into Project Core. Its current init/Psyche reads gate outer persistence and exclusive publication; see the linked Project twins. No runtime launch or credential/preset-profile writer moves into this CLI.
 
 **Outbound — kernel:** `lingtai.kernel.base_agent.{BaseAgent,StopResult,StopStatus}`, `.config.AgentConfig`, `.event_journal.EventJournalPort`, `.mail_transport.MailTransportPort`, `.workdir_lease.WorkdirLeasePort`, `.notification_store.NotificationStorePort` (S4: capability-native persistence for `.notification/` channel mirrors; see `kernel/notification_store/CONTRACT.md`), `.agent_presence.AgentPresenceStorePort` (own-heartbeat + foreign liveness; see `kernel/agent_presence/CONTRACT.md`), `.lifecycle_clock.LifecycleClockPort` (S7b: wall/monotonic lifecycle time; see `kernel/lifecycle_clock/CONTRACT.md`), `.snapshot.{SnapshotPort,SourceRevisionPort}` (S5: workdir capture and bounded source identity; see `kernel/snapshot/CONTRACT.md`), `.prompt.build_system_prompt`, `.handshake.resolve_address`, and the shared `lingtai.init_reader.read_init` / `lingtai.kernel.workdir.write_resolved_manifest` path. Legacy migration modules remain outside this production reader path; see `../lingtai/kernel/migrate/CONTRACT.md` for their retained historical/test surface.
 
@@ -252,3 +261,7 @@ marked refresh's successful `agent.start`; the shared successful post-molt
 publisher calls it for agent/system molts. The threshold is resolved by
 `kernel/config.py:memory_length_warning_chars`; System settings provides SHOW.
 There is no heartbeat or prompt reconstruction producer.
+
+Existing Project configuration is implemented by `src/lingtai/kernel/project/configuration.py`
+and governed by the Project Contract/PRJ003; outside filesystem and strict JSON
+composition adapters perform owner reads/writes, never runtime or fleet control.

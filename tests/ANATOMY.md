@@ -2,6 +2,7 @@
 related_files:
   - src/lingtai/tools/plugin/ANATOMY.md
   - tests/test_plugin_mcp_mode.py
+  - tests/test_project_recipe.py
   - ENVIRONMENT_VARIABLES.md
   - ANATOMY.md
   - CONTRACT.md
@@ -140,6 +141,8 @@ related_files:
   - tests/test_worker_hang_aed_redo.py
   - tests/test_daemon_central_manager.py
   - tests/test_fsutil.py
+  - tests/test_project_inspection.py
+  - tests/test_project_interactive_creation.py
 maintenance: |
   Keep related_files repo-relative, duplicate-free, and linked to real files.
   This is a navigation-only inventory anatomy: tests/ is a validation surface,
@@ -233,3 +236,5 @@ contracts and agent behavior tasks are not weakened. Automated LABT recipes
 whose selectors disappeared are explicitly retired, not silently remapped to
 unrelated smoke. Restore a focused regression from Git history when a
 concrete defect or required native/manual acceptance earns it.
+
+`tests/test_project_recipe.py` carries twelve thin existing local Recipe fake/filesystem and actual CLI source contracts; PRJ004 guards its Project owner promises. Execution is parent-owned, not an authored passing receipt.

@@ -20,6 +20,9 @@ related_files:
   - tests/test_agent_presence.py
   - tests/test_lifecycle_daemon_shutdown.py
   - tests/test_architecture_documents.py
+  - src/lingtai/kernel/project/CONTRACT.md
+  - src/lingtai/adapters/project_inspection.py
+  - src/lingtai/adapters/project_interactive_workspace.py
 maintenance: |
   <!-- CANONICAL-MAINTENANCE v2 BEGIN -->
   This component contract is governed by the root CONTRACT.md. Keep
