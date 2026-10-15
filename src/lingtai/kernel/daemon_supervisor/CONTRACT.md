@@ -23,6 +23,7 @@ related_files:
   - src/lingtai/tools/daemon/execution_host.py
   - src/lingtai/tools/daemon/shell_prompt_events.py
   - tests/test_daemon_detached_supervisor.py
+  - tests/test_daemon_manager_socket_fallback.py
 maintenance: |
   Keep this Contract paired with its ANATOMY.md and preserve the repository
   Anatomy/Contract maintenance convention. Update the promise and focused tests
@@ -127,6 +128,15 @@ slice does not compose Driver authority or remove the existing fail-closed
 dispatch gate for Driver-issued daemon leases.
 
 ## Conformance
+
+The POSIX central-manager startup checks include
+`tests/test_daemon_manager_socket_fallback.py`: supported directories retain
+in-project sockets, unsupported filesystems use the same private local fallback
+as overlong byte paths, only completed capability probes are cached, and a
+recorded startup failure is reported rather than disguised as a capsule timeout.
+These checks supplement the lifecycle promise guarded by
+[DS001](BEHAVIORS.md#behavior-ds001); they do not change the capsule or Port schema.
+
 
 Focused tests must cover real detached process launch, parent shutdown survival,
 parent interpreter exit, all backend-spec routing through the shared execution

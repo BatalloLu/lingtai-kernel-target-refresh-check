@@ -25,6 +25,7 @@ related_files:
   - src/lingtai/adapters/posix/avatar_launcher.py
   - src/lingtai/adapters/posix/daemon_capsule.py
   - src/lingtai/adapters/posix/daemon_manager.py
+  - tests/test_daemon_manager_socket_fallback.py
   - src/lingtai/adapters/posix/daemon_manager_entrypoint.py
   - src/lingtai/tools/avatar/ANATOMY.md
   - src/lingtai/tools/avatar/CONTRACT.md
@@ -142,29 +143,36 @@ co-located owning ANATOMY.md files.
 - `PosixBashStateLockAdapter` implements the Bash-local state-lock Port with an
   exclusive per-job lock file (`src/lingtai/adapters/posix/bash_state_lock.py:9-18`).
 - `daemon_manager.py` owns the resident central manager's queue and one-shot
-  Unix capsule socket. When an agent path exceeds the Unix socket-path limit,
-  `_capsule_socket_path` selects the fixed
-  `/tmp/lingtai-dm-<uid>-<digest>/capsule.sock` fallback, while
-  `_prepare_capsule_socket_path` permits bind/stale-socket reuse only inside a
-  real owner-owned mode-0700 directory and refuses symlink, ownership, type, or
-  private-mode mismatches before unlink or bind
-  (`src/lingtai/adapters/posix/daemon_manager.py:42-116`). `_ensure_manager`
+  Unix capsule socket. `_capsule_socket_path` uses the existing private
+  `/tmp/lingtai-dm-<uid>-<digest>/capsule.sock` fallback when the encoded direct
+  path exceeds the byte limit or the filesystem rejects a short capability
+  probe with an unsupported-socket errno. `_unix_socket_usable` caches only
+  completed probes within each process; caller and manager independently
+  derive the same path on a stable filesystem. The probe name is shorter than
+  `capsule.sock` and only a successfully bound probe is unlinked.
+  `_prepare_capsule_socket_path` retains real owner-owned mode-0700 directory
+  and private socket checks before fallback reuse
+  (`src/lingtai/adapters/posix/daemon_manager.py:74-182`). `_ensure_manager`
   holds one exclusive `fcntl.flock` on `daemon/manager/manager.lock` around
   `_ensure_manager_locked`'s complete observe/identity/reserve/spawn sequence,
   and then (still locked) an optional `after_locked` callback so concurrent
   submitters cannot both act on the same pre-lock state; each later caller
   re-checks the persisted reservation while stale-start recovery remains
-  unchanged (`src/lingtai/adapters/posix/daemon_manager.py:198-230`).
+  unchanged (`src/lingtai/adapters/posix/daemon_manager.py:261-293`).
   `_enqueue_manager_run_owned` supplies that callback to admit a run (queue
   write plus capsule handoff) inside the same held lock
-  (`src/lingtai/adapters/posix/daemon_manager.py:310-358`). On the exit side,
+  (`src/lingtai/adapters/posix/daemon_manager.py:380-432`). On the exit side,
   `_DaemonManagerProcess.run`'s idle branch calls `_try_exit_idle`, which takes
   the identical lock non-blockingly: losing it defers to the next poll tick,
   winning it re-confirms the queue is empty and `manager.pid` still names this
   process before unlinking the capsule-socket path and marking the record dead
   (`pid: null`, no numeric `started_at`) so a later submitter lazily reserves
   and spawns a fresh manager instead of reading a live identity mismatch
-  (`src/lingtai/adapters/posix/daemon_manager.py:543-601`).
+  (`src/lingtai/adapters/posix/daemon_manager.py:638-696`). Child stderr is captured in
+  `daemon/manager/manager.stderr.log`; startup socket or recovery errors record
+  `state=failed`, and `_send_capsule` surfaces that error without polling until
+  the deadline. Covered by `tests/test_daemon_manager_socket_fallback.py` and
+  the existing central-manager safety, descriptor, identity and idle-exit tests.
 - `refresh_watcher_entrypoint.main(argv)` is the owned ordinary
   importable/executable module the launched process runs
   (`src/lingtai/adapters/posix/refresh_watcher_entrypoint.py`). It decodes the
