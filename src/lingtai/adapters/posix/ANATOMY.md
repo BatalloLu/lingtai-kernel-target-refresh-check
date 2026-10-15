@@ -25,6 +25,8 @@ related_files:
   - src/lingtai/adapters/posix/avatar_launcher.py
   - src/lingtai/adapters/posix/daemon_capsule.py
   - src/lingtai/adapters/posix/daemon_manager.py
+  - src/lingtai/adapters/posix/daemon_mach.py
+  - tests/test_daemon_mach.py
   - tests/test_daemon_manager_socket_fallback.py
   - src/lingtai/adapters/posix/daemon_manager_entrypoint.py
   - src/lingtai/tools/avatar/ANATOMY.md
@@ -142,37 +144,33 @@ co-located owning ANATOMY.md files.
   (`src/lingtai/adapters/posix/bash_process.py:111-185`).
 - `PosixBashStateLockAdapter` implements the Bash-local state-lock Port with an
   exclusive per-job lock file (`src/lingtai/adapters/posix/bash_state_lock.py:9-18`).
-- `daemon_manager.py` owns the resident central manager's queue and one-shot
-  Unix capsule socket. `_capsule_socket_path` uses the existing private
-  `/tmp/lingtai-dm-<uid>-<digest>/capsule.sock` fallback when the encoded direct
-  path exceeds the byte limit or the filesystem rejects a short capability
-  probe with an unsupported-socket errno. `_unix_socket_usable` caches only
-  completed probes within each process; caller and manager independently
-  derive the same path on a stable filesystem. The probe name is shorter than
-  `capsule.sock` and only a successfully bound probe is unlinked.
-  `_prepare_capsule_socket_path` retains real owner-owned mode-0700 directory
-  and private socket checks before fallback reuse
-  (`src/lingtai/adapters/posix/daemon_manager.py:74-182`). `_ensure_manager`
-  holds one exclusive `fcntl.flock` on `daemon/manager/manager.lock` around
-  `_ensure_manager_locked`'s complete observe/identity/reserve/spawn sequence,
-  and then (still locked) an optional `after_locked` callback so concurrent
-  submitters cannot both act on the same pre-lock state; each later caller
-  re-checks the persisted reservation while stale-start recovery remains
-  unchanged (`src/lingtai/adapters/posix/daemon_manager.py:261-293`).
-  `_enqueue_manager_run_owned` supplies that callback to admit a run (queue
-  write plus capsule handoff) inside the same held lock
-  (`src/lingtai/adapters/posix/daemon_manager.py:380-432`). On the exit side,
-  `_DaemonManagerProcess.run`'s idle branch calls `_try_exit_idle`, which takes
-  the identical lock non-blockingly: losing it defers to the next poll tick,
-  winning it re-confirms the queue is empty and `manager.pid` still names this
-  process before unlinking the capsule-socket path and marking the record dead
-  (`pid: null`, no numeric `started_at`) so a later submitter lazily reserves
-  and spawns a fresh manager instead of reading a live identity mismatch
-  (`src/lingtai/adapters/posix/daemon_manager.py:638-696`). Child stderr is captured in
-  `daemon/manager/manager.stderr.log`; startup socket or recovery errors record
-  `state=failed`, and `_send_capsule` surfaces that error without polling until
-  the deadline. Covered by `tests/test_daemon_manager_socket_fallback.py` and
-  the existing central-manager safety, descriptor, identity and idle-exit tests.
+- `daemon_manager.py` owns the resident manager queue and capsule endpoint.
+  `_capsule_socket_path` retains short, supported in-project AF_UNIX sockets.
+  Unsupported or overlong paths on Darwin instead select ordinary project
+  `capsule.endpoint.json`; other POSIX platforms retain the private
+  `/tmp/lingtai-dm-<uid>-<digest>/capsule.sock` fallback. Capability probes are
+  short, cache only completed results, and unlink only their own bound name
+  (`src/lingtai/adapters/posix/daemon_manager.py:74-186`).
+  `_ensure_manager` holds the existing `manager.lock` across observation,
+  reservation, startup and queue/capsule admission; `_try_exit_idle` commits
+  retirement under the same lock. The transport does not introduce another
+  per-run process, queue or admission owner
+  (`src/lingtai/adapters/posix/daemon_manager.py:265-483`,
+  `src/lingtai/adapters/posix/daemon_manager.py:668-729`).
+  Startup failures remain explicit in `manager.pid` and stderr; an endpoint
+  is retired on idle exit and listener rights are released on shutdown.
+- `daemon_mach.py` implements only the Darwin rendezvous: public bootstrap and
+  fileport APIs hand an anonymous socketpair endpoint to the resident manager.
+  Kernel audit credentials gate the sender UID; reply UID and exact manager
+  PID are checked before the client sends capsule bytes. Original capsule and
+  SCM_RIGHTS framing then carries data and the optional adopted descriptor.
+  Endpoint metadata contains a random service name and process identity, not
+  a credential. Malformed/oversized requests are discarded independently;
+  native rights and descriptors have explicit release paths. This local
+  candidate has been exercised on macOS 15.7.3 only and depends on deprecated
+  `bootstrap_register`; it makes no cross-platform no-local-artifact promise.
+  Ownership is governed by `kernel/daemon_supervisor/CONTRACT.md`, with native
+  checks in `tests/test_daemon_mach.py` and existing manager lifecycle tests.
 - `refresh_watcher_entrypoint.main(argv)` is the owned ordinary
   importable/executable module the launched process runs
   (`src/lingtai/adapters/posix/refresh_watcher_entrypoint.py`). It decodes the

@@ -10,6 +10,7 @@ import errno
 import os
 import hashlib
 import socket
+import sys
 from pathlib import Path
 
 import pytest
@@ -54,6 +55,13 @@ class _UnsupportedSocket:
         return None
 
 
+def _assert_fallback(path, root):
+    if sys.platform == "darwin":
+        assert path == root / "capsule.endpoint.json"
+    else:
+        assert daemon_manager._is_capsule_socket_fallback(path)
+
+
 def _make_socket_unsupported(monkeypatch) -> None:
     monkeypatch.setattr(socket, "socket", lambda *a, **k: _UnsupportedSocket())
 
@@ -81,10 +89,11 @@ def test_socket_path_falls_back_when_the_filesystem_cannot_bind(
 ) -> None:
     monkeypatch.setattr(daemon_manager, "_unix_socket_usable", lambda _dir: False)
     socket_path = daemon_manager._capsule_socket_path(short_root)
-    assert daemon_manager._is_capsule_socket_fallback(socket_path) is True
-    digest = hashlib.sha256(str(short_root.resolve()).encode("utf-8")).hexdigest()[:24]
-    assert socket_path.name == "capsule.sock"
-    assert socket_path.parent.name == f"lingtai-dm-{__import__('os').getuid()}-{digest}"
+    _assert_fallback(socket_path, short_root)
+    if sys.platform != "darwin":
+        digest = hashlib.sha256(str(short_root.resolve()).encode("utf-8")).hexdigest()[:24]
+        assert socket_path.name == "capsule.sock"
+        assert socket_path.parent.name == f"lingtai-dm-{os.getuid()}-{digest}"
     # The agent process and the resident manager must derive the same path.
     assert daemon_manager._capsule_socket_path(short_root) == socket_path
 
@@ -94,7 +103,7 @@ def test_socket_path_still_falls_back_for_long_paths(short_root: Path, monkeypat
     long_root = short_root / ("segment" * 12)
     assert len(str(long_root / "capsule.sock")) >= daemon_manager._UNIX_SOCKET_PATH_LIMIT
     socket_path = daemon_manager._capsule_socket_path(long_root)
-    assert daemon_manager._is_capsule_socket_fallback(socket_path) is True
+    _assert_fallback(socket_path, long_root)
 
 
 def test_recorded_start_failure_is_surfaced(tmp_path: Path) -> None:
@@ -123,7 +132,7 @@ def test_probe_caches_real_unsupported_result(short_root, monkeypatch, error_num
     first = daemon_manager._capsule_socket_path(short_root)
     second = daemon_manager._capsule_socket_path(short_root)
     assert first == second
-    assert daemon_manager._is_capsule_socket_fallback(first)
+    _assert_fallback(first, short_root)
     assert len(calls) == 1
 
 
@@ -138,7 +147,7 @@ def test_probe_name_does_not_mask_unsupported_filesystem(short_root, monkeypatch
                 raise OSError("AF_UNIX path too long")
             raise OSError(errno.EOPNOTSUPP, "unsupported fixture")
     monkeypatch.setattr(socket, "socket", lambda *a, **k: Probe())
-    assert daemon_manager._is_capsule_socket_fallback(daemon_manager._capsule_socket_path(root))
+    _assert_fallback(daemon_manager._capsule_socket_path(root), root)
 
 
 def test_missing_directory_does_not_poison_later_probe(short_root, monkeypatch):
@@ -154,7 +163,7 @@ def test_unicode_path_limit_is_bytes(short_root, monkeypatch):
     monkeypatch.setattr(daemon_manager, "_unix_socket_usable", lambda _: True)
     assert len(str(root / "capsule.sock")) < 100
     assert len(str(root / "capsule.sock").encode()) >= 100
-    assert daemon_manager._is_capsule_socket_fallback(daemon_manager._capsule_socket_path(root))
+    _assert_fallback(daemon_manager._capsule_socket_path(root), root)
 
 
 def test_successful_probe_is_cached(short_root, monkeypatch):

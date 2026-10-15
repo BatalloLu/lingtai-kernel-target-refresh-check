@@ -9,6 +9,8 @@ related_files:
   - src/lingtai/kernel/daemon_supervisor/control.py
   - src/lingtai/adapters/posix/daemon_capsule.py
   - src/lingtai/adapters/posix/daemon_manager.py
+  - src/lingtai/adapters/posix/daemon_mach.py
+  - tests/test_daemon_mach.py
   - src/lingtai/adapters/posix/daemon_supervisor.py
   - src/lingtai/adapters/posix/daemon_execution_child_entrypoint.py
   - src/lingtai/adapters/posix/daemon_resume_owner_entrypoint.py
@@ -54,6 +56,18 @@ supervisor/child stdout/stderr to restrictive run-owned logs. The supervisor
 starts an exact execution child before its watcher; terminal CLI resume uses a
 durable single-writer generation and a detached resume owner. No parent future
 or process handle is retained, and no broad process matching is performed.
+
+On Darwin, when the project filesystem rejects AF_UNIX pathname sockets or
+its path is too long, the manager MUST use an anonymous socketpair with a Mach
+rendezvous, not a socket or credential file on another filesystem. Only ordinary
+endpoint metadata (service, PID and birth identity) is persisted in the project.
+The server checks the sender's kernel UID; the client checks kernel UID and
+manager PID before sending any capsule bytes. Failure MUST NOT downgrade to TCP
+or omit an adopted descriptor. All rendezvous rights and socket endpoints must
+be released on failed or completed handoff; stale endpoints fail closed and
+restart publishes a new service. This local candidate is validated only on
+macOS 15.7.3 and uses public but deprecated `bootstrap_register`; other POSIX
+fallback behavior is unchanged. Guarded by [DS002](BEHAVIORS.md#behavior-ds002).
 
 The POSIX runtime extension may carry one already-open child descriptor beside
 the bounded capsule. The private central-manager AF_UNIX socket and each
@@ -131,8 +145,9 @@ dispatch gate for Driver-issued daemon leases.
 
 The POSIX central-manager startup checks include
 `tests/test_daemon_manager_socket_fallback.py`: supported directories retain
-in-project sockets, unsupported filesystems use the same private local fallback
-as overlong byte paths, only completed capability probes are cached, and a
+in-project sockets, Darwin unsupported/overlong paths select the in-project
+Mach endpoint record, other POSIX platforms retain the private local fallback,
+only completed capability probes are cached, and a
 recorded startup failure is reported rather than disguised as a capsule timeout.
 These checks supplement the lifecycle promise guarded by
 [DS001](BEHAVIORS.md#behavior-ds001); they do not change the capsule or Port schema.
