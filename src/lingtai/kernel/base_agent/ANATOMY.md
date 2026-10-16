@@ -154,6 +154,12 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
 
 ## State
 
+- The post-turn boundary reconciles terminal ASLEEP with unfinished ACTIVE/STUCK
+  state through `_set_state`, preserving explicit sleep/suspend transitions
+  (`src/lingtai/kernel/base_agent/turn.py:1940-1947`). The existing state owner
+  clears `active_turn` (`src/lingtai/kernel/base_agent/__init__.py:1301-1305`).
+  Guarded by [BA011](BEHAVIORS.md#behavior-ba011).
+
 - `_effective_covenant` retains the complete loaded constructor/mirror body;
   only `COVENANT_ROUTE` enters the protected resident slot. Agent reconstruction
   replaces/restores the body with its applied generation; Psyche reads it through

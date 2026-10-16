@@ -317,3 +317,25 @@ coverage; report those limits separately.
 
 ### Pass / Fail
 Pass only with successful selected tests and every assertion above verified. Fail on loss of returned usage due to text validation, fabricated exception usage, parent SessionManager mutation, a changed default summary policy, or any live provider/network side effect.
+
+## Behavior BA011 — terminal sleep publishes state and fresh notifications can wake
+
+- **id**: BA011
+- **title**: terminal sleep publishes state and fresh notifications can wake
+- **guards**: `agent-runtime` § [Behavior](CONTRACT.md#behavior)
+- **runner**: any LingTai coding agent with shell access to this repository
+- **prerequisites**: repository Python environment; fake provider work only
+- **estimate**: ≈ 1 minute
+
+### Steps
+1. Run `python -m pytest -q tests/test_aed_recovery.py` from this checkout.
+2. Inspect `test_terminal_sleep_publishes_state_and_new_notification_wakes` and `test_post_turn_preserves_explicit_lifecycle_state`.
+
+### Expected evidence
+- [ ] NoCandidate, no-AED terminal, client no-op, and over-window zero-progress exits publish ASLEEP before waiting; the production state owner clears `active_turn`.
+- [ ] Fresh mail drives a second fake-provider turn through real notification synchronization; the failed request is not rebuilt/replayed, and unchanged delivered mail does not wake again.
+- [ ] Notification sync retains cancellation until the fresh dequeue; explicit ASLEEP/SUSPENDED and shutdown signals survive post-turn handling. Existing partial-stream and worker-poison guards pass.
+
+### Pass / Fail
+Pass only with all assertions above and no live provider or Agent launch. This
+hermetic test does not establish live provider behavior or native Windows results.

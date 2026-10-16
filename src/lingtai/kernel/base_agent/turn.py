@@ -1937,7 +1937,13 @@ def _run_loop_body(agent) -> None:
                     ),
                 )
 
-            if not agent._asleep.is_set():
+            # Terminal exits may set the sleep gate before publishing state.
+            # Finish ACTIVE/STUCK through the state owner (which clears
+            # active_turn), while preserving explicit sleep/suspend states.
+            if not agent._asleep.is_set() or (
+                sleep_state == AgentState.ASLEEP
+                and agent._state in (AgentState.ACTIVE, AgentState.STUCK)
+            ):
                 agent._set_state(sleep_state)
 
             if (
