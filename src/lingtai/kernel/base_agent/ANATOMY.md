@@ -175,8 +175,8 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
   continuous-inactivity anchor and successful-publication latch, maintained by
   `_set_state` (IDLE↔ASLEEP keeps; ACTIVE/STUCK/SUSPENDED clears).
   `lifecycle.py::_maybe_notify_auto_molt` checks the existing positive env
-  duration, then reads loaded `SessionManager.chat.interface.estimate_context_tokens()`
-  for the strict >100000 CURRENT-context gate without creating a session.
+  duration and publishes regardless of context size, without reading or creating
+  a session. The body leaves the strict >100000 molt choice to the agent.
   Heartbeat calls it before alarm/sync. No work classification or episode
   generation exists. Guarded by [BA009](BEHAVIORS.md#behavior-ba009).
 
