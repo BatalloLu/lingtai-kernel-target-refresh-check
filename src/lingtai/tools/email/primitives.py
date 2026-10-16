@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -104,11 +105,54 @@ def _save_read_ids(agent, ids: set[str]) -> None:
     os.replace(str(tmp), str(path))
 
 
+# Serialize read-set read/modify/write within this process, including the
+# delivery callback and explicit mailbox operations. No cross-process guarantee.
+_READ_STATE_LOCK = threading.RLock()
+
+
+def _update_read_ids(agent, *, add=(), remove=()) -> bool:
+    """Apply one atomic in-process read-set delta; return whether it changed."""
+    with _READ_STATE_LOCK:
+        before = _read_ids(agent)
+        after = (before | set(add)) - set(remove)
+        if after == before:
+            return False
+        _save_read_ids(agent, after)
+        return True
+
+
 def _mark_read(agent, msg_id: str) -> None:
     """Mark a message as read."""
-    ids = _read_ids(agent)
-    ids.add(msg_id)
-    _save_read_ids(agent, ids)
+    _update_read_ids(agent, add=(msg_id,))
+
+
+def _acknowledge_notification_delivery(agent, payload: dict) -> None:
+    """Mark only complete email records in the final persistent carrier read.
+
+    Called after canonical context insertion, never by carrier/mirror rendering. ID-only,
+    truncated and spill-only records are not proof of body delivery. Save once
+    for at most the producer's per-round entry limit, then publish the next batch.
+    """
+    emails = payload.get("emails")
+    if not isinstance(emails, list):
+        return
+    with _READ_STATE_LOCK:
+        ids = set()
+        for item in emails[:EMAIL_UNREAD_MAX_ENTRIES]:
+            if not isinstance(item, dict):
+                continue
+            eid, body = item.get("id"), item.get("message")
+            if (not isinstance(eid, str) or not eid or Path(eid).name != eid
+                    or eid in (".", "..") or not isinstance(body, str)
+                    or item.get("message_truncated") is not False
+                    or item.get("preview_truncated")
+                    or item.get("message_chars") != len(body)):
+                continue
+            if (_inbox_dir(agent) / eid / "message.json").is_file():
+                ids.add(eid)
+        changed = _update_read_ids(agent, add=ids)
+    if changed:
+        _rerender_unread_digest(agent)
 
 
 # ---------------------------------------------------------------------------
@@ -498,7 +542,8 @@ def _rerender_unread_digest(agent) -> str | None:
             "Unread email bodies are injected in full into "
             "_meta.agent_meta.notifications.persistent.email. You do not need "
             "the email read action merely to see ordinary message content. "
-            "After you handle a mail, prefer email(action='dismiss', "
+            "Complete bodies are automatically marked read after context delivery. "
+            "After handling a still-unread mail, use email(action='dismiss', "
             "input={'email_id': [id1, id2, ...]}, reasoning='handled') to mark "
             "it read and clear the notification without re-fetching content. "
             "Use email(action='read', input={'email_id': [id1, id2, ...], "
@@ -507,11 +552,11 @@ def _rerender_unread_digest(agent) -> str | None:
             "metadata, or intentionally fetch the producer record; use the "
             "reply/reply_all actions with their own strict input object to "
             "answer. Read and dismiss both accept lists, so process multiple "
-            "mails in one call. Sending refuses bodies over 50,000 characters "
-            "because unread bodies are injected without notification-layer "
-            "truncation. Until you read, dismiss, archive, or delete a mail, "
-            "the unread mirror retains it; automatic delivery does not repeat "
-            "an unchanged mail. IDs can become "
+            "mails in one call. Sending refuses bodies over 50,000 characters; "
+            "the smaller shared notification cap can still truncate accepted bodies. "
+            "Truncated or ID-only records remain unread until explicitly "
+            "read, dismissed, archived, or deleted; delivery of complete bodies "
+            "advances the unread mirror one bounded batch at a time. IDs can become "
             "stale if already handled elsewhere; if read/dismiss returns "
             "not_found, call email(action='check', input={'folder': None, "
             "'n': None, 'filter': None}, reasoning='refresh mailbox') to see "

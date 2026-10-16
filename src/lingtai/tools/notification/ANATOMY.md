@@ -119,8 +119,10 @@ Known aggregate projection and process-local delivered identity live in `kernel/
 - `notification_state` is intentionally an operation port, not filesystem or
   Store access. It preserves the real agent-scoped Core behavior instead of
   granting a family the fields from which it could bypass producer policy.
-- Producer-specific state remains producer-owned. Delivery never clears notification
-  files or producer state; one-shot delivered identity lives in the kernel
+- Producer-specific state remains producer-owned. The email-owned post-canonical-commit
+  hook is the sole delivery-time exception: complete bodies become read and its
+  mirror advances; incomplete mail remains unread. Other producers are untouched.
+  One-shot delivered identity lives in the kernel
   (`meta_block.pending_notification_payloads`), in memory only.
 - Settings discovery owns no state and never writes process environment,
   `settings/system.json`, `init.json`, `.notification/`, or any owner file.

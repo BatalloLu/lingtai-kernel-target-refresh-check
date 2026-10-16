@@ -1,9 +1,13 @@
 ---
 name: email-contract
 tool: email
-contract_version: 4
+contract_version: 5
 related_files:
   - src/lingtai/tools/email/__init__.py
+  - src/lingtai/tools/email/primitives.py
+  - src/lingtai/kernel/meta_block.py
+  - src/lingtai/kernel/base_agent/turn.py
+  - tests/test_email_delivery_autoack.py
   - src/lingtai/adapters/tool_plugin_host.py
   - src/lingtai/adapters/posix/mail.py
   - src/lingtai/tools/registry.py
@@ -261,6 +265,35 @@ a manager replacement after refresh.
 source-backed constants, full subscription-list redaction, stable manual
 anchors, whole-inventory failure, strict SHOW-only input, the applied POSIX
 construction snapshot, and an unchanged ordinary contacts call.
+
+## Automatic read after complete context delivery
+
+Guarded by: [EM004](BEHAVIORS.md#behavior-em004).
+
+Version 5 adds one email-owned automatic read transition: the kernel invokes
+`_acknowledge_notification_delivery` through the injected intrinsic registry only
+after canonical context insertion: ACTIVE uses
+`turn._acknowledge_committed_email_notifications` at settled send/commit points,
+checking the actual canonical blocks after rollback/restore; IDLE/ASLEEP uses
+`record_notification_persistent_delivery` after chat insertion. Staging an ACTIVE
+carrier never acknowledges mail. `_unread_notification_context` and mirror
+rendering remain read-only. Only complete final persistent records, at most
+`EMAIL_UNREAD_MAX_ENTRIES` (10) per round, are unioned into `read.json` in one
+write, then the next unread batch is rendered. The shared in-process read-state
+lock also serializes explicit add/remove deltas; cross-process writers are not
+covered. A mailbox I/O failure is logged as `email_delivery_ack_failed` without
+discarding already attached context. Attachment is not proof of provider response,
+model comprehension, or task completion; no cross-crash exactly-once guarantee.
+
+The shared notification envelope has a 10,000-character hard ceiling (and may
+be configured lower), while the send-layer body limit remains 50,000. Truncated,
+ID-only, omitted and spill-only records stay unread, including short bodies
+truncated by a large batch or other notification lanes. Unchanged one-shot
+identity may suppress their automatic redisplay; use explicit `email.read` for
+full bodies, then normal producer actions. Large unread entries can continue to
+occupy the newest-entry window until handled explicitly. This change does not
+alter delivery, caps, message bytes, explicit action semantics or deletion, and
+does not add automatic source reads or chunking. See issue #1844.
 
 ## State & storage
 

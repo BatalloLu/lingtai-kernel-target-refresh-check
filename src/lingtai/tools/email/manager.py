@@ -35,7 +35,7 @@ from .primitives import (
     _persist_to_outbox,
     _preview,
     _read_ids,
-    _save_read_ids,
+    _update_read_ids,
     _sent_dir,
 )
 from .settings import (
@@ -696,9 +696,7 @@ class EmailManager:
             archived.append(eid)
 
         if archived:
-            read_set = _read_ids(self._agent)
-            read_set -= set(archived)
-            _save_read_ids(self._agent, read_set)
+            _update_read_ids(self._agent, remove=archived)
             # Archive removes mail from inbox — the unread set shrinks
             # too.  Rerender so .notification/email.json reflects the
             # new state on the next heartbeat sync.
@@ -736,9 +734,7 @@ class EmailManager:
                 not_found.append(eid)
 
         if deleted:
-            read_set = _read_ids(self._agent)
-            read_set -= set(deleted)
-            _save_read_ids(self._agent, read_set)
+            _update_read_ids(self._agent, remove=deleted)
             # Delete from inbox shrinks the unread set the same way
             # archive does.  Rerender so the wire's notification
             # updates on the next heartbeat sync.

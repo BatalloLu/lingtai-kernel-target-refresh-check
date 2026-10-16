@@ -34,6 +34,7 @@ from ..llm.base import (
     safe_exception_description,
 )
 from ..meta_block import (
+    acknowledge_email_notification_delivery,
     attach_active_notifications,
     attach_active_runtime,
     attach_active_taskcard,
@@ -1017,6 +1018,44 @@ def scan_and_emit_committed_facts(agent) -> None:
                 )
 
 
+def _acknowledge_committed_email_notifications(agent, tool_results) -> None:
+    """Acknowledge only this batch's email payload actually in canonical history.
+
+    Stamping a carrier is not a commit. Read the settled interface, not the
+    staged payload: adapter rollback or a failed/no-op commit must not mark
+    unseen mail read. Copying adapters are supported by matching call IDs and
+    reading the canonical block's final (possibly capped) metadata.
+    """
+    from ..llm.interface import ToolResultBlock
+
+    pending = {
+        block.id for block in tool_results
+        if isinstance(block, ToolResultBlock)
+        and block.metadata.get("agent_meta", {}).get("notifications", {})
+        .get("persistent", {}).get("email")
+    }
+    if not pending or is_worker_interface_poisoned(agent):
+        return
+    iface = getattr(getattr(agent, "_chat", None), "interface", None)
+    if iface is None:
+        return
+    for entry in reversed(iface.entries):
+        if entry.role != "user":
+            continue
+        for block in entry.content:
+            if not isinstance(block, ToolResultBlock) or block.id not in pending:
+                continue
+            pending.remove(block.id)
+            persistent = (
+                block.metadata.get("agent_meta", {})
+                .get("notifications", {}).get("persistent", {})
+            )
+            if isinstance(persistent, dict) and not block.synthesized:
+                acknowledge_email_notification_delivery(agent, persistent)
+        if not pending:
+            break
+
+
 def _restore_tool_results_after_continuation_failure(
     agent,
     tool_results,
@@ -1041,6 +1080,7 @@ def _restore_tool_results_after_continuation_failure(
     # Settle point: the restore commit returned, so any receipt-bearing result
     # it re-committed is durably on the wire.
     scan_and_emit_committed_facts(agent)
+    _acknowledge_committed_email_notifications(agent, tool_results)
     try:
         agent._save_chat_history(ledger_source=ledger_source)
     except Exception as e:
@@ -3096,6 +3136,7 @@ def _process_response(agent, response, *, ledger_source: str = "main") -> dict:
                 agent._chat.commit_tool_results(tool_results)
                 # Settle point: no-API terminal commit returned.
                 scan_and_emit_committed_facts(agent)
+                _acknowledge_committed_email_notifications(agent, tool_results)
             return {
                 "text": intercept_text,
                 "failed": False,
@@ -3117,6 +3158,7 @@ def _process_response(agent, response, *, ledger_source: str = "main") -> dict:
                 agent._chat.commit_tool_results(tool_results)
                 # Settle point: no-API terminal commit returned.
                 scan_and_emit_committed_facts(agent)
+                _acknowledge_committed_email_notifications(agent, tool_results)
             agent._log("turn_cancelled_post_tool",
                        reason="cancel_event_set_after_tool_execute")
             return {"text": "", "failed": False, "errors": []}
@@ -3135,6 +3177,7 @@ def _process_response(agent, response, *, ledger_source: str = "main") -> dict:
                 agent._chat.commit_tool_results(tool_results)
                 # Settle point: no-API terminal commit returned.
                 scan_and_emit_committed_facts(agent)
+                _acknowledge_committed_email_notifications(agent, tool_results)
                 # Issue #126: save immediately so the in-memory and on-disk
                 # interface agree that tool results are committed. Without
                 # this, a notification heartbeat tick between the return
@@ -3159,6 +3202,7 @@ def _process_response(agent, response, *, ledger_source: str = "main") -> dict:
             # Settle point: the carrying send returned; committed tool results
             # (id > watermark) are durably on the wire.
             scan_and_emit_committed_facts(agent)
+            _acknowledge_committed_email_notifications(agent, tool_results)
         except Exception as _continuation_exc:
             # The local tools have already executed and returned results; only
             # the post-tool LLM continuation failed. Some adapters append tool
@@ -3177,6 +3221,7 @@ def _process_response(agent, response, *, ledger_source: str = "main") -> dict:
             # restore re-committed) fires here exactly once; a rolled-back entry
             # is absent and does not fire.
             scan_and_emit_committed_facts(agent)
+            _acknowledge_committed_email_notifications(agent, tool_results)
             # Surface the API error to the *still-live* Task Card here: the outer
             # AED catch runs only after ``_handle_request``'s finally has torn
             # down the card context, so its report would no-op. Observe-only and

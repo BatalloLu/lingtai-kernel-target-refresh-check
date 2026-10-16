@@ -67,24 +67,30 @@ Arrival and every read-state mutation render the current unread set to
                     "message_chars":10,"message_truncated":false}]}}
 ```
 
-The attention lane carries IDs; full structured entries live in
-`_meta.agent_meta.notifications.persistent.email`. New bodies are not truncated.
-The send layer rejects bodies over 50,000 characters; only legacy records may be
-marked `message_truncated=true`. The projection limits newest entries (see
-`unread.max_entries`) but preserves total unread count.
+The attention lane carries IDs; structured entries live in
+`_meta.agent_meta.notifications.persistent.email`. The send layer rejects bodies
+over 50,000 characters. The shared persistent envelope has a 10,000-character
+hard ceiling (possibly configured lower), so even accepted new messages can be
+truncated. The producer selects at most 10 newest unread entries per round.
 
 ## Handling and overflow
 
-Persistent context can make `read` unnecessary for ordinary text. After handling a
-visible entry, call `dismiss` to mark it read without returning another body. Use
-`read` for source metadata, attachments, or deliberate refresh. `read`, `dismiss`,
-`archive`, and `delete` rerender the Email mirror, which disappears when no unread
-mail remains. Replies currently leave the source unread; see the
+After a complete body successfully enters model context, Email automatically
+marks that ID read and renders the next bounded unread batch. Constructing or
+rerendering the mirror alone never marks mail read. Delivery means context
+canonical insertion after the send/commit settles, not mere carrier preparation,
+a successful provider response, or completion of the mail's task.
+Explicit `read`, `dismiss`, `archive`, `delete`, and reply behavior is unchanged.
+Use `read` for source metadata, attachments, or missing full bodies; use `dismiss`
+only when deliberately handling a still-unread message without another body copy.
+Replies currently leave the source unread; see the
 [Contract discrepancy and explicit-dismiss workaround](../addressing-and-replies/SKILL.md#same-channel-reply).
 
-If persistent context has an `overflow` marker, follow its local spill file or use
-the Email producer action; do not assume the body is complete. Notification
-delivery is one-shot (a new or changed unread set is attached again, an unchanged
-one is not) and never marks source messages read or clears the mirror; there is no
-notification dismiss action, and Email `dismiss`, `read`, `archive`, and `delete`
-remain the producer operations.
+Truncated, ID-only, omitted and spill-only records remain unread. Overflow can
+come from one long mail, a batch of otherwise short mails, or other lanes. Use
+explicit `email.read` to recover the complete source body (or follow the spill
+locator when appropriate). One-shot delivery may suppress unchanged records;
+automatic retries, chunking and source reads are not provided. Large unread mail
+can occupy the newest-entry window until explicitly handled. This change does
+not change delivery, the notification cap or the 50,000-character send limit.
+There is no notification dismiss action; read-state belongs to Email.

@@ -1,9 +1,11 @@
 ---
 name: notification-tool
-contract_version: 9
+contract_version: 10
 root_contract: CONTRACT.md
 related_files:
   - src/lingtai/tools/notification/ANATOMY.md
+  - src/lingtai/tools/email/CONTRACT.md
+  - tests/test_email_delivery_autoack.py
   - src/lingtai/tools/notification/__init__.py
   - src/lingtai/tools/notification/schema.py
   - src/lingtai/tools/notification/settings.py
@@ -75,8 +77,9 @@ Guarded by: [K005](../../kernel/BEHAVIORS.md#behavior-k005),
 LingTai agents MUST use `manual` only to retrieve installed guidance, `check` as
 a deliberate read of the complete current notification mirrors (never an
 automatic replay), and the owning producer tool to act on a notification. They
-MUST NOT expect delivery to clear or complete producer state, bypass protected
-channels, or route large-result compaction through this tool.
+MUST NOT equate delivery with task completion, bypass protected channels, or
+route large-result compaction through this tool. Email alone acknowledges complete
+context-delivered bodies via its producer-owned read-state hook (Email Contract).
 
 Coding agents MUST preserve the six operational actions, Store semantics, producer
 state, and the absence of any `dismiss*` notification action or `system`
@@ -88,8 +91,9 @@ remain versioned channel snapshots) committed only after a delivery succeeded
 from the same coherent observation. It survives ordinary same-process molt,
 rebuild and redacted-replay resync, but not Agent/process restart; no cross-crash
 exactly-once is promised. Delivery must never mark blocked,
-unstable, no-carrier, or failed attempts as delivered and never mutating
-producer or notification files. The private Core `dismiss_channel` helper stays
+unstable, no-carrier, or failed attempts as delivered. Generic delivery never
+mutates producer files; the email-owned post-canonical-commit hook is the explicit
+exception for complete bodies and its refreshed unread mirror. The private Core `dismiss_channel` helper stays
 unreachable from this tool. They MUST keep `manual` read-only, fixed to the
 installed per-agent path, and independent of check delivery state.
 They MUST keep `settings` SHOW-only and route each row to its exact manual
@@ -288,8 +292,9 @@ than dispatched, so it is not a second inbound adapter.
 - Missing installed guidance is degraded, never a silent successful empty body;
   source-tree fallback and compatibility response aliases are forbidden.
 - `check` remains a write-free placeholder path.
-- Delivery is one-shot and never mutates notification or producer state. The
-  delivered identity is in-memory only: a process restart or molt shows
+- Delivery is one-shot. Only the email-owned complete-body acknowledgment hook
+  may update read state and its mirror after attachment; incomplete mail remains
+  unread. No other producer state is mutated. The delivered identity is in-memory only: a process restart or molt shows
   surviving notification files once to the (new) context, and no cross-crash
   exactly-once guarantee is made. Producer read/reply/dismiss operations
   (for example `email.dismiss`) are independent producer business operations and

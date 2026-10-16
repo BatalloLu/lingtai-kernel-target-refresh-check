@@ -55,9 +55,11 @@ A producer writes the current channel as an envelope such as:
 `instructions` is inside the payload, not a channel. Read it before choosing a
 verb: the producer knows whether the file is disposable output, a mirror over
 canonical state, a coalesced event summary, or protected source of truth. A
-notification is never cleared by delivery and never mutates producer state: it must
-not mark mail read, change a goal, consume an MCP queue, or touch any other
-producer-owned record. A producer with canonical state should teach its owner verb
+notification normally does not mutate producer state: it must not change a goal,
+consume an MCP queue, or clear arbitrary producer records. Email is the narrow
+exception: its own post-canonical-commit hook marks complete bodies read and advances
+its unread mirror. Truncated/ID-only/spill-only email remains unread for explicit
+source recovery; this does not change delivery or notification caps. A producer with canonical state should teach its owner verb
 in `instructions`; hook registration only widens the allowlist. External
 writers use atomic sibling-temp replacement so readers never see partial JSON.
 

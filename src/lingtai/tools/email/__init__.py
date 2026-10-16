@@ -116,6 +116,7 @@ from .primitives import (  # noqa: F401
     _sent_dir,
     _summary_to_list,
     _unread_notification_context,
+    _acknowledge_notification_delivery,
 )
 
 # Schema — the legacy flat description/schema. ``get_description`` remains the

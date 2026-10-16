@@ -115,3 +115,31 @@ Pass when all four steps hold and the official Email surface is mandatory by int
 
 ### Pass / Fail
 Pass when exact five-field inventory, manual pointers, full redaction, whole-action failure, and no-I/O behavior all hold. Fail on any extra field, mutation API, partial unavailable row, path/domain-data leak, missing manual target, or operational regression.
+
+
+## Behavior EM004 — only complete context-delivered bodies become read
+
+- **id**: EM004
+- **title**: bounded complete-body delivery advances unread state
+- **guards**: `email-contract` § Automatic read after complete context delivery
+- **runner**: any LingTai agent with repository shell access
+- **prerequisites**: isolated temporary mailbox fixtures; no live mailbox
+- **estimate**: ≈ 1 minute
+
+### Steps
+1. Run `python -m pytest -q tests/test_email_delivery_autoack.py` from the repository.
+2. Inspect the ACTIVE and IDLE 23-message drain assertions: read counts 10, 20, 23.
+3. Inspect the 12,000-character mail test: three capped deliveries leave it unread;
+   explicit `read` returns the original full body and marks it read.
+
+### Expected evidence
+- [ ] Rendering, carrier staging, missing carrier and failed chat append do not mark messages read.
+- [ ] ACTIVE success/intercept/cancel/backoff/restore/survivor routes acknowledge only canonical blocks.
+- [ ] Rolled-back, capped-copy and poisoned-interface cases never falsely acknowledge.
+- [ ] Each successful batch marks only its complete snapshot IDs, once; bytes stay intact.
+- [ ] Long/incomplete records stay unread, including after repeated deliberate checks.
+- [ ] Read-ledger failure does not discard already attached context.
+
+### Pass / Fail
+Pass when the focused suite passes. Fail on any unseen/incomplete automatic read,
+source-body change, over-limit batch or lost bounded-drain transition.

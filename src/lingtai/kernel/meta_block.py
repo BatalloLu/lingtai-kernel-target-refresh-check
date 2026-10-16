@@ -260,8 +260,10 @@ NOTIFICATION_PERSISTENT_EMAIL_CONTEXT_COMMENT = (
     "Unread email content moved here from the legacy input path "
     "_meta.agent_meta.notifications.attention.email. The canonical path is "
     "_meta.agent_meta.notifications.persistent.email. Bodies "
-    "are injected in full up to the 50,000 character send-layer limit, once "
-    "per delivery; use email.read/reply/dismiss for source-of-truth actions."
+    "are subject to the shared 10,000 character notification envelope cap "
+    "despite the 50,000 character send limit. Complete bodies are automatically "
+    "marked read after canonical context insertion; incomplete records stay unread. "
+    "Use email.read for full source records and email.reply/dismiss as needed."
 )
 NOTIFICATION_PERSISTENT_EMAIL_TRUNCATED_COMMENT = (
     "This legacy email body exceeded the current 50,000 character send-layer "
@@ -3892,18 +3894,39 @@ def _record_im_persistent_delivery(
         pass
 
 
+def acknowledge_email_notification_delivery(agent, persistent: dict) -> None:
+    """Dispatch email read-state acknowledgement after canonical insertion."""
+    # Email owns its read-state policy. Resolve the injected producer hook only
+    # after canonical context insertion, never while preparing a carrier.
+    email = persistent.get(NOTIFICATION_PERSISTENT_EMAIL_CHANNEL)
+    resolve_hook = getattr(agent, "_intrinsic_hook", None)
+    if isinstance(email, dict) and callable(resolve_hook):
+        try:
+            acknowledge = resolve_hook("email", "_acknowledge_notification_delivery")
+            if acknowledge is not None:
+                acknowledge(agent, email)
+        except Exception as exc:
+            # Context attachment already succeeded. Preserve it even if mailbox
+            # I/O fails; do not claim successful read-state persistence.
+            agent._log("email_delivery_ack_failed", error_type=type(exc).__name__)
+
+
 def record_notification_persistent_delivery(
     agent,
     notification_persistent_payload: dict | None,
     *,
     tool_call_id: str | None,
+    acknowledge_email: bool = True,
 ) -> None:
-    """Record persistent notification context delivered to provider context."""
+    """Record delivery bookkeeping; ACTIVE defers email until canonical commit."""
     if not notification_persistent_payload:
         return
     persistent = notification_persistent_payload.get(NOTIFICATION_PERSISTENT_KEY)
     if not isinstance(persistent, dict):
         return
+
+    if acknowledge_email:
+        acknowledge_email_notification_delivery(agent, persistent)
 
     mcp = persistent.get(NOTIFICATION_PERSISTENT_MCP_KEY)
     if not isinstance(mcp, dict):
@@ -4519,7 +4542,8 @@ def commit_delivered_notification_sources(agent, payloads: Mapping[str, Any]) ->
     later reread, so a concurrently published event stays pending. Channels
     absent from ``payloads`` lose their mirror version, but known event/message
     identities remain in the process-local ledger. We do not infer business
-    processing from observation. Delivery never touches producer/store state.
+    processing from observation. This identity commit never touches producer/store
+    state; the separate persistent-delivery hook acknowledges complete email bodies.
     """
     try:
         agent._notification_delivered_source_signatures = (
@@ -4610,8 +4634,9 @@ def attach_active_notifications(
     synthesized pair is injected — so an unchanged event is never attached or
     re-delivered through either path, while a new or changed event still is.
     ``agent._notification_payload_signature`` remains a delivery diagnostic.
-    Older holders remain historical traces and are never rewritten. Producer
-    and notification files are never modified by delivery.
+    Older holders remain historical traces and are never rewritten. Email read-state
+    acknowledgement is deferred until the turn engine witnesses canonical commit;
+    this staging function never marks mail read or modifies other producer state.
 
     Serialized under ``agent._notification_sync_lock`` (when present) so an
     IDLE sync and an ACTIVE batch cannot both deliver the same state.
@@ -4776,6 +4801,7 @@ def _attach_active_notifications_locked(
             agent,
             persistent_payload,
             tool_call_id=_result_tool_call_id(target),
+            acknowledge_email=False,
         )
     # Register this dict as the new live holder.
     agent._notification_live_holder = target

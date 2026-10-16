@@ -98,6 +98,15 @@ Filesystem-based email system — mailbox I/O, composition, search, contacts, an
 
 ## Connections
 
+- **Post-delivery acknowledgment:** `meta_block.acknowledge_email_notification_delivery`
+  resolves the exported `primitives._acknowledge_notification_delivery` hook.
+  ACTIVE calls it via `turn._acknowledge_committed_email_notifications` only after
+  settled canonical commit/send (including rollback/restore); IDLE calls it via
+  `record_notification_persistent_delivery` after chat insertion.
+  Email validates complete bounded records, uses
+  `_update_read_ids` for one locked delta, then rerenders; builders never acknowledge.
+  `tests/test_email_delivery_autoack.py` covers ACTIVE/IDLE draining and non-delivery.
+
 - **Inbound:** the official handler is called by the tool dispatcher; the
   retained intrinsic shim supplies kernel inbound hooks and looks up that handler
   at call time. `handle()` strips `_tc_id` at this family's legacy/hook boundary.
