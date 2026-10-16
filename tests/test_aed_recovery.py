@@ -1041,6 +1041,140 @@ def test_no_candidate_error_is_terminal_without_aed_retry(tmp_path, monkeypatch)
     }
 
 
+@pytest.mark.parametrize(
+    "failure",
+    ["no_candidate", "provider_terminal", "client_noop", "over_window_noop"],
+)
+def test_terminal_sleep_publishes_state_and_new_notification_wakes(
+    tmp_path, monkeypatch, failure
+):
+    """Real loop/state/sync/wire paths, with only fake provider work."""
+    from lingtai.kernel.base_agent import BaseAgent
+    from lingtai.kernel.tool_result_artifacts import CompactionStats
+    from tests._lifecycle_clock_helpers import make_test_lifecycle_clock
+    from tests._notification_store_helpers import FakeNotificationStore
+    from tests.test_notification_sync import _make_stub_agent_for_block_log
+
+    agent = _make_stub_agent_for_block_log(tmp_path)
+    agent._asleep = threading.Event()
+    agent._idle = threading.Event()
+    agent._shutdown = threading.Event()
+    agent._cancel_event = threading.Event()
+    agent._inbox_timeout = 0.01
+    agent._idle_since_monotonic = None
+    agent._lifecycle_clock = make_test_lifecycle_clock()
+    agent._workdir = SimpleNamespace(write_manifest=lambda _manifest: None)
+    agent._build_manifest = lambda: {}
+    # Use the production state owner, including active_turn cleanup.
+    agent._set_state = BaseAgent._set_state.__get__(agent)
+    agent._notification_store = FakeNotificationStore()
+    agent._config = SimpleNamespace(max_aed_attempts=10)
+    agent._preset_fallback_attempted = False
+    agent._can_fallback_preset = lambda: False
+    agent._session = SimpleNamespace(chat=agent._chat)
+    agent._session._rebuild_session = lambda _iface: pytest.fail("terminal replay")
+    sends, processed, sleeps = [], [], []
+
+    def send(payload):
+        assert payload is None
+        assert agent._state is AgentState.ACTIVE
+        assert not agent._asleep.is_set()
+        assert not agent._cancel_event.is_set()
+        result = agent._chat.interface.entries[-1].content[0]
+        email = result.metadata["agent_meta"]["notifications"]["attention"]["email"]
+        sends.append(email["data"]["email_ids"])
+        if len(sends) == 1:
+            agent._active_turn_kind = "llm_call"
+            agent._active_turn_started_at = 1000.0
+            agent._active_turn_id = "failed-call"
+            agent._cancel_event.set()
+            if failure == "no_candidate":
+                raise NoCandidateError("included usage unknown")
+            if failure == "provider_terminal":
+                raise mark_llm_replay_terminal(
+                    RuntimeError("recovery exhausted"), no_aed_retry=True
+                )
+            if failure == "client_noop":
+                raise _StatusError(400, message="messages_parameter_illegal")
+            raise RuntimeError("Your input exceeds the context window of this model.")
+        assert len(sends) == 2, "only a fresh notification may start another send"
+        return LLMResponse(text="noticed fresh mail")
+
+    agent._session.send = send
+    monkeypatch.setattr(turn, "_make_tool_executor", lambda _a, _g: None)
+    monkeypatch.setattr(turn, "_turn_boundary_housekeeping", lambda _a: None)
+    monkeypatch.setattr(
+        turn, "_compact_history_before_retry",
+        lambda _a, *, source: CompactionStats(compacted_blocks=0),
+    )
+
+    def process_response(current, response, **_kwargs):
+        processed.append(response.text)
+        current._shutdown.set()
+
+    monkeypatch.setattr(turn, "_process_response", process_response)
+    log = agent._log
+
+    def on_log(event, **fields):
+        log(event, **fields)
+        if event != "sleep":
+            return
+        sleeps.append(agent._state)
+        assert agent._state is AgentState.ASLEEP
+        assert agent._asleep.is_set()
+        assert agent._idle.is_set()
+        assert agent._active_turn_kind is None
+        assert agent._active_turn_started_at is None
+        assert agent._active_turn_id is None
+        assert len(sends) == 1
+        assert agent.inbox.empty()
+        agent._notification_store.publish("email", {"data": {"email_ids": ["new"]}})
+        agent._sync_notifications()
+        assert agent._state is AgentState.IDLE
+        assert not agent._asleep.is_set()
+        assert agent._cancel_event.is_set(), "sync must retain turn cancellation"
+        assert agent.inbox.qsize() == 1
+
+    agent._log = on_log
+    agent._notification_store.publish("email", {"data": {"email_ids": ["old"]}})
+    agent._sync_notifications()
+    turn._run_loop(agent)
+
+    assert sleeps == [AgentState.ASLEEP]
+    assert sends == [["old"], ["new"]], "the second send carries only fresh mail"
+    assert processed == ["noticed fresh mail"]
+    assert agent._state is AgentState.IDLE
+    agent._sync_notifications()
+    assert agent.inbox.empty(), "unchanged delivered mail must not wake again"
+    expected_aed = int(failure in ("client_noop", "over_window_noop"))
+    assert sum(name == "aed_attempt" for name, _ in agent._logs) == expected_aed
+
+
+@pytest.mark.parametrize("explicit_state", [AgentState.ASLEEP, AgentState.SUSPENDED])
+@pytest.mark.parametrize("terminal_error", [False, True])
+def test_post_turn_preserves_explicit_lifecycle_state(
+    tmp_path, monkeypatch, explicit_state, terminal_error
+):
+    agent = _make_run_loop_agent(tmp_path)
+
+    def handle(current, _msg):
+        current._set_state(explicit_state, reason="explicit lifecycle transition")
+        current._asleep.set()
+        current._cancel_event.set()
+        current._shutdown.set()
+        if terminal_error:
+            raise NoCandidateError("included usage unknown")
+
+    monkeypatch.setattr(turn, "_handle_message", handle)
+    turn._run_loop(agent)
+
+    assert agent._states == [AgentState.ACTIVE, explicit_state]
+    assert agent._state is explicit_state
+    assert agent._asleep.is_set()
+    assert agent._cancel_event.is_set()
+    assert agent._shutdown.is_set()
+
+
 def test_ordinary_exception_keeps_aed_rebuild_behavior(tmp_path, monkeypatch):
     agent = _make_run_loop_agent(tmp_path)
     agent._config.max_aed_attempts = 3
