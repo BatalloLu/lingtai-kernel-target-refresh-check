@@ -5,8 +5,6 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
-  - tests/test_cache_warm_notification.py
-  - src/lingtai/intrinsic_skills/system-manual/reference/settings-inventory/SKILL.md
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/kernel/base_agent/CONTRACT.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
@@ -269,10 +267,10 @@ Pass when both assertions hold and no test sends a real message. Fail if a hidde
 ### Pass / Fail
 Pass when the focused producer tests pass; fail on inferred duration or wall-time subtraction.
 
-## Behavior BA009 — inactivity reminder requires current context above 100000
+## Behavior BA009 — inactivity reminder is context-agnostic
 
 - **id**: BA009
-- **title**: continuous IDLE/ASLEEP time and strict current-context gate, never forced molt
+- **title**: continuous IDLE/ASLEEP time; conditional agent molt choice, never forced molt
 - **guards**: `agent-runtime` § [Contract rules](CONTRACT.md#contract-rules), inactivity-period paragraph
 - **runner**: any LingTai agent with shell access
 - **prerequisites**: this checkout as current directory, test-enabled interpreter `python`; no live agent/provider or shared workdir
@@ -284,10 +282,10 @@ Pass when the focused producer tests pass; fail on inferred duration or wall-tim
 
 ### Expected evidence
 - [ ] Positive finite env duration wins; invalid/missing values use 1800.
-- [ ] At elapsed ≥ duration, context ≤100000 remains silent; >100000 publishes once. Before duration, even large context remains silent.
+- [ ] At elapsed ≥ duration, low/high/unknown/unloaded context publishes once without estimating context. Before duration, publication remains silent; ACTIVE/STUCK remains suppressed.
 - [ ] IDLE↔ASLEEP retains the period; leaving inactivity clears it. ASLEEP publication uses normal sync wake.
 - [ ] Unloaded/unknown context never creates a session; failed publication retries, only success latches.
-- [ ] Actual molt replaces context; a drop below the boundary suppresses the next due reminder despite stale/cumulative token counters.
+- [ ] Actual molt replaces context; a drop below the boundary still permits the next due reminder, whose body does not force another molt.
 - [ ] No forced shed/journal occurs; journal refusal preserves count/history and safe guidance loads in a full Agent prompt.
 
 ### Pass / Fail
@@ -341,32 +339,3 @@ Pass only with successful selected tests and every assertion above verified. Fai
 ### Pass / Fail
 Pass only with all assertions above and no live provider or Agent launch. This
 hermetic test does not establish live provider behavior or native Windows results.
-
-## Behavior BA012 — hourly cache-warm is inert and never sacrifices real work
-
-- **id**: BA012
-- **title**: monotonic ordinary notifications include busy and sleeping agents without control side effects
-- **guards**: `agent-runtime` § [Cache-warm notification cadence](CONTRACT.md#cache-warm-notification-cadence)
-- **runner**: a LingTai coding agent with Shell and a test-enabled Python interpreter
-- **prerequisites**: repository checkout as current directory; disposable pytest temporary directories only; no live agent/provider credentials or background loops
-- **estimate**: approximately 1 minute
-
-### Steps
-1. Run `python -m pytest -q tests/test_cache_warm_notification.py` from the repository root; capture exit status and summary.
-2. Run `python -m pytest -q tests/test_auto_molt_idle_episode.py tests/test_notification_sync.py tests/test_tc_wake.py tests/test_lifecycle_daemon_shutdown.py` for independent inactivity, notification, wake and teardown safeguards.
-3. Review the published `system.cache_warm` body asserted in the focused test: sole no-work notice means no tools/reply/molt and go IDLE; real busy/concurrent work wins.
-
-### Expected evidence
-- [ ] First tick anchors, exact 3600-second boundary publishes once, wall jumps have no effect, and a late tick never catches up in bursts.
-- [ ] ACTIVE/IDLE/ASLEEP qualify; STUCK/SUSPENDED, shutdown and not-ready do not publish.
-- [ ] Live tuning and zero-disable apply without refresh; re-enable waits a full interval.
-- [ ] Failed and ambiguous publication retry the same identity; a foreign colliding ref neither suppresses the notice nor loses the foreign event.
-- [ ] Repeated warm ticks coalesce their own event; one or 20 retained real system events survive without eviction (a full mirror skips warming).
-- [ ] ACTIVE synchronization preserves canonical wire, queued real work and cancellation state; ASLEEP uses existing sync wake. The producer itself never changes state or sends to a provider.
-- [ ] Existing auto-molt, wake and stop tests retain their independent promises.
-
-### Pass / Fail
-Pass only with both commands exiting zero and all evidence satisfied. Fail on
-provider access, direct control side effects, busy-work loss, immediate boot
-publication, retry duplication or catch-up bursts. Hermetic coverage proves
-mechanics, not live model obedience or a provider cache hit; report those limits.

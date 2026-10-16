@@ -844,12 +844,6 @@ def _heartbeat_loop(agent) -> None:
             except Exception as sleep_alarm_err:
                 agent._log("sleep_alarm_check_failed", error=str(sleep_alarm_err)[:200])
 
-            # Ordinary publication only: existing sync below owns delivery/wake.
-            try:
-                _maybe_notify_cache_warm(agent)
-            except Exception as cache_warm_err:
-                agent._log("cache_warm_notification_check_failed", error=str(cache_warm_err)[:200])
-
             # --- Notification sync ---
             # Poll the `.notification/` directory for changes.  The sync
             # method is a no-op when the fingerprint is unchanged, so this
@@ -968,62 +962,11 @@ def _maybe_sleep_after_idle_timeout(agent, *, now_mono: float | None = None) -> 
     agent._asleep.set()
 
 
-def _maybe_notify_cache_warm(agent) -> None:
-    """One inert notice per live monotonic cadence, never a forced model call.
-
-    Only heartbeat calls this producer. ACTIVE delivery remains with the normal
-    notification carrier; this code never changes state, inbox, or cancellation.
-    Failed/ambiguous writes retry the same identity. No crash exactly-once claim.
-    """
-    from ..state import AgentState
-
-    if agent._shutdown.is_set() or not getattr(agent, "_heartbeat_runtime_ready", False):
-        return
-    if agent._state not in (AgentState.ACTIVE, AgentState.IDLE, AgentState.ASLEEP):
-        return  # STUCK recovery and SUSPENDED own their lifecycle.
-    interval = agent.resolve_cache_warm_interval()
-    if interval == 0:
-        agent._cache_warm_anchor = None
-        return
-    now = agent._lifecycle_clock.monotonic_seconds()
-    if agent._cache_warm_anchor is None:
-        agent._cache_warm_anchor = now
-        return  # Boot/re-enable never publishes immediately.
-    if now - agent._cache_warm_anchor < interval:
-        return
-    if agent._cache_warm_ref_id is None:
-        import secrets
-        agent._cache_warm_ref_id = f"cache_warm:{secrets.token_hex(16)}"
-    ref_id = agent._cache_warm_ref_id
-    if agent._shutdown.is_set() or not agent._heartbeat_runtime_ready:
-        return
-    try:
-        agent._enqueue_system_notification(
-            source="system.cache_warm",
-            ref_id=ref_id,
-            idempotency_key=f"system.cache_warm:{ref_id}",
-            skip_if_idempotency_key_exists=True,
-            body=(
-                "Cache-warm notification only; no task. If this is the sole "
-                "notification and no real work is pending, do absolutely nothing: "
-                "no tools, reply, or molt; go IDLE. Real work always wins: "
-                "continue busy or concurrent work without abandoning, cancelling, "
-                "or sleeping it. This notice requires no action."
-            ),
-        )
-    except Exception as exc:
-        agent._log("cache_warm_notification_publish_failed", ref_id=ref_id, error=str(exc)[:200])
-        return
-    # Anchor to this successful tick, not an elapsed slot: never catch up in bursts.
-    agent._cache_warm_anchor = now
-    agent._cache_warm_ref_id = None
-
-
 _AUTO_MOLT_SOURCE = "system.auto_molt"
 
 
 def _maybe_notify_auto_molt(agent) -> None:
-    """Publish once per due IDLE/ASLEEP period with current context >100000.
+    """Publish once per due IDLE/ASLEEP period, regardless of context size.
 
     The period anchor and one-shot latch are owned by ``BaseAgent._set_state``
     (IDLE<->ASLEEP keeps the period; ACTIVE/STUCK/SUSPENDED clears it). This
@@ -1045,36 +988,22 @@ def _maybe_notify_auto_molt(agent) -> None:
     if elapsed < threshold:
         return
 
-    # Read the canonical current wire, not cumulative spending or the last
-    # provider input snapshot. Never create a session from the heartbeat.
-    session = getattr(agent, "_session", None)
-    chat = getattr(session, "chat", None)
-    if chat is None:
-        return
-    try:
-        context_tokens = chat.interface.estimate_context_tokens()
-    except Exception:
-        return  # Unknown context is not eligible.
-    if type(context_tokens) is not int or context_tokens <= 100_000:
-        return
-
     ref_id = f"auto_molt:{since}"
     try:
         agent._enqueue_system_notification(
             source=_AUTO_MOLT_SOURCE,
             ref_id=ref_id,
             body=(
-                f"Inactivity reminder: this agent has been idle or asleep for "
-                f"at least {threshold:g} seconds and its current context exceeds "
-                f"100000 tokens. This eligible inactivity event is a valid "
-                f"actionable molt reason. Read the context manual "
-                f'(context(action="manual")), tend only changed durable stores, '
-                f"write a valid session journal, then call context molt once "
-                f"at a safe idle boundary. After reorientation, remain IDLE "
-                f"until human input or other real work arrives. If authorized "
-                f"work is unfinished, explicitly preserve it and defer the molt "
-                f"rather than discarding context. This is a reminder, not a "
-                f"forced reset or automatic journal."
+                f"Inactivity reminder: idle or asleep for at least {threshold:g} "
+                "seconds. Real work always takes priority. If your CURRENT context "
+                "is strictly above 100000 tokens, consider ONE safe idle-boundary "
+                "molt: follow the context manual, tend only changed durable stores, "
+                "and write a valid session journal. Preserve unfinished authorized "
+                "duties and defer the molt rather than discard context. Otherwise "
+                "do absolutely nothing: no tools, external reply, or molt; return "
+                "IDLE. After any molt reorientation, remain IDLE until real work. "
+                "This is only a cache-warm attempt, not a cache TTL or free-turn "
+                "guarantee, forced reset, or automatic journal."
             ),
             skip_if_ref_id_exists=True,
         )

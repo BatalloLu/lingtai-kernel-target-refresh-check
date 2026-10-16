@@ -8,9 +8,6 @@ tags: [lingtai, system, settings, init, llm, environment, read-only]
 version: 1.3.0
 last_changed_at: "2026-09-29T00:00:00Z"
 related_files:
-  - src/lingtai/kernel/base_agent/ANATOMY.md
-  - src/lingtai/kernel/base_agent/CONTRACT.md
-  - src/lingtai/kernel/base_agent/lifecycle.py
   - ENVIRONMENT_VARIABLES.md
   - src/lingtai/adapters/posix/mail.py
   - src/lingtai/auth/codex.py
@@ -106,10 +103,9 @@ System router does not own another copy of this policy.
 
 The same `settings/system.json` file may be a closed v2 document naming any
 subset of the seven ordinary runtime-policy fields above plus `cache_miss_budget`
-(positive integer; see "Cache-miss budget" below), `notification_max_chars`
+(positive integer; see "Cache-miss budget" below) and `notification_max_chars`
 (positive integer; Core still clamps it to 2048–10000 and
-`LINGTAI_NOTIFICATION_MAX_CHARS` still wins), and `cache_warm_interval`
-(finite nonnegative seconds; zero disables; see below), for example:
+`LINGTAI_NOTIFICATION_MAX_CHARS` still wins), for example:
 
 ```json
 {"schema_version": 2, "context_limit": 200000, "max_rpm": 30, "streaming": true}
@@ -136,70 +132,6 @@ boot/refresh timing in the table, then query System settings again. An
 invalid owner document applies no partial subset; this does not authorize
 repair, runtime refresh or configuration writes by itself. Cache-budget live
 resolution is separate and described below.
-
-### Cache-warm interval
-
-`cache_warm_interval` is public, not redacted, and defaults to **3600 seconds
-(on)**. The live resolver is valid `LINGTAI_CACHE_WARM_INTERVAL` > valid v2
-`settings/system.json` `cache_warm_interval` > 3600. Both accept finite
-nonnegative numeric seconds in the float clock domain; **0 disables**. JSON
-booleans, strings and null are rejected, as are negatives and nonfinite
-numbers. Environment values are numeric strings (not `on`/`off` or boolean
-words); invalid environment falls through. Missing/unreadable/malformed owner
-JSON supplies no runtime overrides; one invalid/unknown/duplicate v2 field
-rejects the entire document, not merely this field. V1 remains exactly the
-cache-budget-only shape below; do not add this field to v1. No init/preset or
-provider cache setting supplies it. SHOW retains its whole-inventory failure
-rules for an invalid current owner source; runtime uses the safe default.
-
-Authorized change procedure: when owner/human authorization permits, use the
-existing Shell/File route to edit **this agent's `settings/system.json`**,
-preserving unrelated fields. For an existing v1 file, explicitly migrate to
-v2 while retaining `cache_miss_budget`; do not widen v1. Examples of complete
-minimal documents (not instructions to overwrite other existing settings):
-
-```json
-{"schema_version": 2, "cache_warm_interval": 3600}
-```
-
-```json
-{"schema_version": 2, "cache_warm_interval": 0}
-```
-
-Then call `system(action="settings", input={})` again and verify the
-`cache_warm_interval` row's `current`, `default: 3600`, `configurable: true`,
-and this section's comment pointer. SHOW cannot set/reset/write anything.
-Unshadowed file edits apply on the next eligible heartbeat, **without refresh**.
-A valid environment value still wins; change it only at its authorized launcher
-owner instead of repeatedly editing a shadowed file. Direct process-env changes
-are live; editing `env_file` needs the normal approved refresh route to reload
-the environment and is not necessary for an unshadowed System JSON edit.
-
-The existing heartbeat publishes `system.cache_warm` for ACTIVE, IDLE and
-ASLEEP agents. STUCK/SUSPENDED, shutdown and not-ready are excluded; recovery
-may deliver one overdue notice. First eligible tick anchors the injected
-monotonic clock, so boot is not an immediate wake. Successful publication waits
-a full new interval; missed periods never burst. Tuning uses the existing
-anchor; after a heartbeat observes zero, re-enable starts a fresh full wait.
-Failed/ambiguous publication retries the same process-local identity, even if
-disabled and later re-enabled. Restart starts a fresh cadence, not a durable
-schedule. Existing notification synchronization handles wake/delivery and can
-incur a **normal paid provider turn**. There is no cache-hit/TTL/free-wake
-guarantee, forced producer provider call, or provider/cache-key reconfiguration.
-
-If this is the sole no-work notification, **do absolutely nothing: no tools,
-reply or molt; go IDLE**. Busy, concurrent or pending real work always wins:
-continue it, never abandon/cancel it or force sleep because of this notice.
-Other actionable notices retain their own meaning. Normal notification wakes
-still enter ACTIVE and reset continuous inactivity: tuning this interval below
-the auto-molt idle threshold can repeatedly defer that reminder. The defaults
-are 3600 seconds here versus 1800 seconds for auto-molt. No special work-source
-classifier or inactivity exemption is introduced.
-
-Only the latest cache-warm event is retained in the bounded system mirror.
-If all 20 slots hold other system events, this cadence skips warm publication
-rather than evicting real work; the next interval tries again. Other producers'
-retention rules are unchanged.
 
 ### Cache-miss budget
 
@@ -323,7 +255,7 @@ shown. `LINGTAI_CODEX_WS` is a compatibility alias under the single
 | `nudge.folder_size_gb` (`LINGTAI_NUDGE_FOLDER_SIZE_GB`) | `5`; positive finite decimal GB; invalid → 5 | Every folder-size evaluation | number |
 | `lifecycle.active_stuck_threshold_seconds` (`LINGTAI_ACTIVE_STUCK_THRESHOLD_S`) | `600`; finite numeric seconds floored to 30; parse failure or non-finite value → 600 | Each ACTIVE watchdog evaluation | number |
 | `lifecycle.agent_alive_threshold_seconds` (`LINGTAI_AGENT_ALIVE_THRESHOLD_SEC`) | `10`; positive finite seconds; invalid → 10 | Kernel import/start (restart required); SHOW reports the imported effective constant | number |
-| `lifecycle.auto_molt_idle_seconds` (`LINGTAI_AUTO_MOLT_IDLE_SECONDS`) | `1800`; positive finite seconds of continuous IDLE and/or ASLEEP before one molt reminder; invalid, zero, or negative → 1800 (no disable value) | Each heartbeat evaluation while inactive and not yet reminded; no restart for a direct process-environment change | number |
+| `lifecycle.auto_molt_idle_seconds` (`LINGTAI_AUTO_MOLT_IDLE_SECONDS`) | `1800`; positive finite seconds of continuous IDLE and/or ASLEEP before one context-agnostic reminder; invalid, zero, or negative → 1800 (no disable value) | Each heartbeat evaluation while inactive and not yet reminded; no restart for a direct process-environment change | number |
 | `prompt.tool_prose_section_enabled` (`LINGTAI_TOOL_PROSE_SECTION_ENABLED`) | off; `1/true/yes/on`; everything else off | Every prompt rebuild/provider payload | boolean |
 | `prompt.system_prompt_pressure_ratio` (`LINGTAI_SYSTEM_PROMPT_PRESSURE_RATIO`) | `0.4`; finite `0 < value < 1`; invalid → 0.4 | Every metadata snapshot | number |
 | `session_stats.refresh_seconds` (`LINGTAI_SESSION_STATS_REFRESH_SECONDS`) | `5`; positive finite seconds; invalid → 5 | Every Agent Record throttle check | number |

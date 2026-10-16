@@ -5,7 +5,6 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
-  - tests/test_cache_warm_notification.py
   - src/lingtai/tools/system/karma.py
   - src/lingtai/tools/system/schema.py
   - src/lingtai/tools/system/settings.py
@@ -295,28 +294,3 @@ Pass only when mounted and direct routes agree on refusal, force escape, receipt
 ### Pass / Fail
 Pass only when all evidence holds. Fail on an omitted/duplicate row, partial
 inventory, secret disclosure, mutation, or an unresolved manual pointer.
-
-## Behavior B010 — hourly cache-warm is adjustable only through owner settings
-
-- **id**: B010
-- **title**: live finite numeric interval with zero-disable, exact v1 compatibility and read-only SHOW
-- **guards**: `system-contract` § [Cache-warm interval](CONTRACT.md#cache-warm-interval)
-- **runner**: a LingTai coding agent with Shell and a test-enabled Python interpreter
-- **prerequisites**: repository checkout as current directory; tests may write disposable pytest temporary directories only; no live agents/providers or credentials
-- **estimate**: approximately 1 minute
-
-### Steps
-1. Run `python -m pytest -q tests/test_cache_warm_notification.py tests/test_system_declared_plugin.py` from the repository root; capture exit status and summary.
-2. Inspect the focused SHOW test evidence for `cache_warm_interval`: exactly five public fields, default 3600, current from live owner resolution, configurable true, and comment `system-manual/reference/settings-inventory#cache-warm-interval`.
-
-### Expected evidence
-- [ ] Numeric env wins over a valid v2 field, which wins over 3600; invalid env falls through. Zero disables.
-- [ ] JSON booleans/null/strings, negatives and nonfinite/out-of-clock-domain numbers reject the whole v2; other invalid/duplicate/unknown fields prevent partial application.
-- [ ] V1 remains exactly schema version 1 plus positive integer cache-miss budget; adding a cache-warm field does not widen it.
-- [ ] File edits are live without refresh; SHOW reports them and writes nothing. A mutation-shaped settings input fails without altering the owner file.
-- [ ] Kernel's hook is numeric only, lazily delegated by outer Agent; no new System action or provider setting appears.
-
-### Pass / Fail
-Pass only with a zero exit status and every evidence item. Fail on partial v2
-application, bool coercion, stale unshadowed file resolution, SHOW mutation or a
-new action. This hermetic task does not claim live model/cache behavior.

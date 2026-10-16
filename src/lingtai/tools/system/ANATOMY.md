@@ -1,6 +1,5 @@
 ---
 related_files:
-  - tests/test_cache_warm_notification.py
   - src/lingtai/tools/ANATOMY.md
   - src/lingtai/tools/system/CONTRACT.md
   - src/lingtai/kernel/base_agent/CONTRACT.md
@@ -105,13 +104,6 @@ the POSIX transaction in `change_name.py`, the incomplete-target launch gate in
 
 ## Components
 
-- `settings.py::resolve_cache_warm_interval` is the live env/v2/default scalar
-  owner (`src/lingtai/tools/system/settings.py:1348-1365`); the read-only
-  inventory projects `cache_warm_interval` after `cache_miss_budget` and routes
-  to the linked settings-inventory manual. `Agent` exposes it to the existing
-  kernel heartbeat producer; no settings write handler exists. Guarded by
-  [B010](BEHAVIORS.md#behavior-b010).
-
 - `__init__.py` — Package surface, static declared-host binding, family composition, and legacy direct adapter. Re-exports all public API for backward compatibility. Contains:
   - `get_description` (re-exported from `schema.py`) — tool registration prose.
   - `DECLARATION`, `_bind()`, and `_SystemHandlerHost` — System's static declaration and its normal mounted-handler route. `_bind()` creates the private compatibility-shaped bridge from only the granted `workdir`, `system_runtime`, and `identity` ports, calls `_build_family(bridge, host.workdir)`, and returns a `BoundToolPlugin` whose handler closes over that family; it never receives an Agent.
@@ -196,7 +188,7 @@ the POSIX transaction in `change_name.py`, the incomplete-target launch gate in
 
 ## Key invariants
 
-- System has one family settings file, `settings/system.json`, with no per-action file. Closed v1 remains exactly `{schema_version: 1, cache_miss_budget: positive-int}`. Closed v2 accepts only `context_limit`, `max_rpm`, `streaming`, `aed_timeout`, `max_aed_attempts`, `snapshot_interval`, `activeness`, `cache_miss_budget`, `notification_max_chars`, and `cache_warm_interval`; one invalid/unknown/duplicate field rejects the whole document. The seven ordinary rows resolve as valid env > v2 > fixed default and are applied consistently at boot/refresh; legacy init copies are ignored.
+- System has one family settings file, `settings/system.json`, with no per-action file. Closed v1 remains exactly `{schema_version: 1, cache_miss_budget: positive-int}`. Closed v2 accepts only `context_limit`, `max_rpm`, `streaming`, `aed_timeout`, `max_aed_attempts`, `snapshot_interval`, `activeness`, `cache_miss_budget`, and `notification_max_chars`; one invalid/unknown/duplicate field rejects the whole document. The seven ordinary rows resolve as valid env > v2 > fixed default and are applied consistently at boot/refresh; legacy init copies are ignored.
 - The declaration plus provider opts System into SHOW even when the file is absent. SHOW includes runtime-policy values, effective non-policy root/manifest/LLM inputs, and kernel environment controls without another ToolPlugin owner, including global `runtime.tool_batch_memory_relief`. Existing File/Shell/manual procedures are the only change routes; `configurable` grants no mutation; sensitive values are fully redacted. Concrete ToolPlugin domains, dead compatibility fields, build/test controls, and handoff identities remain excluded.
 - `_dispatch()` uses the explicit declaration-derived handler table rather than `globals().get()`, so mounted and compatibility dispatch work correctly across sub-modules.
 - `system` has **no** agent-callable `notification` or `dismiss` action; voluntary notification reads live on the standalone `notification` tool (which has no dismiss action). (The kernel still synthesizes a notification-delivery tool-call pair for IDLE/ASLEEP delivery — now shaped as `notification(action="check")` (no longer `system(action="notification")`), so the synthetic pair is byte-shape-identical to a voluntary `notification` check. That synthesis is `base_agent` plumbing, not a `system` intrinsic action. Such synthesized reads carry `_synthesized: True` in both the JSON body and the `ToolResultBlock.synthesized` flag, and the canonical live payload (`_meta.agent_meta.notifications.attention` / `_meta.agent_meta.guidance.transient`) is stamped on by the turn loop's `attach_active_notifications` post-hook — guaranteeing one live notification payload in conversation history at any moment.)

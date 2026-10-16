@@ -913,9 +913,6 @@ class BaseAgent:
         # _shutdown because heartbeat remains live throughout teardown.
         self._heartbeat_stop = threading.Event()
         self._aed_start: float | None = None
-        # Heartbeat-owned, process-local cadence. No timer or provider session.
-        self._cache_warm_anchor: float | None = None
-        self._cache_warm_ref_id: str | None = None
 
         # Issue #164 — ACTIVE-without-progress watchdog.
         #
@@ -2512,14 +2509,6 @@ class BaseAgent:
         raise NotImplementedError(
             "_activate_default_preset must be implemented by Agent subclass"
         )
-
-    def resolve_cache_warm_interval(self) -> float:
-        """Seconds between inert notices; outer composition may override live.
-
-        The hook supplies a finite nonnegative scalar, with zero disabling it.
-        A bare kernel agent uses the product default without importing tools.
-        """
-        return 3600.0
 
     def _build_launch_cmd(self) -> list[str] | None:
         """Return the command to relaunch this agent. Override in subclasses."""

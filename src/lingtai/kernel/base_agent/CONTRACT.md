@@ -3,8 +3,6 @@ name: agent-runtime
 contract_version: 1
 root_contract: CONTRACT.md
 related_files:
-  - tests/test_cache_warm_notification.py
-  - src/lingtai/intrinsic_skills/system-manual/reference/settings-inventory/SKILL.md
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - src/lingtai/tools/context/manual/SKILL.md
@@ -198,45 +196,6 @@ Platform profiles are selector-composed at the composition roots
 
 ## Contract rules
 
-### Cache-warm notification cadence
-
-The existing heartbeat publishes inert `system.cache_warm` notifications for
-ACTIVE, IDLE and ASLEEP, without cancelling/interrupting work, changing state,
-forcing sleep, creating a session or calling a provider. STUCK and SUSPENDED
-are ineligible to avoid competing with recovery/teardown. Shutdown or runtime
-not-ready forbids dispatch. Normal notification synchronization alone owns wake
-and delivery; an ordinary paid model turn may result. This is a cache-warm
-attempt, not a free wake, cache-hit or TTL guarantee, and changes no provider
-configuration or cache key.
-
-`resolve_cache_warm_interval()` is the narrow outer scalar hook: finite
-nonnegative seconds, default 3600; zero disables. System owns the live resolver
-and approved file procedure in its settings inventory manual. The injected
-monotonic clock anchors at the first eligible heartbeat, not wall time or host
-uptime; first publication waits a full interval. Successful publication anchors
-the next interval to that tick, so delayed ticks never create catch-up bursts.
-ACTIVE/IDLE/ASLEEP switches retain the anchor; an overdue notice suppressed in
-STUCK may publish once after recovery. Tuning compares the new interval to the
-existing anchor; observing zero clears that anchor, so re-enable waits a full
-new interval. A failed or ambiguous publish retains its ref/idempotency identity
-for the next eligible retry, including across an observed disable/re-enable.
-Normal return, including idempotent duplicate suppression, advances cadence.
-Only one retained cache-warm event occupies the system mirror; a mirror with
-20 other events skips warm publication without evicting them and advances the
-cadence normally. Other producers retain their existing bounded policy.
-Identity deduplication uses the producer-namespaced idempotency key, not a
-foreign producer's colliding public ref. This is process-local and limited to
-retained Store events, not crash exactly-once delivery or durable scheduling.
-
-The agent receiving only this no-work notice MUST do absolutely nothing: no
-tools, reply, or molt, and go IDLE. Busy/concurrent/pending real work always
-wins and MUST NOT be abandoned. Other actionable notifications (including
-`system.auto_molt`) retain their independent semantics. Guarded by
-[BA012](BEHAVIORS.md#behavior-ba012) and
-[System B010](../../tools/system/BEHAVIORS.md#behavior-b010).
-
-### Existing runtime rules
-
 Covenant construction retains the complete effective constructor/mirror body
 outside resident prompt state. Its protected slot carries only the discovery
 route and immediate pre-action gates; the existing read-only Psyche host Port
@@ -255,21 +214,22 @@ State ordering and wall-domain event `ts` are unchanged. Guarded by
 An inactivity period is continuous IDLE and/or ASLEEP time on the injected
 monotonic lifecycle clock. IDLE↔ASLEEP preserves it; leaving both for ACTIVE,
 STUCK or SUSPENDED clears the anchor and successful-publication latch. Heartbeat
-publishes one ordinary `system.auto_molt` event per period only when elapsed time
+publishes one ordinary `system.auto_molt` event per period when elapsed time
 is at least `LINGTAI_AUTO_MOLT_IDLE_SECONDS` (default 1800; invalid/nonpositive/
-nonfinite → 1800, no disable value) AND CURRENT context is strictly above 100000
-tokens. The loaded session's canonical `ChatInterface.estimate_context_tokens()`
-counts current system/tools/history, not cumulative input, since-molt spending or
-last provider input. Unloaded/unknown context is ineligible; this read never
-creates a session or requests a provider. A failed publish remains retryable.
+nonfinite → 1800, no disable value), regardless of low, high, unknown or unloaded
+context. The producer never reads context or creates a session; failed publish
+remains retryable.
 The process-local timer/latch reset on restart. Normal notification sync owns
 wake/delivery; its ordinary ACTIVE wake can start a new inactivity period.
-After molt, the gate reads the replacement context; no post-molt size guarantee
-is made, and retained/reconstructed context above 100000 can remain eligible.
-At a safe boundary, tend changed stores, write a valid journal and molt once,
-then remain IDLE until human input or other real work. Preserve unfinished
-authorized work and defer the molt rather than discard it. The publisher never
-molts, generates a journal, refreshes, cancels work or directly calls a provider;
+Real work always wins. The body asks the agent to consider ONE safe-boundary
+molt only if CURRENT context is strictly above 100000 tokens: tend changed stores,
+write a valid journal, preserve unfinished authorized duties and defer the molt
+rather than discard them. Otherwise do absolutely nothing: no tools, external
+reply, or molt; return IDLE. After any molt reorientation remain IDLE until real
+work. Even below 100000 after molt, the next due period still gets a reminder.
+This is a cache-warm attempt, not a cache TTL or free-turn guarantee.
+The publisher never molts, generates a journal, refreshes, cancels work or
+directly calls a provider;
 notification delivery may start an ordinary paid turn. Separate from
 `idle_elapsed_s` and the hidden 24h IDLE→ASLEEP timeout. Guarded by
 [BA009](BEHAVIORS.md#behavior-ba009); procedure:
@@ -753,7 +713,7 @@ the poison-recovery boot baseline that keeps a relaunch ASLEEP until a
 genuinely later notification change), `tests/test_cli_worker_poison_recovery.py`
 (hard exit after poison, and no refresh-success kick-start while a worker
 recovery is pending), `retired-test:test_silence_kill` (idempotent private producer),
-`tests/test_auto_molt_idle_episode.py` (strict current-context/time gate,
+`tests/test_auto_molt_idle_episode.py` (context-agnostic time gate,
 IDLE/ASLEEP continuity, publication retry, unloaded context, post-molt context
 and journal refusal); `retired-test:test_auto_molt_notification` remains historical
 coverage, not restored real heartbeat-loop conformance,

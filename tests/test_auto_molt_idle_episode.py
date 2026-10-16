@@ -1,4 +1,4 @@
-"""Simple inactivity gate; canonical context, fake provider, injected clock.
+"""Context-agnostic inactivity reminder; fake provider and injected clock.
 
 No live providers or background Agent loops. Historical episode coverage is
 retired, not preserved as an alternative runtime policy.
@@ -62,12 +62,12 @@ def _events(agent):
 
 
 @pytest.mark.parametrize("tokens,elapsed,eligible", [
-    (0, 1000, False), (99999, 1000, False), (100000, 1000, False),
+    (0, 1000, True), (99999, 1000, True), (100000, 1000, True),
     (100001, 999, False), (100001, 1000, True),
 ])
-def test_strict_current_context_and_time_boundary(idle_agent, monkeypatch, tokens, elapsed, eligible):
+def test_context_agnostic_time_boundary(idle_agent, monkeypatch, tokens, elapsed, eligible):
     agent, clock = idle_agent
-    # Deliberately unrelated spending/provider snapshot must never own the gate.
+    # Neither current context nor spending/provider snapshots own publication.
     agent._session._total_input_tokens = 9000000
     agent._session._latest_input_tokens = 9000000
     monkeypatch.setattr(agent._chat.interface, "estimate_context_tokens", lambda: tokens)
@@ -83,6 +83,8 @@ def test_asleep_continuity_and_existing_sync_wake(idle_agent, monkeypatch):
     monkeypatch.setattr(agent._chat.interface, "estimate_context_tokens", lambda: 100001)
     since = agent._inactive_since_monotonic
     clock.advance_monotonic(500)
+    agent._set_state(AgentState.ASLEEP)
+    agent._set_state(AgentState.IDLE)
     agent._set_state(AgentState.ASLEEP)
     agent._asleep.set()
     clock.advance_monotonic(500)
@@ -107,12 +109,25 @@ def test_unknown_context_does_not_create_session(idle_agent, monkeypatch, unknow
     else:
         def estimate():
             if unknown == "error":
-                raise ValueError("unknown")
+                pytest.fail("producer must not estimate context")
             return None
         monkeypatch.setattr(agent._chat.interface, "estimate_context_tokens", estimate)
     clock.advance_monotonic(1000)
     _maybe_notify_auto_molt(agent)
+    assert len(_events(agent)) == 1
+    assert agent._auto_molt_notified_since == agent._inactive_since_monotonic
+    agent.service.create_session.assert_not_called()
+    agent.service.generate.assert_not_called()
+
+
+@pytest.mark.parametrize("state", [AgentState.ACTIVE, AgentState.STUCK])
+def test_busy_state_suppresses_reminder(idle_agent, state):
+    agent, clock = idle_agent
+    clock.advance_monotonic(1000)
+    agent._set_state(state)
+    _maybe_notify_auto_molt(agent)
     assert not _events(agent)
+    assert agent._inactive_since_monotonic is None
     assert agent._auto_molt_notified_since is None
 
 
@@ -139,7 +154,7 @@ def test_failed_publish_retries_and_journal_is_still_required(idle_agent, monkey
     assert agent._chat.interface.to_dict() == before
 
 
-def test_actual_molt_drop_reads_replacement_context(idle_agent, monkeypatch):
+def test_actual_molt_below_boundary_still_gets_later_reminder(idle_agent, monkeypatch):
     agent, clock = idle_agent
     # Exercise the existing canonical estimator deterministically, not a new one.
     monkeypatch.setattr("lingtai.kernel.token_counter.count_tokens", len)
@@ -155,13 +170,17 @@ def test_actual_molt_drop_reads_replacement_context(idle_agent, monkeypatch):
     assert _context_molt(agent, args).get("status") == "ok"
     assert agent._chat is not old_chat
     assert agent._chat.interface.estimate_context_tokens() < 100000
-    # Even an outdated provider snapshot cannot override the replacement wire.
+    # Small replacement context still gets a vanilla reminder in the next period.
     agent._session._latest_input_tokens = 9000000
     agent._set_state(AgentState.IDLE)
     clock.advance_monotonic(1000)
     _maybe_notify_auto_molt(agent)
-    assert len(_events(agent)) == 1
-    assert agent._auto_molt_notified_since is None
+    assert len(_events(agent)) == 2
+    assert agent._auto_molt_notified_since == agent._inactive_since_monotonic
+    body = _events(agent)[-1]["body"]
+    assert "strictly above 100000" in body
+    assert "no tools, external reply, or molt" in body
+    assert agent._molt_count == 1
 
 
 @pytest.mark.parametrize("raw,expected", [(None, 1800), ("1000", 1000), ("1800", 1800),
@@ -200,6 +219,10 @@ def test_real_agent_startup_and_complete_prompt_build_load_idle_guidance(tmp_pat
         assert "system.auto_molt" in principle
         assert "valid session journal" in principle
         assert "remain IDLE" in principle
+        for loaded in (principle, guidance):
+            assert "CURRENT context >100000" in loaded
+            assert "no tools, external reply, or molt" in loaded
+            assert "Real work always" in loaded
         assert guidance.count("system.auto_molt") >= 2
         assert "defer the molt" in guidance
         service.create_session.assert_not_called()

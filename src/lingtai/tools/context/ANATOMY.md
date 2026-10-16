@@ -117,8 +117,8 @@ archive/count/replay effects. No retired root or action is an alias.
 
 `_molt.py::_context_molt` replaces session/history and estimates the fresh
 canonical interface before resetting session token counters. The runtime's
-inactivity gate reads that current interface, not old provider input; a molt is
-not guaranteed to put context below 100000. [BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009)
+inactivity reminder does not read context; its body leaves the strict >100000
+molt choice to the agent. Molt does not guarantee context below 100000. [BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009)
 guards the gate; `_publish_post_molt` remains reorientation.
 
 `_molt.py:_publish_post_molt` also requests

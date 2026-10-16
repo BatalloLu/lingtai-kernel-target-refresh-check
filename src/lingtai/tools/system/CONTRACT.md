@@ -3,7 +3,6 @@ name: system-contract
 tool: system
 contract_version: 6
 related_files:
-  - tests/test_cache_warm_notification.py
   - src/lingtai/tools/system/__init__.py
   - src/lingtai/tools/system/plugin.py
   - src/lingtai/tools/system/settings.py
@@ -213,21 +212,6 @@ both telemetry and the soft Context reminder. Legacy
 `manifest.cache_miss_budget` is ignored and not hydrated. Threshold changes
 never reset since-last-molt counters or block a request. The System manual owns
 the operator details; focused System, meta, and init tests own proof.
-
-### Cache-warm interval
-
-System owns the live `cache_warm_interval` SHOW row: valid numeric
-`LINGTAI_CACHE_WARM_INTERVAL` > valid closed-v2 `settings/system.json` field >
-3600 seconds. Zero disables; negatives, booleans, null, strings in JSON and
-nonfinite/out-of-float-domain numbers are invalid. An invalid environment
-falls through; any malformed v2 rejects the whole file layer. Closed v1 stays
-exactly unchanged. No init/preset source or new System action exists. The
-outer Agent's lazy numeric hook keeps Core free of tool imports. Unshadowed
-file edits apply on the next eligible heartbeat without refresh. SHOW remains
-strict-empty and read-only, with the existing whole-inventory error behavior.
-The manual owns the authorized change procedure and the runtime contract owns
-[cadence and eligibility](../../kernel/base_agent/CONTRACT.md#cache-warm-notification-cadence).
-Guarded by [B010](BEHAVIORS.md#behavior-b010).
 
 ### Runtime-policy setting (v2)
 

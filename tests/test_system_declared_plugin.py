@@ -22,7 +22,6 @@ from tests._service_helpers import make_mock_llm_service
 
 _EXPECTED_SYSTEM_SETTING_KEYS = (
     "cache_miss_budget",
-    "cache_warm_interval",
     "env_file",
     "venv_path",
     "agent_name",
@@ -79,7 +78,6 @@ _EXPECTED_SYSTEM_SETTING_KEYS = (
 
 _EXPECTED_ANTHROPIC_DEFAULTS = {
     "cache_miss_budget": 2_000_000,
-    "cache_warm_interval": 3600.0,
     "env_file": "<redacted>",
     "venv_path": "<redacted>",
     "agent_name": None,
@@ -360,7 +358,7 @@ def test_system_settings_inventory_has_exact_public_contract(monkeypatch, tmp_pa
     rows = result["settings"]
     assert system_settings.SYSTEM_SETTING_KEYS == _EXPECTED_SYSTEM_SETTING_KEYS
     assert tuple(row["key"] for row in rows) == _EXPECTED_SYSTEM_SETTING_KEYS
-    assert len(rows) == len({row["key"] for row in rows}) == 53
+    assert len(rows) == len({row["key"] for row in rows}) == 52
     for row in rows:
         assert tuple(row) == (
             "key", "current", "default", "configurable", "comment",
@@ -370,7 +368,6 @@ def test_system_settings_inventory_has_exact_public_contract(monkeypatch, tmp_pa
         "llm.codex_session_anchor",
     }
     assert {row["comment"] for row in rows} == {
-        "system-manual/reference/settings-inventory#cache-warm-interval",
         "system-manual/reference/settings-inventory#cache-miss-budget",
         "system-manual/reference/settings-inventory#runtime-policy-v2-document-shape",
         "system-manual/reference/settings-inventory#root-and-manifest-inputs",
@@ -1666,28 +1663,3 @@ def test_system_manual_routes_declared_ltp_and_settings_owners():
         "system-manual/reference/settings-inventory#llm-and-provider-inputs",
         "system-manual/reference/settings-inventory#kernel-environment-controls",
     }
-
-
-def test_cache_warm_show_live_file_and_env_is_read_only(monkeypatch, tmp_path):
-    _clear_system_setting_env(monkeypatch)
-    init_path = _write_init(tmp_path)
-    path = tmp_path / system_settings.SYSTEM_SETTINGS_RELATIVE_PATH
-    path.parent.mkdir(parents=True)
-    path.write_text('{"schema_version":2,"cache_warm_interval":12.5}', encoding="utf-8")
-    original_init = init_path.read_bytes()
-    original_settings = path.read_bytes()
-    row = next(row for row in _settings_call(tmp_path, {})["settings"] if row["key"] == "cache_warm_interval")
-    assert row == {
-        "key": "cache_warm_interval", "current": 12.5, "default": 3600.0,
-        "configurable": True,
-        "comment": "system-manual/reference/settings-inventory#cache-warm-interval",
-    }
-    assert _settings_call(tmp_path, {"set": "cache_warm_interval"})["status"] == "failed"
-    assert path.read_bytes() == original_settings
-    assert init_path.read_bytes() == original_init
-    path.write_text('{"schema_version":2,"cache_warm_interval":0}', encoding="utf-8")
-    assert next(row for row in _settings_call(tmp_path, {})["settings"] if row["key"] == "cache_warm_interval")["current"] == 0
-    monkeypatch.setenv(system_settings.CACHE_WARM_INTERVAL_ENV, "30")
-    assert next(row for row in _settings_call(tmp_path, {})["settings"] if row["key"] == "cache_warm_interval")["current"] == 30
-    assert path.read_text(encoding="utf-8") == '{"schema_version":2,"cache_warm_interval":0}'
-    assert init_path.read_bytes() == original_init
