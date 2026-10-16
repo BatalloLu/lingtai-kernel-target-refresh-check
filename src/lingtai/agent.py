@@ -236,6 +236,12 @@ class Agent(BaseAgent):
 
         return resolve_cache_miss_budget(self)
 
+    def resolve_cache_warm_interval(self) -> float:
+        """Expose only System's live numeric cadence to the kernel heartbeat."""
+        from lingtai.tools.system.settings import resolve_cache_warm_interval
+
+        return resolve_cache_warm_interval(self._working_dir)
+
     def resolve_notification_max_chars(self) -> int | None:
         """Lazily expose the System v2 notification cap (file layer only).
 

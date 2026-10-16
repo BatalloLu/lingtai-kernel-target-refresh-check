@@ -3,6 +3,8 @@ name: agent-runtime
 contract_version: 1
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_cache_warm_notification.py
+  - src/lingtai/intrinsic_skills/system-manual/reference/settings-inventory/SKILL.md
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - src/lingtai/tools/context/manual/SKILL.md
@@ -195,6 +197,45 @@ Platform profiles are selector-composed at the composition roots
   (guard honestly absent; the lease remains the authority).
 
 ## Contract rules
+
+### Cache-warm notification cadence
+
+The existing heartbeat publishes inert `system.cache_warm` notifications for
+ACTIVE, IDLE and ASLEEP, without cancelling/interrupting work, changing state,
+forcing sleep, creating a session or calling a provider. STUCK and SUSPENDED
+are ineligible to avoid competing with recovery/teardown. Shutdown or runtime
+not-ready forbids dispatch. Normal notification synchronization alone owns wake
+and delivery; an ordinary paid model turn may result. This is a cache-warm
+attempt, not a free wake, cache-hit or TTL guarantee, and changes no provider
+configuration or cache key.
+
+`resolve_cache_warm_interval()` is the narrow outer scalar hook: finite
+nonnegative seconds, default 3600; zero disables. System owns the live resolver
+and approved file procedure in its settings inventory manual. The injected
+monotonic clock anchors at the first eligible heartbeat, not wall time or host
+uptime; first publication waits a full interval. Successful publication anchors
+the next interval to that tick, so delayed ticks never create catch-up bursts.
+ACTIVE/IDLE/ASLEEP switches retain the anchor; an overdue notice suppressed in
+STUCK may publish once after recovery. Tuning compares the new interval to the
+existing anchor; observing zero clears that anchor, so re-enable waits a full
+new interval. A failed or ambiguous publish retains its ref/idempotency identity
+for the next eligible retry, including across an observed disable/re-enable.
+Normal return, including idempotent duplicate suppression, advances cadence.
+Only one retained cache-warm event occupies the system mirror; a mirror with
+20 other events skips warm publication without evicting them and advances the
+cadence normally. Other producers retain their existing bounded policy.
+Identity deduplication uses the producer-namespaced idempotency key, not a
+foreign producer's colliding public ref. This is process-local and limited to
+retained Store events, not crash exactly-once delivery or durable scheduling.
+
+The agent receiving only this no-work notice MUST do absolutely nothing: no
+tools, reply, or molt, and go IDLE. Busy/concurrent/pending real work always
+wins and MUST NOT be abandoned. Other actionable notifications (including
+`system.auto_molt`) retain their independent semantics. Guarded by
+[BA012](BEHAVIORS.md#behavior-ba012) and
+[System B010](../../tools/system/BEHAVIORS.md#behavior-b010).
+
+### Existing runtime rules
 
 Covenant construction retains the complete effective constructor/mirror body
 outside resident prompt state. Its protected slot carries only the discovery

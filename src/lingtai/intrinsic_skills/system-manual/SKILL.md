@@ -90,6 +90,13 @@ provider replay.
   require `admin.karma=True`; `nirvana` also requires `admin.nirvana=True` and
   permanently destroys the target. Read `reference/substrate-manual/SKILL.md`.
 
+### Cache-warm interval
+
+Hourly inert notifications default on, including busy and sleeping agents.
+For the live numeric cadence and zero-disable file procedure, read
+`reference/settings-inventory/SKILL.md#cache-warm-interval`. A sole no-work
+notice means no tools/reply/molt and go IDLE; real work always wins.
+
 ### Cache-miss budget
 
 `system-manual#cache-miss-budget` remains an alias for

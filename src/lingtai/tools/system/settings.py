@@ -17,12 +17,13 @@ Two closed document versions share ``<workdir>/settings/system.json``:
 
 Ordinary boot/refresh fields resolve once through
 :func:`resolve_runtime_policy` as ``valid env > valid v2 field > fixed
-default``. Two documented exceptions keep their live resolvers:
+default``. Three documented exceptions keep their live resolvers:
 the cache-miss budget (``env > v1/v2 > 2_000_000``; legacy
-``manifest.cache_miss_budget`` is never a source) and the notification cap
+``manifest.cache_miss_budget`` is never a source), the notification cap
 (Core parses ``LINGTAI_NOTIFICATION_MAX_CHARS`` itself, then asks the outer
 Agent for the v2 file value through :func:`resolve_notification_max_chars`,
-then its own 10,000 default; the 2048/10,000 clamp stays in Core).
+then its own 10,000 default; the 2048/10,000 clamp stays in Core), and the
+cache-warm interval (``env > v2 > 3600``, zero off) through a scalar Agent hook.
 
 Kernel-fixed context-pressure safety thresholds (0.85 / 1.0 / 3 rounds /
 0.75) and the legacy ``molt_*`` fields are not System settings: any such key
@@ -41,6 +42,9 @@ from lingtai.tools.tool_family import SettingRow, SettingsProvider
 
 CACHE_MISS_BUDGET_ENV = "LINGTAI_CACHE_MISS_BUDGET"
 DEFAULT_CACHE_MISS_BUDGET = 2_000_000
+CACHE_WARM_INTERVAL_ENV = "LINGTAI_CACHE_WARM_INTERVAL"
+DEFAULT_CACHE_WARM_INTERVAL = 3600.0
+_CACHE_WARM_COMMENT = "system-manual/reference/settings-inventory#cache-warm-interval"
 SYSTEM_SETTINGS_RELATIVE_PATH = Path("settings") / "system.json"
 _SYSTEM_SETTINGS_SCHEMA_VERSION = 1
 _CACHE_MISS_BUDGET_COMMENT = (
@@ -411,6 +415,7 @@ SYSTEM_ENVIRONMENT_SETTING_OWNERS.update(
     {environment: key for key, environment in RUNTIME_POLICY_ENV.items()}
 )
 SYSTEM_ENVIRONMENT_SETTING_OWNERS[CACHE_MISS_BUDGET_ENV] = "cache_miss_budget"
+SYSTEM_ENVIRONMENT_SETTING_OWNERS[CACHE_WARM_INTERVAL_ENV] = "cache_warm_interval"
 SYSTEM_ENVIRONMENT_SETTING_OWNERS["LINGTAI_INJECT_REASONING_FALLBACK"] = (
     "llm.inject_reasoning_fallback"
 )
@@ -488,8 +493,9 @@ RUNTIME_POLICY_FIELDS = (
     "activeness",
     "cache_miss_budget",
     "notification_max_chars",
+    "cache_warm_interval",
 )
-# Ordinary boot/refresh-time fields (the two live exceptions are excluded).
+# Ordinary boot/refresh-time fields (the three live exceptions are excluded).
 ORDINARY_POLICY_FIELDS = (
     "context_limit",
     "max_rpm",
@@ -602,6 +608,17 @@ def _validate_activeness(value: Any) -> tuple[bool, Any]:
     return (isinstance(value, str) and bool(value.strip())), value
 
 
+def _validate_cache_warm_interval(value: Any) -> tuple[bool, Any]:
+    # Bound to the finite float domain used by the monotonic clock, even for
+    # arbitrarily large JSON integers. Reject bool instead of coercing it.
+    if type(value) not in (int, float):
+        return False, value
+    try:
+        return (math.isfinite(value) and value >= 0), value
+    except OverflowError:
+        return False, value
+
+
 def _validate_positive_int(value: Any) -> tuple[bool, Any]:
     return (_is_int(value) and value > 0), value
 
@@ -616,6 +633,7 @@ _V2_VALIDATORS = {
     "activeness": _validate_activeness,
     "cache_miss_budget": _validate_positive_int,
     "notification_max_chars": _validate_positive_int,
+    "cache_warm_interval": _validate_cache_warm_interval,
 }
 
 
@@ -1181,6 +1199,7 @@ _RUNTIME_POLICY_INSERT_INDEX = next(
 )
 SYSTEM_SETTING_KEYS = (
     "cache_miss_budget",
+    "cache_warm_interval",
     *(spec.key for spec in SYSTEM_INIT_SETTING_SPECS[:_RUNTIME_POLICY_INSERT_INDEX]),
     *_RUNTIME_POLICY_INVENTORY_ORDER,
     *(spec.key for spec in SYSTEM_INIT_SETTING_SPECS[_RUNTIME_POLICY_INSERT_INDEX:]),
@@ -1242,7 +1261,14 @@ def system_settings_provider(workdir: Path | None) -> SettingsProvider:
                 default=DEFAULT_CACHE_MISS_BUDGET,
                 configurable=True,
                 comment=_CACHE_MISS_BUDGET_COMMENT,
-            )
+            ),
+            SettingRow(
+                key="cache_warm_interval",
+                current=resolve_cache_warm_interval(root),
+                default=DEFAULT_CACHE_WARM_INTERVAL,
+                configurable=True,
+                comment=_CACHE_WARM_COMMENT,
+            ),
         ]
 
         runtime_policy = resolve_runtime_policy(root)
@@ -1317,6 +1343,26 @@ def resolve_cache_miss_budget(agent: Any) -> int:
         if fields is not None:
             budget = fields.get("cache_miss_budget")
     return budget if budget is not None else DEFAULT_CACHE_MISS_BUDGET
+
+
+def resolve_cache_warm_interval(working_dir: Any) -> float:
+    """Live valid env > whole valid v2 document > 3600 seconds; zero is off.
+
+    No init/preset input and no writes. Invalid environment falls through;
+    malformed/unreadable System JSON contributes no fields (v1 stays exact).
+    """
+    raw = _env_raw(CACHE_WARM_INTERVAL_ENV)
+    if raw is not None:
+        try:
+            value = float(raw)
+        except ValueError:
+            pass
+        else:
+            if _validate_cache_warm_interval(value)[0]:
+                return value
+    return float(read_runtime_policy_document(working_dir).get(
+        "cache_warm_interval", DEFAULT_CACHE_WARM_INTERVAL
+    ))
 
 
 def resolve_notification_max_chars(agent: Any) -> int | None:

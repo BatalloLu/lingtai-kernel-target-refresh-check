@@ -1,5 +1,6 @@
 ---
 related_files:
+  - tests/test_cache_warm_notification.py
   - src/lingtai/tools/plugin/ANATOMY.md
   - tests/test_plugin_mcp_mode.py
   - ENVIRONMENT_VARIABLES.md
@@ -186,6 +187,8 @@ graph.
   canonical-wire wake and generic adapter-hook regressions.
   `test_notification_sync.py` is only their existing 70-line helper closure;
   its former notification matrices are retired, not restored.
+- `test_cache_warm_notification.py` covers the injected-clock hourly cadence,
+  eligibility, live settings, ambiguous publication retry and busy-work safety.
 - `test_auto_molt_idle_episode.py` covers the strict current-context/time gate,
   IDLE/ASLEEP continuity, unloaded/unknown context, publication retry, actual
   post-molt context, journal refusal, env parsing and full Agent prompt loading.

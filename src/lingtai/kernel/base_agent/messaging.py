@@ -156,6 +156,14 @@ def _enqueue_system_notification(
                 if ev.get("idempotency_key") == idempotency_key:
                     return current_payload, False, ""
 
+        # Inert periodic notices must not crowd actionable work out of the
+        # bounded system mirror. Coalesce only this producer; a full real-work
+        # mirror skips the warm publication, leaving ordinary retention intact.
+        if channel == "system" and source == "system.cache_warm":
+            events = [ev for ev in events if ev.get("source") != source]
+            if len(events) >= 20:
+                return current_payload, False, ""
+
         event = {
             "event_id": event_id,
             "source": source,

@@ -844,6 +844,12 @@ def _heartbeat_loop(agent) -> None:
             except Exception as sleep_alarm_err:
                 agent._log("sleep_alarm_check_failed", error=str(sleep_alarm_err)[:200])
 
+            # Ordinary publication only: existing sync below owns delivery/wake.
+            try:
+                _maybe_notify_cache_warm(agent)
+            except Exception as cache_warm_err:
+                agent._log("cache_warm_notification_check_failed", error=str(cache_warm_err)[:200])
+
             # --- Notification sync ---
             # Poll the `.notification/` directory for changes.  The sync
             # method is a no-op when the fingerprint is unchanged, so this
@@ -960,6 +966,57 @@ def _maybe_sleep_after_idle_timeout(agent, *, now_mono: float | None = None) -> 
     agent._set_state(AgentState.ASLEEP, reason="idle sleep timeout")
     agent._save_chat_history()
     agent._asleep.set()
+
+
+def _maybe_notify_cache_warm(agent) -> None:
+    """One inert notice per live monotonic cadence, never a forced model call.
+
+    Only heartbeat calls this producer. ACTIVE delivery remains with the normal
+    notification carrier; this code never changes state, inbox, or cancellation.
+    Failed/ambiguous writes retry the same identity. No crash exactly-once claim.
+    """
+    from ..state import AgentState
+
+    if agent._shutdown.is_set() or not getattr(agent, "_heartbeat_runtime_ready", False):
+        return
+    if agent._state not in (AgentState.ACTIVE, AgentState.IDLE, AgentState.ASLEEP):
+        return  # STUCK recovery and SUSPENDED own their lifecycle.
+    interval = agent.resolve_cache_warm_interval()
+    if interval == 0:
+        agent._cache_warm_anchor = None
+        return
+    now = agent._lifecycle_clock.monotonic_seconds()
+    if agent._cache_warm_anchor is None:
+        agent._cache_warm_anchor = now
+        return  # Boot/re-enable never publishes immediately.
+    if now - agent._cache_warm_anchor < interval:
+        return
+    if agent._cache_warm_ref_id is None:
+        import secrets
+        agent._cache_warm_ref_id = f"cache_warm:{secrets.token_hex(16)}"
+    ref_id = agent._cache_warm_ref_id
+    if agent._shutdown.is_set() or not agent._heartbeat_runtime_ready:
+        return
+    try:
+        agent._enqueue_system_notification(
+            source="system.cache_warm",
+            ref_id=ref_id,
+            idempotency_key=f"system.cache_warm:{ref_id}",
+            skip_if_idempotency_key_exists=True,
+            body=(
+                "Cache-warm notification only; no task. If this is the sole "
+                "notification and no real work is pending, do absolutely nothing: "
+                "no tools, reply, or molt; go IDLE. Real work always wins: "
+                "continue busy or concurrent work without abandoning, cancelling, "
+                "or sleeping it. This notice requires no action."
+            ),
+        )
+    except Exception as exc:
+        agent._log("cache_warm_notification_publish_failed", ref_id=ref_id, error=str(exc)[:200])
+        return
+    # Anchor to this successful tick, not an elapsed slot: never catch up in bursts.
+    agent._cache_warm_anchor = now
+    agent._cache_warm_ref_id = None
 
 
 _AUTO_MOLT_SOURCE = "system.auto_molt"

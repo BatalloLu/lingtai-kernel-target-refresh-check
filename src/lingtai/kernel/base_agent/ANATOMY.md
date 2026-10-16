@@ -1,5 +1,7 @@
 ---
 related_files:
+  - tests/test_cache_warm_notification.py
+  - src/lingtai/intrinsic_skills/system-manual/reference/settings-inventory/SKILL.md
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - src/lingtai/tools/context/manual/SKILL.md
@@ -76,6 +78,15 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
 > **History note:** the former `soul_flow.py` wire-splice logic moved to the legacy TCInbox, which is now retired. The Soul subsystem had already been removed; old patches remain historical context.
 
 ## Components
+
+- `lifecycle.py::_maybe_notify_cache_warm` publishes inert `system.cache_warm`
+  events from the existing heartbeat before notification sync
+  (`src/lingtai/kernel/base_agent/lifecycle.py:971-1019`). Its scalar cadence
+  hook is `BaseAgent.resolve_cache_warm_interval`, overridden lazily by outer
+  `Agent`; no Core tools dependency or additional scheduler. Heartbeat owns
+  `_cache_warm_anchor` and `_cache_warm_ref_id` for this process only. Guarded
+  by [BA012](BEHAVIORS.md#behavior-ba012); procedure: the linked System settings
+  inventory manual's `cache-warm-interval` section.
 
 - `turn.py::_build_apriori_summarizer_fn` captures the helper's API id,
   requested model and molt generation around the existing untracked one-shot
