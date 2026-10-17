@@ -81,7 +81,8 @@ that generic dispatch route.
   before calling that child's handler with only its `input`
   (`__init__.py:173-472`). Two enforcement layers correlate `action` with
   `input`, generated purely from the child registry with no name/schema
-  mapping table: (1) schema-level — a root `allOf` with one `if`/`then`
+  mapping table. Typed `input.anyOf` disclosure permits overlapping child
+  inputs; action correlation stays strict: (1) schema-level — a root `allOf` with one `if`/`then`
   condition per child, each `if` testing `action` via `const` against that
   child's own registry name, each `then` constraining `input` to that exact
   child's canonical validation constraints (duplicate description annotations

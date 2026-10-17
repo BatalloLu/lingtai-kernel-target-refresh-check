@@ -293,7 +293,7 @@ class ToolFamily:
            showed this root construct is accepted, not rejected, by the
            current backend route.
         2. **Typed ``input`` disclosure:** the same per-action branches retained
-           for discoverability (``oneOf`` normally, ``anyOf`` with settings).
+           for discoverability (``anyOf`` permits overlapping action inputs).
            Descriptions stay here verbatim; the conditional validation copy
            omits only description annotations at known schema nodes.
 
@@ -341,9 +341,6 @@ class ToolFamily:
                     },
                 }
             )
-        input_branches_keyword = (
-            "anyOf" if RESERVED_SETTINGS_NAME in self._children else "oneOf"
-        )
         return {
             "type": "object",
             "properties": {
@@ -358,7 +355,7 @@ class ToolFamily:
                         "Strict action-specific input; the selected action is "
                         "validated again at dispatch."
                     ),
-                    input_branches_keyword: input_branches,
+                    "anyOf": input_branches,
                 },
                 "reasoning": {
                     "type": "string",
