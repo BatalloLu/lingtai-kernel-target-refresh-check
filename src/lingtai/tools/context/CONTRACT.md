@@ -54,11 +54,10 @@ manual under `tools/context/manual/` is the sole canonical source and is install
 at the longstanding `context-manual` path. Any same-name collision fails loudly.
 No OLD
 `psyche` action is reachable anywhere, and none is aliased here. A public
-root named `psyche` does exist again — it is the read-only family for the four
-durable domains (`pad + lingtai + knowledge + skills = psyche`,
-`src/lingtai/tools/psyche/CONTRACT.md`) — it carries five strict-empty manual
-loaders plus redacted settings SHOW for its Pad inputs and Psyche-owned
-configurable prompt pairs.
+root named `psyche` does exist again — it routes private Pad/Knowledge memory
+and the Skills catalog (`src/lingtai/tools/psyche/CONTRACT.md`), with four
+strict-empty manual loaders, loaded instructions/Covenant disclosure and
+redacted settings SHOW. No separate character route remains.
 `psyche.context_molt`, `psyche.pad_edit`, `psyche.lingtai_update`,
 `psyche.name_set`, and every other old spelling fail as unknown actions: root
 reuse is not action compatibility. The lifecycle actions live here; name changes
@@ -92,15 +91,15 @@ must execute in this order:
 1. call `Agent._reconstruct_context()`;
 2. through `Agent._reload_prompt_sections`, re-read/recompose **all** canonical
    configured, durable, and packaged prompt sources: base prompt, covenant,
-   configured/self-authored character, substrate, rules, Pad body plus pinned
+   substrate, unified Pad memory plus pinned
    references, the enabled Skills and Knowledge catalogs, principle, procedures,
-   guidance mirror and comment. The Skills and Knowledge catalogs are
+   and guidance mirror. Retired character, rules and comment have no active source. The Skills and Knowledge catalogs are
    rescanned from disk through their capabilities' own private composers; a
    disabled domain is skipped entirely (no section written, no scan), and the
    Knowledge one-time legacy migration is **not** reachable from this path — it
    remains owned by that capability's setup/refresh lifecycle;
 3. perform exactly one final full prompt build/flush through the Agent override
-   after every section is composed; private Pad/LingTai composers must not
+   after every section is composed; the private Pad composer must not
    publish intermediate prompts, and the live interface plus `system/system.md`
    must contain the same newly composed prompt. If composition or the final
    flush fails, restore the prior prompt-manager sections, wrapper base prompt,
@@ -111,7 +110,7 @@ must execute in this order:
 5. only then request provider history replay/rebuild with the new prompt and
    rewritten history.
 
-The private Pad/LingTai composers remain reused; composition logic is not
+The private unified Pad composer is reused; composition logic is not
 copied into the context handler. Reconstruction failure returns
 `context_reconstruction_unavailable` or `context_reconstruction_failed` without
 applying summaries or requesting provider replay.
@@ -130,8 +129,8 @@ Refresh and molt are passive scenarios invoking the same internal
   or sealing are torn down or replaced;
 - Agent registers exactly one post-molt hook (`_reconstruct_context`), invoked
   before the fresh session is created;
-- Pad/LingTai `boot` functions do initial private composition only and register
-  no competing section-specific hooks.
+- Psyche boot invokes the private Pad composer and registers no competing
+  section-specific hook. Legacy character is preserved once under the Pad owner.
 
 Their distinct lifecycle effects remain unchanged: refresh rebuilds runtime
 configuration/capabilities while preserving conversation; molt validates the

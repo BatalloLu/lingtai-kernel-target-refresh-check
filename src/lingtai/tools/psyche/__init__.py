@@ -1,8 +1,8 @@
 """Psyche's declared official host-plugin slice.
 
-``psyche`` is the mandatory model-visible LTP v2 root for the four durable
-self-domains: ``pad + lingtai + knowledge + skills = psyche``. Its seven actions
-are four domain manuals, the effective ``covenant`` body, redacted ``settings``,
+``psyche`` is the mandatory model-visible LTP v2 root for private Pad and
+Knowledge memory and the Skills catalog. Its seven actions
+are three domain manuals, fixed instructions, the effective ``covenant`` body, redacted ``settings``,
 and the ``manual`` router; every
 child uses the canonical strict-empty input and is read-only. The declaration
 binds only ``workdir`` and the applied Psyche settings snapshot.
@@ -36,7 +36,6 @@ __all__ = [
 #: The one canonical child registry, as ``(action, installed manual name)``.
 DOMAIN_MANUALS: tuple[tuple[str, str], ...] = (
     ("pad", "pad-manual"),
-    ("lingtai", "lingtai-manual"),
     ("knowledge", "knowledge"),
     ("skills", "skills"),
 )
@@ -54,7 +53,6 @@ _ACTION_ENUM_DESCRIPTION = (
     "Routine inspection needs no manual reload; read the matching domain manual first "
     "for unfamiliar or consequential work.\n"
     "pad: Pad manual for system/pad.md and pinned references.\n"
-    "lingtai: identity manual for system/lingtai.md (灵台 / character).\n"
     "knowledge: private KNOWLEDGE.md memory manual.\n"
     "skills: .library catalog and configured-roots manual.\n"
     "instructions: current loaded fixed instructions, including runtime and adapter rules; read on first orientation and before unfamiliar/consequential work, not routinely.\n"
@@ -117,7 +115,7 @@ _FAMILY = _build_family(None)
 
 def get_description(lang: str = "en") -> str:
     return (
-        "Read-only: routes pad, lingtai (灵台), knowledge, and skills manuals, "
+        "Read-only: routes pad, knowledge, and skills manuals, "
         "returns the current effective Covenant body, with redacted settings "
         "and manual guidance. Every action is read-only with strict input={}; it "
         "never authors, edits, pins, installs, rescans, or reloads prompt state. "
@@ -199,16 +197,17 @@ INPUT_SCHEMAS = DECLARATION.public_input_schemas()
 
 
 def boot(agent: Any) -> None:
-    """Compose private Pad/LingTai state, then mount the official Psyche family.
+    """Compose unified private Pad memory, then mount the official Psyche family.
 
-    The two domain composers remain lifecycle operations owned by their packages.
+    Pad composition remains a lifecycle operation owned by its package.
     Registration then binds only the declaration's narrow public host facade.
     """
     from lingtai.adapters.tool_plugin_host import register_agent_tool_plugins
 
-    from ..lingtai import _lingtai_load
     from ..pad import _pad_load
 
-    _pad_load(agent, {})
-    _lingtai_load(agent, {})
+    # An init-owned upgrade must consume configured and disk legacy inputs
+    # together, after its Pad seed. Direct construction with staged init defers
+    # migration to canonical setup/rebuild rather than marking disk-only early.
+    _pad_load(agent, {}, migrate_legacy=not (agent._working_dir / "init.json").is_file())
     register_agent_tool_plugins(agent, [DECLARATION])

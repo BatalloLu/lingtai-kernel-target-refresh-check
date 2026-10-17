@@ -1,4 +1,4 @@
-"""Pad domain — private owner of the prompt sketchboard and its pinned refs.
+"""Pad domain — private owner of unified injected memory and its pinned refs.
 
 This package registers **no** model-facing tool. The former public ``pad`` root
 and its ``append`` action were removed as a clean break: the one public root for
@@ -6,10 +6,10 @@ this domain is now ``psyche``, whose read-only ``psyche(action='pad')``
 returns ``pad-manual``. There is no alias or compatibility wrapper for the old
 root or for ``pad.append``.
 
-What remains here is the domain's private ownership, unchanged:
+The domain retains private composition and owns one-time legacy preservation:
 
 - ``_pad_load`` is the canonical composer of the ``pad`` prompt section from
-  ``system/pad.md`` plus the pinned read-only references persisted in
+  ``system/pad.md`` (including legacy character preserved once) plus the pinned read-only references persisted in
   ``system/pad_append.json``. ``Agent._reload_prompt_sections`` calls it inside
   the one full-context reconstruction path shared by active
   ``context.rebuild``, refresh, and molt.

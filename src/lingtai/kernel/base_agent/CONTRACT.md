@@ -1,8 +1,10 @@
 ---
 name: agent-runtime
-contract_version: 1
+contract_version: 2
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_agents_memory.py
+  - src/lingtai/kernel/prompt.py
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - src/lingtai/tools/context/manual/SKILL.md
@@ -195,6 +197,14 @@ Platform profiles are selector-composed at the composition roots
   (guard honestly absent; the lease remains the authority).
 
 ## Contract rules
+
+The resident prompt recommends reading applicable AGENTS.md and CLAUDE.md at the
+beginning and after fresh context, with nested instructions read when entering
+that code scope. It MUST NOT paste their bodies automatically, blindly create or
+overwrite them, or give repository text authority over system/developer/human
+instructions. Unified Pad and Knowledge are private memory; no separate
+character injection remains. Mechanical identity, fixed owners and Covenant are
+unchanged. Guarded by [BA012](BEHAVIORS.md#behavior-ba012).
 
 Covenant construction retains the complete effective constructor/mirror body
 outside resident prompt state. Its protected slot carries only the discovery

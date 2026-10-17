@@ -2,7 +2,7 @@
 name: psyche-manual
 last_changed_at: 2026-09-29T00:00:00Z
 description: >
-  Compact router for Psyche's four durable domains (pad, lingtai, knowledge,
+  Compact router for Psyche's private-memory and procedure domains (pad, knowledge,
   skills), the shared file→rebuild model, redacted settings, and the separate
   fixed-instructions disclosure and retirement guidance.
 related_files:
@@ -28,7 +28,7 @@ maintenance: |
 
 # Psyche
 
-Psyche is the read-only public root for **pad + lingtai + knowledge + skills**.
+Psyche is the read-only public root for **Pad + Knowledge memory and the Skills catalog**.
 Routine schema-sufficient calls may go directly to their action. For unfamiliar
 or consequential work, read the matching domain manual first; use this router
 only if the domain is unclear. There is no required router-then-domain double read.
@@ -38,7 +38,6 @@ only if the domain is unclear. There is no required router-then-domain double re
 | Call (strict `input={}`) | Returns / owner |
 |---|---|
 | `psyche(action="pad", input={}, reasoning="load Pad guidance")` | Pad manual: `system/pad.md`, `system/pad_append.json` |
-| `psyche(action="lingtai", input={}, reasoning="load identity guidance")` | LingTai manual: `system/lingtai.md` |
 | `psyche(action="knowledge", input={}, reasoning="load knowledge guidance")` | Knowledge manual: `knowledge/<name>/KNOWLEDGE.md` |
 | `psyche(action="skills", input={}, reasoning="load skills guidance")` | Skills manual: `.library/{intrinsic,custom}/` and configured paths |
 | `psyche(action="instructions", input={}, reasoning="orientation")` | current loaded fixed instructions, including runtime and adapter rules; no ambient reread |
@@ -46,7 +45,7 @@ only if the domain is unclear. There is no required router-then-domain double re
 | `psyche(action="settings", input={}, reasoning="inspect Psyche settings")` | redacted settings SHOW |
 | `psyche(action="manual", input={}, reasoning="load the routing table")` | this router |
 
-All eight actions require strict empty `input` and are read-only: no authoring,
+All seven actions require strict empty `input` and are read-only: no authoring,
 editing, pinning, installing, migration, catalog rescan, or prompt reload. Keep
 root `summarize=false` when exact guidance matters.
 
@@ -71,7 +70,8 @@ recipes live in `shell-manual`.
 ## Lifecycle and settings
 
 `context` owns `molt`, `summarize`, and `rebuild`; `system` owns lifecycle
-controls and mechanical names. LingTai owns self-authored character guidance.
+controls and mechanical names. Pad holds unified private memory, including
+legacy character preserved once without deleting its old source.
 `settings` is SHOW-only, fully redacted, and reports the last successful applied
 snapshot. Read [the settings reference](reference/settings/SKILL.md) for grammar,
 precedence, timing, rollback, and all six anchors.
@@ -108,8 +108,8 @@ compatibility reader, automatic rewrite, purge, or data migration.
 ## Loaded memory length reminder
 
 After a successful molt or CLI refresh relaunch/start, `memory-length` reports
-character counts for the **loaded** Pad (including pinned references), Character,
-their total and threshold. It is not a token count, disk-size check or knowledge
+character counts for the **loaded** unified Pad (including pinned references),
+its total and threshold. It is not a token count, disk-size check or knowledge
 catalog scan. The environment threshold defaults to 50000; discover its effective
 value with `system(action="settings", input={})` under
 `prompt.memory_length_warning_chars`, and read the canonical
@@ -119,7 +119,7 @@ A lifecycle boundary produces at most one warning; normal turns, heartbeat,
 initial startup and `context.rebuild` do not produce new warnings. At/below the
 threshold a subsequent successful lifecycle check clears only the current
 notification; prior checks remain in `logs/events.jsonl`. Publication is best-effort
-and never blocks molt/refresh. No Pad, pinned reference, Character, Knowledge or
+and never blocks molt/refresh. No Pad, pinned reference, Knowledge or
 history content is automatically removed, cropped or rewritten. Review stale and
 duplicate content and move it to its proper durable owner through ordinary
 scoped edits; a warning is not permission for unrelated cleanup.

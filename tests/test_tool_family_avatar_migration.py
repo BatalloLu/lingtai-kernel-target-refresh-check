@@ -404,6 +404,9 @@ def test_avatar_spawn_carries_only_psyche_prompt_owner_for_both_modes(
         )
     )
     assert not (child / "settings" / "system.json").exists()
+    child_init = json.loads((child / "init.json").read_text(encoding="utf-8"))
+    assert "lingtai" not in child_init
+    assert "lingtai_file" not in child_init
 
     from lingtai.agent import Agent
     from lingtai.kernel.prompt import COVENANT_ROUTE

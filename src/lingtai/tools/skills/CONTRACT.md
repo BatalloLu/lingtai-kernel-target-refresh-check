@@ -5,6 +5,9 @@ contract_version: 2
 related_files:
   - src/lingtai/tools/skills/__init__.py
   - src/lingtai/tools/skills/ANATOMY.md
+  - src/lingtai/tools/skills/BEHAVIORS.md
+  - src/lingtai/tools/skills/manual/SKILL.md
+  - tests/test_standard_skill_discovery.py
   - src/lingtai/tools/_catalog.py
   - src/lingtai/tools/CONTRACT.md
   - src/lingtai/tools/psyche/CONTRACT.md
@@ -168,6 +171,43 @@ frontmatter; entries missing either are surfaced in `problems`. Only
 until read. Scanning uses the shared `scan_markdown_catalog` /
 `build_catalog_yaml` helpers in `src/lingtai/tools/_catalog.py`.
 
+## Standard folder discovery
+
+Guarded by [SK002](BEHAVIORS.md#behavior-sk002).
+
+The existing setup/full-context reconstruction lifecycle scans vanilla roots in
+this order: `.library/intrinsic`, `.library/custom`, explicitly configured
+`manifest.capabilities.skills.paths`, then `.agents/skills` followed by
+`.claude/skills` at each directory from `agent._working_dir` outward through the
+nearest boundary, then `~/.agents/skills` and `~/.claude/skills`. A boundary is
+`.git` (directory or worktree file), or the parent of the nearest literal
+`.lingtai` ancestor when the current working directory contains `init.json`.
+A nearer Git boundary always wins. The `.lingtai` case is LingTai's bounded
+project convention, not a claim Codex searches arbitrary outside-repo ancestors.
+Without either valid marker, automatic project discovery considers only the
+current agent working directory, not its parents. Shell cwd and turn-local
+execution workspaces do not select roots.
+Only marker paths are probed above that directory; no parent contents, siblings,
+or whole home tree are scanned. Missing conventional roots are normal.
+
+Root identities use canonical resolved paths, retaining the first occurrence
+across built-in, explicit, automatic and symlink-alias roots. The shared scanner
+still supports symlinked skill folders and preserves distinct entries with the
+same skill name; this is not vendor-specific name precedence or merging.
+Overlapping but unequal roots retain the existing recursive scanner semantics.
+Malformed/unreadable files retain the shared parser's `problems` reporting.
+The catalog carries only metadata and file location; body reading is on demand.
+Plugin registration paths are not added here: plugin packages and their
+containment-filtered skills remain owned by the separate `plugins` field.
+
+This is folder-convention discovery, not full Codex/Claude compatibility.
+`/etc/codex/skills`, vendor bundled/managed/cloud skills, plugin synchronization,
+Claude shell substitutions/hooks/commands and per-turn scanning are not
+supported. An omitted `name` uses the skill directory name; `description` is still
+required. No files are copied, installed,
+migrated, executed, or watched. See the [manual](manual/SKILL.md#automatic-standard-folders)
+for procedure and official convention sources.
+
 ## Cross-platform invariants
 
 Do not change any of the following; documented for reviewers only.
@@ -250,3 +290,7 @@ No replacement conformance claimed for: test_catalog_helpers, test_skills, test_
   name, or user-visible concept requires reviewing all three glossary files in
   the same PR.
 - **Validation:** `python -m lingtai.tools.glossary_validator --check`.
+
+Standard Claude-style `SKILL.md` files may omit `name`: the shared parser
+uses the containing directory name while retaining required `description`.
+`KNOWLEDGE.md` still requires an explicit `name`.

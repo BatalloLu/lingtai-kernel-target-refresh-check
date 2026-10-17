@@ -38,14 +38,14 @@ or live ledger peer. Confirmation does not bypass these or launch authority.
 ## Select the payload
 
 - **Shallow (default):** rewritten `init.json`, narrow Psyche base/covenant
-  inputs, and the new comment; it does not copy parent `system/`, knowledge,
+  inputs; it does not copy parent `system/`, knowledge,
   exports, or conversation history.
 - **Deep:** also copies `system/`, `knowledge/`, `exports/`, and `combo.json`
-  when present. This includes durable character, Pad, summaries and existing
+  when present. This includes unified Pad, its one-time legacy migration marker, summaries and existing
   old inert `system/rules.md`; a fresh conversation does not mean empty durable memory.
 
-Both set `manifest.agent_name`, clear `manifest.admin`, blank the `lingtai`
-seed, remove `lingtai_file`, old top-level prompt pairs/brief and top-level
+Both set `manifest.agent_name`, clear `manifest.admin`, remove retired `lingtai`/`lingtai_file`
+seeds, old top-level prompt pairs/brief and top-level
 `addons`. This is **not a blanket purge of init fields**: other declarations,
 including an explicit `mcp` block, are not removed by this rewrite. Check
 integration ownership before authorizing a child that could share a poller.
@@ -76,7 +76,7 @@ mission gate and creates no directory, ledger record, marker, `.prompt`, or
 process. Neither preview nor `confirm=true` grants authority.
 
 Parent identity and mission travel in a separate one-time `.prompt` signal,
-consumed by the child watcher. The blank `lingtai` seed is not that channel.
+consumed by the child watcher. Retired character seeds are not that channel.
 Avatar writes no `.rules` signal and distributes no rules. Both the heartbeat
 consumer and protected rules injection are retired; existing files remain inert.
 For durable working instructions, edit the child's Pad only with ordinary

@@ -23,7 +23,7 @@ maintenance: |
 # Psyche Tool Behavior Tests
 
 Self-contained agent behavior tasks guarding the observable behavior clauses of
-`src/lingtai/tools/psyche/CONTRACT.md` (five read-only manual actions, eight-row
+`src/lingtai/tools/psyche/CONTRACT.md` (four read-only manual actions, six-row
 redacted settings SHOW, and durable changes via file + explicit rebuild).
 Pinned pytest commands must run from the repo root with the project's Python.
 
@@ -38,7 +38,7 @@ Pinned pytest commands must run from the repo root with the project's Python.
 
 ### Steps
 1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
-2. Call `pad | lingtai | knowledge | skills | manual` with strict empty input;
+2. Call `pad | knowledge | skills | manual` with strict empty input;
    confirm each returns its intended manual.
 3. Call `settings` with strict empty input and record the six rows. Edit the
    Psyche owner document without reconstructing, then make it malformed;
@@ -59,7 +59,7 @@ Pinned pytest commands must run from the repo root with the project's Python.
 ### Expected evidence
 - [ ] Step 1: both focused Psyche suites pass, pinning exact manual routing,
       settings discovery, strict owner parsing, and read-only behavior.
-- [ ] Step 2: the five manual bodies are nonempty and distinct.
+- [ ] Step 2: the four manual bodies are nonempty and distinct.
 - [ ] Step 3: success is exactly `pad`, `pad_file`, `base_prompt`,
       `base_prompt_file`, `covenant`, then `covenant_file`; each row has exactly `key,current,default,configurable,comment`,
       both values are `<redacted>`, an ambient source edit or malformed owner

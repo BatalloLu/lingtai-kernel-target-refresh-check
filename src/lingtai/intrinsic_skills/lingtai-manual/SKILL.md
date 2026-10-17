@@ -1,8 +1,7 @@
 ---
 name: lingtai-manual
 description: |
-  Read before changing character/identity in `system/lingtai.md`, choosing forced
-  versus self-evolve mode, or applying durable identity edits.
+  Retirement reference for legacy character memory; use unified Pad and Knowledge.
 version: 2.1.0
 last_changed_at: 2026-09-29T00:00:00Z
 related_files:
@@ -14,44 +13,21 @@ related_files:
 - src/lingtai/tools/context/manual/SKILL.md
 maintenance: |
   Keep the manual-only Psyche route, Shell ownership of durable edits, no-hot-load
-  rule, identity modes, and context reconstruction route aligned with code.
+  rule, retirement, and unified Pad reconstruction route aligned with code.
 ---
+# Retired character memory
 
-# LingTai Manual
+There is no separate character/LingTai memory domain or `psyche.lingtai` route.
+Use `psyche(action="pad", input={}, reasoning="load memory guidance")`.
+Pad and Knowledge are private memory; applicable AGENTS.md and CLAUDE.md hold
+project working instructions. No forced/self-evolve mode remains.
 
-LingTai (`灵台`) is the character that distinguishes this agent from others.
-Its durable source is `system/lingtai.md`; reconstruction renders it into the
-protected `character` prompt section.
-
-## Public call
-
-```text
-psyche(action="lingtai", input={}, reasoning="load identity guidance")
-```
-
-This is the only public LingTai call and only returns this manual. It performs no
-disk or prompt mutation; there is no update, load, or reload action or alias.
-
-## Change durable identity
-
-Durable identity changes go through `shell`, anchored in the authorized working
-directory: rewrite `system/lingtai.md` in full, or make a bounded exact change
-after verifying the old text exists exactly once, then verify the written file.
-Platform recipes live in `shell-manual`. Preserve all character content you
-intend to keep when rewriting. No shell write hot-loads the prompt; the edit takes effect at the next natural molt or reload, so
-do not rebuild after each edit. Manual rebuild is strongly discouraged (costly full
-replay); only when the identity change must apply in this conversation and a molt
-is unsuitable, make one targeted
-`context(action="rebuild", input={}, reasoning="apply identity change")`.
-
-- **Self-evolve:** an absent or empty **resolved** `lingtai` value (inline or
-  from `lingtai_file`) preserves and composes the self-authored file. These
-  inputs belong to top-level `init.json`, not `settings/psyche.json`.
-- **Forced:** a nonempty configured identity materializes into the file on every
-  reconstruction, so a file edit is replaced at the next rebuild, refresh, or
-  molt.
-
-Keep character separate from operator `covenant`, third-party `base_prompt`, and
-mechanical `identity`; names remain `system(action="name_set"|"name_nickname")`.
-Before molt, update identity only when the task's lessons genuinely changed who
-you are, then use `context-manual` for the journal/summary/molt procedure.
+Existing `system/lingtai.md` is preserved once into `system/pad.md` without
+modifying the old file. The one-time marker prevents re-append after later Pad
+rewrites. Edit unified Pad or Knowledge thereafter, not the old source.
+Old string `lingtai`/`lingtai_file` init values remain accepted as one-way
+migration inputs. A readable configured file wins over inline fallback; its
+bytes and any distinct disk character are preserved in Pad once. Marked migration
+never reopens those old sources, and the runtime never rewrites old configs.
+New templates and serializers omit the old keys.
+Mechanical names and Covenant have not changed owners.

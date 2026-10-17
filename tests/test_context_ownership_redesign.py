@@ -30,12 +30,12 @@ def _actions(module) -> list[str]:
 
 
 def test_public_action_sets_are_the_locked_inventories():
-    # The four durable domains now share one read-only root.
+    # Unified private memory and the Skills catalog share one read-only root.
     assert _actions(psyche_tool) == [
-        "pad", "lingtai", "knowledge", "skills", "settings", "manual",
+        "pad", "knowledge", "skills", "instructions", "covenant", "settings", "manual",
     ]
     assert psyche_tool.ACTION_ORDER == (
-        "pad", "lingtai", "knowledge", "skills", "settings", "manual",
+        "pad", "knowledge", "skills", "instructions", "covenant", "settings", "manual",
     )
     assert _actions(context_tool) == ["molt", "summarize", "rebuild", "manual"]
 
@@ -59,36 +59,18 @@ def test_retired_actions_are_rejected_without_aliases(tmp_path):
         agent.stop(timeout=1.0)
 
 
-def test_manual_only_lingtai_has_a_strict_ltp_v2_envelope(tmp_path):
-    """The 灵台 signpost survives as ``psyche(action='lingtai')``."""
+def test_retired_lingtai_route_is_absent_and_rejected(tmp_path):
     schema = psyche_tool.get_schema("en")
     assert set(schema["properties"]) == {"action", "input", "reasoning", "summarize"}
     assert schema["required"] == ["action", "input", "reasoning"]
     assert schema["additionalProperties"] is False
-    assert "lingtai" in schema["properties"]["action"]["enum"]
-    lingtai_branch = next(
-        cond["then"]["properties"]["input"]
-        for cond in schema["allOf"]
-        if cond["if"]["properties"]["action"]["const"] == "lingtai"
-    )
-    assert lingtai_branch == {
-        "type": "object",
-        "properties": {},
-        "required": [],
-        "additionalProperties": False,
-    }
-
+    assert "lingtai" not in schema["properties"]["action"]["enum"]
     agent = _agent(tmp_path)
     try:
-        result = agent._intrinsics["psyche"](
-            {"action": "lingtai", "input": {}, "reasoning": "inspect", "summarize": False}
-        )
-        assert result["status"] in {"ok", "degraded"}
-        bad = agent._intrinsics["psyche"](
-            {"action": "lingtai", "input": {"content": "not allowed"}}
-        )
-        assert bad["status"] == "failed"
-        assert bad["error_code"] == "INVALID_ARGUMENT"
+        result = agent._intrinsics["psyche"]({
+            "action": "lingtai", "input": {}, "reasoning": "inspect",
+        })
+        assert "Unknown psyche action" in result["error"]
     finally:
         agent.stop(timeout=1.0)
 
@@ -273,7 +255,8 @@ def test_canonical_reconstruction_rereads_all_durable_prompt_sources(tmp_path):
         assert publish_count == 1
         assert agent._base_prompt == "BASE-SOURCE"
         assert agent._prompt_manager.read_section("covenant") == "COVENANT-SOURCE"
-        assert "LINGTAI-SOURCE" in agent._prompt_manager.read_section("character")
+        assert "LINGTAI-SOURCE" in agent._prompt_manager.read_section("pad")
+        assert agent._prompt_manager.read_section("character") is None
         assert agent._prompt_manager.read_section("rules") == "RULES-SOURCE"
         assert "PAD-SOURCE" in agent._prompt_manager.read_section("pad")
         assert "PINNED-SOURCE" in agent._prompt_manager.read_section("pad")

@@ -18,13 +18,12 @@ from lingtai.tools import psyche as psyche_tool
 from tests._service_helpers import make_mock_llm_service as make_mock_service
 
 
-MANUAL_ACTIONS = ["pad", "lingtai", "knowledge", "skills", "manual"]
-EXPECTED_ACTIONS = ["pad", "lingtai", "knowledge", "skills", "instructions", "covenant", "settings", "manual"]
+MANUAL_ACTIONS = ["pad", "knowledge", "skills", "manual"]
+EXPECTED_ACTIONS = ["pad", "knowledge", "skills", "instructions", "covenant", "settings", "manual"]
 
 #: Which installed manual each action must return, by its `.library` directory.
 EXPECTED_MANUAL_DIR = {
     "pad": "pad-manual",
-    "lingtai": "lingtai-manual",
     "knowledge": "knowledge",
     "skills": "skills",
     "manual": "psyche-manual",
@@ -84,7 +83,6 @@ def test_every_child_input_is_the_canonical_strict_empty_object():
     branches = schema["properties"]["input"]["anyOf"]
     assert [b["title"] for b in branches] == [
         "pad input",
-        "lingtai input",
         "knowledge input",
         "skills input",
         "instructions input",
@@ -179,7 +177,7 @@ def test_each_action_returns_its_intended_manual(tmp_path, action):
         agent.stop(timeout=1.0)
 
 
-def test_the_five_manuals_are_all_distinct(tmp_path):
+def test_the_four_manuals_are_all_distinct(tmp_path):
     agent = _agent(tmp_path)
     try:
         bodies = {a: _call(agent, a)["manual"] for a in MANUAL_ACTIONS}
@@ -188,11 +186,11 @@ def test_the_five_manuals_are_all_distinct(tmp_path):
         agent.stop(timeout=1.0)
 
 
-def test_router_manual_is_a_routing_table_naming_all_four_domains(tmp_path):
+def test_router_manual_is_a_routing_table_naming_current_domains(tmp_path):
     agent = _agent(tmp_path)
     try:
         body = _call(agent, "manual")["manual"]
-        for domain in ("pad", "lingtai", "knowledge", "skills"):
+        for domain in ("pad", "knowledge", "skills"):
             assert f'action="{domain}"' in body
         # It teaches the shared mutation/rebuild model rather than duplicating
         # the domain manuals it points at. Durable sources change through
@@ -449,12 +447,12 @@ def test_configured_pad_seeds_only_an_empty_durable_body(tmp_path):
     try:
         pad_path = agent._working_dir / "system" / "pad.md"
         assert pad_path.read_text(encoding="utf-8") == ""
-        agent._reload_prompt_sections({"pad": "INITIAL PAD", "lingtai": ""})
+        agent._reload_prompt_sections({"pad": "INITIAL PAD"})
         assert pad_path.read_text(encoding="utf-8") == "INITIAL PAD"
         assert "INITIAL PAD" in agent._build_system_prompt()
 
         pad_path.write_text("DURABLE PAD", encoding="utf-8")
-        agent._reload_prompt_sections({"pad": "REPLACEMENT", "lingtai": ""})
+        agent._reload_prompt_sections({"pad": "REPLACEMENT"})
         assert pad_path.read_text(encoding="utf-8") == "DURABLE PAD"
         assert "DURABLE PAD" in agent._build_system_prompt()
         assert "REPLACEMENT" not in agent._build_system_prompt()
@@ -627,7 +625,7 @@ def test_manual_actions_never_scan_a_catalog(tmp_path, monkeypatch):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.parametrize(
-    "action", ["append", "info", "edit", "load", "update", "", None, [], {}]
+    "action", ["lingtai", "append", "info", "edit", "load", "update", "", None, [], {}]
 )
 def test_unknown_or_retired_action_is_rejected(tmp_path, action):
     agent = _agent(tmp_path)
@@ -841,7 +839,8 @@ def test_successful_rebuild_still_publishes_exactly_once(tmp_path):
         assert publishes == [1]
         read = agent._prompt_manager.read_section
         assert "PAD-BODY" in read("pad")
-        assert "I AM" in read("character")
+        assert "I AM" in read("pad")
+        assert read("character") is None
         assert read("skills")
         assert "knowledge" in agent._prompt_manager._sections
     finally:

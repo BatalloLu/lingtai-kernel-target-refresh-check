@@ -4,8 +4,8 @@ description: >
   Read before authoring, installing, or sharing a skill in
   `.library/custom/<name>/`, adding configured skill roots, or diagnosing a
   catalog entry; this teaches the Skills system, not bundled skill procedures.
-version: 1.3.0
-last_changed_at: "2026-09-29T00:00:00Z"
+version: 1.4.0
+last_changed_at: "2026-10-17T00:00:00Z"
 related_files:
 - src/lingtai/tools/skills/manual/reference/cleanup-footprint-contract.md
 - src/lingtai/tools/skills/manual/assets/skill-template.md
@@ -21,8 +21,8 @@ maintenance: |
 # Skills Manual
 
 Skills are reusable, portable procedures. The capability scans `.library/` plus
-configured roots, builds a compact YAML catalog, and injects that catalog into the
-prompt. A skill is usable only after it is installed in a scanned root **and** a
+configured and automatically discovered standard roots, builds a compact YAML
+catalog, and injects that catalog into the prompt. A skill is usable only after it is installed in a scanned root **and** a
 catalog rebuild (or passive refresh/molt) has picked it up. A URL, temporary clone,
 or newly written file is not loaded yet.
 
@@ -51,6 +51,40 @@ system(action="refresh",
 receiver's `custom/`. If Skills is disabled, files remain on disk but no catalog is
 injected.
 
+## Automatic standard folders
+
+No configuration or copying is needed for an existing vanilla skill in these
+folders. Setup and full-context rebuild/refresh discover them in this order,
+after `.library/intrinsic`, `.library/custom`, and configured roots:
+
+1. `.agents/skills`, then `.claude/skills` in the agent working directory.
+2. The same two roots at each parent through the nearer of a `.git` boundary
+   (directory or worktree file) or the project above a literal `.lingtai`
+   ancestor, the latter only when the current working directory has `init.json`.
+   This is LingTai's bounded project convention, not Codex outside-repo search.
+   **Without either valid boundary, parents are not eligible**.
+3. `~/.agents/skills`, then `~/.claude/skills` for the process user.
+
+Missing folders are normal. This uses the Agent's working directory, not shell
+cwd, and never searches sibling projects or recursively searches all of home.
+Canonical root aliases are scanned once, first occurrence retained. Symlinked
+skill folders use the existing scanner; distinct roots with the same skill name
+remain separate catalog entries, not a vendor-specific override/merge. Keep
+`description` frontmatter (an omitted `name` uses its containing directory): malformed/read-failed entries retain the
+usual problems report. Rebuilds rescan files, not changed configuration.
+
+This adds folder conventions only: no `/etc/codex/skills`, vendor bundled,
+managed/cloud skills, plugin synchronization, Claude `!` shell substitutions,
+hooks/commands, or per-turn filesystem watcher.
+Registered plugin skills stay in the separate plugin field and do not enter
+this vanilla catalog. Discovery does not install, execute, or authorize a skill.
+Read the cataloged `location` on demand and review external content before use.
+
+Convention references (checked 2026-10-17):
+[Codex skills](https://developers.openai.com/codex/skills/), currently redirecting
+to [Build skills](https://learn.chatgpt.com/docs/build-skills), and
+[Claude Code skills](https://code.claude.com/docs/en/skills).
+
 ## Public route and first action
 
 ```text
@@ -66,8 +100,8 @@ use its `location` with a bounded `shell` read:
 shell(action="run", input={"command": "sed -n '1,120p' -- \"<location>\"", "timeout": null, "working_dir": null, "async": null, "reminder": null}, reasoning="read cataloged skill, bounded")
 ```
 
-A rebuild rescans `.library/` and configured roots and recomposes the Skills
-section, but a manual rebuild is strongly discouraged as routine (costly full
+A rebuild rescans `.library/`, configured roots, and automatic standard folders
+and recomposes the Skills section, but a manual rebuild is strongly discouraged as routine (costly full
 replay): prefer the next natural refresh/molt, and make one targeted
 `context(action="rebuild", input={}, reasoning="rescan skills catalog")` only when
 the catalog must change in this conversation and a molt is unsuitable. A degraded

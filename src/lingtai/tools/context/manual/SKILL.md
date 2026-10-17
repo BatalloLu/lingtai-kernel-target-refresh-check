@@ -23,7 +23,7 @@ maintenance: |
 Use the schema for routine calls; open this manual for unfamiliar workflows or recovery risk. Context has four operations:
 
 - `summarize` records compact replacements for selected old tool results; it does not rebuild provider context.
-- `rebuild` recomposes all canonical prompt sources, applies summaries, then requests provider replay. Bare `input={}` is valid; durable file edits do not hot-load. It is strongly discouraged as routine compaction, tool-result cleanup, or a ceremony after every Pad/Knowledge/character edit: full replay is costly, can disturb prompt-prefix cache reuse, and still retains the bulky history.
+- `rebuild` recomposes all canonical prompt sources, applies summaries, then requests provider replay. Bare `input={}` is valid; durable file edits do not hot-load. It is strongly discouraged as routine compaction, tool-result cleanup, or a ceremony after every Pad/Knowledge edit: full replay is costly, can disturb prompt-prefix cache reuse, and still retains the bulky history.
 - `molt` sheds conversation while retaining durable files and stores. It is an irreversible boundary, not housekeeping, but it is the preferred deliberate response to substantial or noisy history or sustained pressure when a fresh briefing is worth its cost.
 - `manual` returns the installed `context-manual` without changing context.
 
@@ -45,6 +45,12 @@ A `system.auto_molt` reminder is sent once per continuous IDLE/ASLEEP period ≥
 Ordinary molt/rebuild retains notification delivery identity within this agent process: already delivered events do not automatically replay. Carry still-needed message content and routing IDs in your authorized handoff; new post-molt notices and new producer events still deliver. A new Agent/process restart starts fresh bookkeeping, not cross-crash exactly-once.
 
 ## After a molt
+
+Read applicable AGENTS.md and CLAUDE.md working instructions after fresh context,
+and applicable nested instructions when entering that project scope. Do not
+paste their bodies into private memory or create/overwrite those files merely
+for orientation. Pad and Knowledge remain private memory; legacy character is
+preserved once into Pad, not injected as a separate section.
 
 Read the post-molt notification/`summary_path`, current prompt/Pad, journal index, and new producer messages. An inactivity-triggered molt with no remaining authorized work ends in IDLE waiting for human input or other real work; its own post-molt notice is reorientation, not new work. Treat the briefing as context, not a command to run blindly. Re-check IDs and evidence paths. After reorientation, explicitly choose `continue`, `defer`, or `obsolete` and record that decision in your session journal/pad. The post-molt notification is delivered once and is not re-attached automatically; there is no notification dismiss action, and delivery does not mean any human task is completed (`notification(action="check")` rereads it deliberately). Resume through the originating channel/tool; a saved briefing or provider replay is not proof of delivery.
 

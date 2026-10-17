@@ -16,5 +16,4 @@ maintenance: |
 
 **名相对照**
 
-- `lingtai`：灵台之域（`system/lingtai.md`）；无公开之根。
-- 其文以 `psyche(action='lingtai', input={}, reasoning='...')` 召之，唯还其文，不易其盘，不即更今提示；欲改长存者，以 `shell`（核而后易）继以 `context.rebuild`。
+- `lingtai`：旧灵台之域，今废；私忆归 Pad 与 Knowledge。

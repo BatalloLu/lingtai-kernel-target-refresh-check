@@ -1,8 +1,9 @@
 ---
 name: psyche-tool-contract
-contract_version: 6
+contract_version: 7
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_agents_memory.py
   - src/lingtai/tools/psyche/ANATOMY.md
   - src/lingtai/tools/psyche/BEHAVIORS.md
   - src/lingtai/tools/psyche/__init__.py
@@ -26,8 +27,8 @@ related_files:
 maintenance: |
   This component contract is governed by the root CONTRACT.md and owns the one
   public `psyche` root. Keep the paired ANATOMY.md, the psyche-manual
-  routing table, owner settings provider, Pad reconstruction seam, the four
-  domain Contracts it points to, glossary resources, and focused tests in sync.
+  routing table, owner settings provider, Pad reconstruction seam, the domain
+  Contracts it points to, glossary resources, and focused tests in sync.
   Bump contract_version for any change to the public action inventory or to the
   read-only/settings promise.
   Follow the root Anatomy/Contract pairing and ownership rules, report
@@ -41,14 +42,15 @@ maintenance: |
 Guarded by: [PY001](BEHAVIORS.md#behavior-py001)
 
 
-`psyche` is the single mandatory, model-visible LTP v2 family for the four
-durable domains that survive a molt. The name states the governing human
-contract exactly:
-
-> pad + lingtai + knowledge + skills = psyche
+`psyche` is the single mandatory, model-visible LTP v2 routing family for
+private Pad and Knowledge memory and the Skills catalog. The former separate
+LingTai/character memory domain and `psyche.lingtai` route are retired.
+Applicable AGENTS.md and CLAUDE.md are project working instructions; they are
+read by the agent, never automatically pasted or rewritten. Pad stays injected
+and preserves legacy character once, under the Pad contract.
 
 It is a read-only manual router plus current effective Covenant disclosure and
-owner settings SHOW. Its five manual
+owner settings SHOW. Its four manual
 actions teach the durable domains and routing model; its reserved `settings`
 action exposes exactly six fully redacted Psyche-owned inputs: the existing
 Pad pair plus the two configurable system-prompt pairs. Psyche owns the
@@ -59,7 +61,8 @@ a clean break. Those roots, the `pad.append` action, and the `skills.info` /
 `knowledge.info` actions are retired with no alias, wrapper, or compatibility
 path; those tool names are unknown and fail loudly. The domains' capabilities did
 not move to this family — they moved to private lifecycle ownership documented in
-the four Contracts listed in `related_files`.
+the current domain Contracts listed in `related_files`; LingTai's Contract
+records retirement and points to Pad preservation.
 
 ### Root reuse is not action compatibility
 
@@ -78,8 +81,8 @@ Reusing the root name grants none of them, and the two cases are distinct:
   before any I/O with no alias, wrapper, or compatibility path.
 - **The spelling `manual` is deliberately reused, with new semantics.** It is a
   current, accepted action, so a `manual` call is NOT rejected. What it returns
-  is only the new durable-self routing table (`psyche-manual`, the five-manual map
-  over Pad / 灵台 / Knowledge / Skills). It never returns the dissolved family's
+  is only the new durable-self routing table (`psyche-manual`, the four-manual map
+  over Pad / Knowledge / Skills). It never returns the dissolved family's
   manual or body, and accepting it grants no compatibility with any other old
   action.
 
@@ -104,7 +107,8 @@ on-disk mirror fallback and frontmatter-stripping behavior; the source owners st
 ### The `substrate` prompt section keeps its kernel render mechanics
 
 The `substrate` *prompt section* (`lingtai/prompts/substrate/substrate.md` →
-`system/substrate.md`) keeps its name, complete loaded content, and mirror. Its static
+`system/substrate.md`) keeps its name, loaded-body ownership, and mirror; memory-split wording is
+updated with unified Pad. Its static
 source contribution is carried by the Psyche plan, while the kernel retains the
 render slot and cache mechanics. This family briefly carried the name `substrate`
 as a public root; that root is gone, and nothing keys the two namespaces together.
@@ -178,7 +182,6 @@ and `reasoning` are required. The public action inventory is exactly:
 | Action | Input | Result |
 |---|---|---|
 | `pad` | strict empty `{}` | flat `{status, manual, manual_path}` (+ degraded `error`) — `pad-manual` |
-| `lingtai` | strict empty `{}` | same shape — `lingtai-manual` |
 | `knowledge` | strict empty `{}` | same shape — the installed knowledge manual |
 | `skills` | strict empty `{}` | same shape — the installed skills manual |
 | `instructions` | strict empty `{}` | `{status: "ok", instructions: <current loaded fixed bodies>}`; no source reread |
@@ -188,7 +191,7 @@ and `reasoning` are required. The public action inventory is exactly:
 
 Every call carries required root `action`, `input`, and `reasoning`; a public
 call is spelled `psyche(action="<domain>", input={}, reasoning="...")`. All
-eight children share one strict-empty `input` schema, so every `input` key is an
+seven children share one strict-empty `input` schema, so every `input` key is an
 unknown key. Unknown or missing actions, any `input` key, non-object `input`,
 unknown root fields, and a non-boolean root `summarize` fail with the LTP v2
 envelope errors before any file is read. Root `summarize`, `reasoning`, and the
@@ -197,7 +200,7 @@ intrinsic-only `_tc_id` never become child input.
 ## Adapters
 
 Dispatch and schema composition are the generic `tool_family` infrastructure.
-Five children are built by the shared `build_manual_child` loader, so there is
+Four children are built by the shared `build_manual_child` loader, so there is
 one loader and one result adapter for every manual action — no per-domain
 handler exists to acquire a side effect. The flat
 `{status, manual, manual_path}` presentation shape is rebuilt strictly after
@@ -220,7 +223,7 @@ Psyche schema keys.
 
 `psyche` remains mandatory in `INTRINSICS`, marked `official_plugin=True`: the
 intrinsic entry is only the kernel hook/dispatch shim. `boot` runs the private
-Pad/LingTai composers and registers the static declaration, so the public schema
+unified Pad composer and registers the static declaration, so the public schema
 and handler are claimed and mounted exactly once through the official registrar.
 Neither the binder nor settings provider receives an Agent.
 
@@ -228,11 +231,11 @@ Neither the binder nor settings provider receives an Agent.
 
 - Schema and dispatch derive from the same fixed child registry; the advertised
   action enum cannot drift from the dispatch keys.
-- The exact action order is `pad | lingtai | knowledge | skills | instructions | covenant |
+- The exact action order is `pad | knowledge | skills | instructions | covenant |
   settings | manual`; the reserved settings action is immediately before `manual`.
 - Every child is mutation-free. A future mutating action does not belong in this
   family; durable mutation happens through `shell`, never through Psyche.
-- The four domain actions load the domains' existing manuals as progressively
+- The three domain actions load the domains' existing manuals as progressively
   disclosed references. This router MUST NOT copy those manual bodies inline.
 - Catalog composition, configured Skills paths, disabled-domain behavior, and the
   one-time Knowledge legacy migration remain owned by those capabilities'
@@ -264,7 +267,7 @@ Neither the binder nor settings provider receives an Agent.
   symlink document, invalid bytes/JSON/schema, read race, or I/O failure raises
   one typed Psyche settings error before prompt publication. It has no
   environment layer, mutation action, migration, or writeback.
-- Psyche MUST NOT expose LingTai inputs, Skills paths, content, paths, auth, or
+- Psyche MUST NOT expose retired character inputs, Skills paths, content, paths, auth, or
   any other row. System MUST NOT duplicate the six Psyche prompt rows.
 - `summarize` profile: **short-result** for every action.
 
@@ -275,7 +278,7 @@ Automated recipe retired by test pruning (2026-10-12).
 No replacement conformance claimed for: test_psyche_family, test_psyche_prompt_settings.
 ```
 
-These pin the exact eight-action inventory and order; strict-empty input on every
+These pin the exact seven-action inventory and order; strict-empty input on every
 child; strict bounded owner parsing and file-over-inline resolution; ambient
 edit isolation; last-good preservation after failed reconstruction; exact
 five-field projection, six-row order, defaults, anchors, and full redaction;
@@ -288,7 +291,7 @@ exact production owner opt-ins (`system` plus this intrinsic).
 ## Maintenance
 
 Keep `related_files` complete and repo-relative, including the paired
-`ANATOMY.md`, the psyche manual, the four domain Contracts, and the contract
+`ANATOMY.md`, the psyche manual, the domain Contracts, and the contract
 tests. Update the Port, this contract, the manual, and the tests together when
 the action inventory or the read-only promise changes; update the paired Anatomy
 when structure changes. Follow the root Anatomy/Contract pairing and ownership
@@ -300,7 +303,7 @@ The kernel renderer projects the loaded `principle`, Covenant route, `substrate`
 `procedures`, and assembled `meta_guidance` into one short resident entry.
 Internal source owners, protected stored bodies, packaged mirrors/fallback,
 transactional rollback, and two cache batches remain intact. `base_prompt` stays
-resident immediately after that entry; catalogs, identity, character and Pad
+resident immediately after that entry; catalogs, mechanical identity and Pad
 remain separate dynamic owners. No generic section selector or opt-out exists.
 
 `instructions` takes strict empty input and returns `{status: "ok", instructions:

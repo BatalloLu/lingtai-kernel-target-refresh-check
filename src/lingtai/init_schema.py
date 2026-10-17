@@ -298,19 +298,12 @@ def validate_init(data: dict) -> list[str]:
         "manifest": dict,
     }, prefix="")
 
-    # Required text fields: inline value OR _file path (at least one required).
-    #
-    # `lingtai` is intentionally NOT required. It selects one of two modes:
-    # a nonempty resolved value (inline or from `lingtai_file`) is a forced
-    # identity value written to system/lingtai.md during each reconstruction;
-    # an absent or empty value selects self-evolve mode and leaves that file
-    # untouched. In both cases the internal LingTai composer renders the file as
-    # the `character` prompt section during canonical context reconstruction. The field was renamed from `prompt` /
-    # `prompt_file`; there is still NO legacy alias — a stale `prompt` remains an
-    # unknown-field warning rather than being reintroduced.
-    #
-    # Note: top-level "soul" / "soul_file" are retired and kept in TOP_KNOWN
-    # for silent ignore (no warning); the Soul subsystem no longer exists.
+    # Old character seed keys remain accepted for one-way Pad preservation.
+    # They no longer select a forced/self-evolve mode and are never rewritten.
+    for key in ("lingtai", "lingtai_file"):
+        if key in data and not isinstance(data[key], str):
+            raise ValueError(f"{key}: expected str, got {type(data[key]).__name__}")
+
     for key in ("pad",):
         file_key = f"{key}_file"
         has_inline = key in data
@@ -320,16 +313,6 @@ def validate_init(data: dict) -> list[str]:
         if has_inline and not isinstance(data[key], str):
             raise ValueError(f"{key}: expected str, got {type(data[key]).__name__}")
         if has_file and not isinstance(data[file_key], str):
-            raise ValueError(f"{file_key}: expected str, got {type(data[file_key]).__name__}")
-
-    # `lingtai` remains an optional init seed. Psyche's base_prompt, covenant,
-    # and comment pairs are intentionally absent: their legacy init spellings
-    # are known-but-inert and their strict schema lives in settings/psyche.json.
-    for key in ("lingtai",):
-        file_key = f"{key}_file"
-        if key in data and not isinstance(data[key], str):
-            raise ValueError(f"{key}: expected str, got {type(data[key]).__name__}")
-        if file_key in data and not isinstance(data[file_key], str):
             raise ValueError(f"{file_key}: expected str, got {type(data[file_key]).__name__}")
 
     # Optional top-level fields — check types for known ones

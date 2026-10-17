@@ -1,5 +1,6 @@
 ---
 related_files:
+  - tests/test_agents_memory.py
   - src/lingtai/tools/psyche/BEHAVIORS.md
   - src/lingtai/tools/psyche/CONTRACT.md
   - src/lingtai/tools/ANATOMY.md
@@ -34,8 +35,7 @@ maintenance: |
 ---
 # tools/psyche
 
-Mandatory LTP v2 family that is the one public root for the four durable
-domains (`pad + lingtai + knowledge + skills = psyche`). Five actions are
+Mandatory LTP v2 family that is the one public root for private Pad and Knowledge memory plus the Skills catalog. Four actions are
 read-only manual loaders; `covenant` discloses the current loaded constitution
 body through the existing narrow host Port; the reserved `settings` child returns six fully
 redacted Psyche-owned rows: Pad plus the two configurable prompt pairs. The
@@ -51,12 +51,12 @@ registrar.
 
 - `DOMAIN_MANUALS` — the one fixed registry mapping each domain action to the
   installed manual it loads (`src/lingtai/tools/psyche/__init__.py:37-42`).
-- `ACTION_ORDER` — the exact public inventory `pad | lingtai | knowledge |
+- `ACTION_ORDER` — the exact public inventory `pad | knowledge |
   skills | instructions | covenant | settings | manual`, derived from the composed family so injected
   settings cannot drift (`src/lingtai/tools/psyche/__init__.py:172-187`).
 - `_ROUTER_MANUAL` — the routing-table manual name loaded by the reserved
   `manual` child (`src/lingtai/tools/psyche/__init__.py:45-50`).
-- `_build_children` — builds the Covenant loaded-body child and all five manual children from the shared
+- `_build_children` — builds the Covenant loaded-body child and all four manual children from the shared
   `build_manual_child` loader with one strict-empty input schema
   (`src/lingtai/tools/psyche/__init__.py:66-89`).
 - `_FAMILY`, `_ACTION_ENUM_DESCRIPTION`, `get_description`, `get_schema` —
@@ -76,12 +76,12 @@ registrar.
 - `_adapt_manual_result` — the one post-dispatch Host adapter producing the flat
   `{status, manual, manual_path}` shape
   (`src/lingtai/tools/psyche/__init__.py:128-137`).
-- `_bind` / `DECLARATION` — statically declare the four domain routes and Covenant disclosure plus
+- `_bind` / `DECLARATION` — statically declare the three domain routes and Covenant disclosure plus
   reserved settings/manual children, bind only `workdir`/`psyche_settings`, drop
   intrinsic `_tc_id`, dispatch through the generic family, and preserve
   Psyche-shaped unknown-action errors
   (`src/lingtai/tools/psyche/__init__.py:140-183`).
-- `boot` — lifecycle only: runs the Pad and LingTai domains' private composers
+- `boot` — lifecycle only: runs the unified Pad private composer
   once at construction, since those packages are no longer registered intrinsics
   and the kernel boot loop no longer reaches them
   (`src/lingtai/tools/psyche/__init__.py:190-203`).
@@ -96,14 +96,14 @@ registrar.
   `tool_family/manual.py::build_manual_child`, which reads
   `.library/intrinsic/capabilities/<name>/SKILL.md` via `tools/_manual.py`.
   Generic settings injection places `settings` immediately before `manual`.
-- The four domain manuals are installed by
-  `Agent._install_intrinsic_manuals`: `pad-manual` and `lingtai-manual` from
+- The three domain manuals are installed by
+  `Agent._install_intrinsic_manuals`: `pad-manual` from
   `intrinsic_skills/`, `knowledge` and `skills` from those packages' own
   `manual/` directories. The routing table ships as
   `intrinsic_skills/psyche-manual/`.
-- `boot` imports `pad._pad_load` and `lingtai._lingtai_load` and calls them once
-  at construction; those are the domains' own composers, the same ones
-  `Agent._reload_prompt_sections` reuses. The Pad/LingTai domain packages and
+- `boot` imports `pad._pad_load` and calls it once
+  at construction; that is the domain's own composer, the same one
+  `Agent._reload_prompt_sections` reuses. The Pad domain package and
   catalog composers do not import Psyche. The sole reverse composition edge is
   `Agent._reload_prompt_sections` importing this package's prompt-plan composer;
   no Psyche public action reaches that edge.
@@ -123,8 +123,8 @@ registrar.
 ## Composition
 
 Parent: [`tools/ANATOMY.md`](../ANATOMY.md). Paired interface promise:
-[`CONTRACT.md`](CONTRACT.md). Structurally relevant siblings are the four domain
-owners — [`pad`](../pad/ANATOMY.md), [`lingtai`](../lingtai/ANATOMY.md),
+[`CONTRACT.md`](CONTRACT.md). Structurally relevant siblings are the three domain
+owners — [`pad`](../pad/ANATOMY.md),
 [`knowledge`](../knowledge/ANATOMY.md), [`skills`](../skills/ANATOMY.md) — which
 retain their private composers, catalogs, and lifecycle; this package routes to
 their manuals and reads only Pad configuration plus its four prompt-owner inputs.
@@ -150,9 +150,9 @@ composer runs.
 ## Notes
 
 The prompt section named `substrate` is a different concept from this family's
-old public root name; its kernel render slot and content bytes are unchanged.
+old public root name; its kernel render slot and fixed owner remain intact.
 The old `psyche` family's actions live in `context`/`system` and are not
-reachable here. Both points are owned by the paired Contract. The five manual
+reachable here. Both points are owned by the paired Contract. The four manual
 children share one loader and settings is the generic SHOW-only child; every
 child has strict-empty input. The read-only promise is structural, not
 conventional.
@@ -163,8 +163,11 @@ The kernel renderer projects the loaded `principle`, Covenant route, `substrate`
 `procedures`, and assembled `meta_guidance` into one short resident entry.
 Internal source owners, protected stored bodies, packaged mirrors/fallback,
 transactional rollback, and two cache batches remain intact. `base_prompt` stays
-resident immediately after that entry; catalogs, identity, character and Pad
+resident immediately after that entry; catalogs, mechanical identity and Pad
 remain separate dynamic owners. No generic section selector or opt-out exists.
+The kernel resident entry recommends applicable AGENTS.md/CLAUDE.md at startup
+and after fresh context, and nested project instructions upon scope entry. It
+neither pastes their bodies nor creates or overwrites those files.
 
 `instructions` takes strict empty input and returns `{status: "ok", instructions:
 <current loaded fixed bodies>}` through `PsycheSettingsPort.read_instructions`.
