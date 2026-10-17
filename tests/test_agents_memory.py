@@ -52,6 +52,9 @@ def test_real_init_and_lifecycle_keep_unified_pad_and_instruction_guidance(
             b"INITIAL PAD\n\nLEGACY IDENTITY\r\n\n\nCONFIGURED LEGACY"
         )
         prompt = agent._build_system_prompt()
+        from lingtai.kernel.prompt import AGENT_META_INSTRUCTION
+        assert prompt.count(AGENT_META_INSTRUCTION) == 1
+        assert "".join(agent._prompt_manager.render_batches()).count(AGENT_META_INSTRUCTION) == 1
         assert "INITIAL PAD" in prompt and "LEGACY IDENTITY" in prompt
         schemas = {schema.name: schema for schema in agent._build_tool_schemas()}
         assert "AGENTS.md and CLAUDE.md" in schemas["psyche"].description

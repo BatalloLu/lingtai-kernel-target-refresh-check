@@ -193,7 +193,10 @@ and `override_policy`.
 
 ## Current resident projection and retirement
 
-The one resident fixed prefix is `kernel/prompt.py::INSTRUCTIONS_ENTRY`.
+The one resident fixed prefix is `kernel/prompt.py::INSTRUCTIONS_ENTRY`. It
+contains the complete runtime-state versus delivered-notification interpretation
+rule (`AGENT_META_INSTRUCTION`), also used by the daemon static prompt and
+optional full readme. New metadata construction does not repeat that prose.
 Principle/substrate/procedures retain their full packaged loaded bodies and
 mirrors, disclosed by `psyche.instructions`; assembled meta guidance and adapter
 static rules use the same route. Covenant fulltext uses `psyche.covenant`; its

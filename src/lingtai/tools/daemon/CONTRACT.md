@@ -718,7 +718,11 @@ carries the canonical `_meta.agent_meta` sidecar. Its `agent_state` contains onl
 that daemon's runtime identity/round counters, current-call and session token
 counters, and provider-context token/window/ratio state. It deliberately omits
 the parent agent's notification and communication state; only the latest
-`agent_meta` snapshot is current and older snapshots are historical traces.
+`agent_meta.agent_state` snapshot is current and older snapshots are historical
+traces. The static daemon prompt carries the full interpretation rule, including
+the continuing usability of delivered notification records subject to newer human
+instructions and producer safeguards; empty later tails do not resolve them.
+New sidecars omit `agent_meta.instruction`; historical sidecars are not rewritten.
 
 The daemon-owned runtime state uses provider-reported input tokens when available
 (and the session estimate only when provider usage is unavailable) against the

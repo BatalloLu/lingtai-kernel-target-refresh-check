@@ -32,8 +32,9 @@ injection_contract:
   override_policy: not_user_overridable
   notes: >
     This is a loaded source owner, not a separate resident fulltext section.
-    The kernel renders one short entry; psyche.instructions reads current loaded
-    fixed detail without disk I/O. Covenant fulltext remains psyche.covenant.
+    The kernel renders one short entry containing the complete latest-state versus
+    delivered-notification interpretation rule; new metadata omits agent_meta.instruction.
+    psyche.instructions reads current loaded fixed detail without disk I/O. Covenant fulltext remains psyche.covenant.
     The rendered body is GENERATED from the guidance Markdown catalog under
     src/lingtai/prompts/meta_guidance/catalog/ (INDEX.md + one <id>.md per section), plus
     the generated `_meta` readme and the active adapter's static rules. There is no single
