@@ -402,10 +402,10 @@ verification and are the only code the task runs.
 3. Inspect `src/lingtai/tools/tool_family/__init__.py` and
    `src/lingtai/mcp_servers/cloud_mail/_family.py`: both root schemas advertise
    boolean `summarize` with `default: true`, an exact-raw opt-out, and a retention
-   specification in `reasoning`. The shared schema encourages leaving it on for
-   routine Shell output and manual lookups; a tool/action name alone is not an
-   opt-out reason. Required verbatim gates and exact names/paths/fields,
-   source/diffs/evidence still use explicit false when this task needs them.
+   specification in `reasoning`. The shared schema recommends summaries for
+   anticipated long, bulky output and explicit false for expected short results
+   or required exact text. Retention targets name status, key fields, counts
+   and evidence; the summarizer compresses faithfully without extra conclusions.
 
 ### Expected evidence
 

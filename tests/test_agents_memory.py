@@ -51,6 +51,10 @@ def test_real_init_and_lifecycle_keep_unified_pad_and_instruction_guidance(
         assert "INITIAL PAD" in prompt and "LEGACY IDENTITY" in prompt
         assert "AGENTS.md and CLAUDE.md" in prompt
         assert "PRIVATE PROJECT BODY" not in prompt
+        instructions_body = agent._prompt_manager.read_instructions()
+        assert "anticipated long, bulky" in instructions_body
+        assert "expected short results" in instructions_body
+        assert "CLEAR retention targets" in instructions_body
         assert agent._prompt_manager.read_section("character") is None
         pad.write_text("UPDATED PRIVATE MEMORY")
         for boundary in ("rebuild", "refresh", "molt"):
