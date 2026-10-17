@@ -358,7 +358,7 @@ class AvatarManager:
         """Append a single event record to the ledger."""
         self._ledger_path.parent.mkdir(parents=True, exist_ok=True)
         record = {"ts": time.time(), "event": event, "name": name, **fields}
-        with open(self._ledger_path, "a") as f:
+        with open(self._ledger_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
     # ------------------------------------------------------------------

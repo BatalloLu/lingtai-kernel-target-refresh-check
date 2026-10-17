@@ -421,7 +421,7 @@ def _context_molt(agent, args: dict) -> dict:
     archive_path = history_dir / "chat_history_archive.jsonl"
     try:
         if current_path.is_file():
-            with open(archive_path, "a") as archive:
+            with open(archive_path, "a", encoding="utf-8") as archive:
                 archive.write(current_path.read_text(encoding="utf-8"))
             current_path.unlink()
     except OSError:
@@ -691,7 +691,7 @@ def context_forget(agent, *, source: str = "warning_ladder", attempts: int = 0,
     archive_path = history_dir / "chat_history_archive.jsonl"
     try:
         if current_path.is_file():
-            with open(archive_path, "a") as archive:
+            with open(archive_path, "a", encoding="utf-8") as archive:
                 archive.write(current_path.read_text(encoding="utf-8"))
             current_path.unlink()
     except OSError:
