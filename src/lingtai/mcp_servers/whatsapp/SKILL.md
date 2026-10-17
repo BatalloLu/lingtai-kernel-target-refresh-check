@@ -253,9 +253,14 @@ stable bridge message ID exists, it is namespaced by sender and recorded in the
 persistent `inbox_seen.json` replay guard; a redelivery is suppressed. The
 bounded guard retains up to 5000 keys. Messages without a stable upstream ID
 are not deduplicated; they receive a local archive UUID for storage and
-notification, and that UUID is not a valid reply/react target. File/event
-components are sanitized. When a stable bridge ID exists, reply/react uses that
-opaque bridge-supplied value.
+notification, and that UUID is not a valid reply/react target. Archive path
+components are sanitized; the LICC filename is a bounded `wa-` plus SHA-256
+of the unambiguous sender/message-ID tuple, not a reply target. When a stable
+bridge ID exists, reply/react uses that opaque bridge-supplied value.
+
+Archiving and recording the replay guard still precede LICC publication. A
+failed publication logs a content-free warning; it does not retry, roll back
+the archive/guard, or replay historical messages.
 
 ## SIDE EFFECTS / RISK / ERRORS
 
