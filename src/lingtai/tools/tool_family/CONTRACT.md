@@ -115,7 +115,9 @@ package does not own or enforce. Today `web`, `mcp`, `plugin`, `vision`,
 `telegram`, `feishu`, `imap`, `wechat`, `whatsapp`, and `cloud_mail` are on that
 allowlist. Their root control defaults to `true` in both schema and runtime;
 explicit canonical `false` always requests raw presentation, even alongside
-legacy `summary=true`. Present null/malformed values retain literal-True
+legacy `summary=true`. Caller guidance selects summaries for anticipated long,
+bulky output and raw presentation for expected short results or required exact
+text, with explicit retention targets rather than extra interpretation. Present null/malformed values retain literal-True
 semantics and dispatch validation; unrelated external domain fields are not
 reinterpreted. Guarded by [LP003](../BEHAVIORS.md#behavior-lp003). Thus `summarize` is
 meaningful for the families that use this infrastructure; a family adopting

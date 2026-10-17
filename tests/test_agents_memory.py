@@ -93,6 +93,10 @@ def test_real_init_and_lifecycle_keep_unified_pad_and_instruction_guidance(
             assert disclose("covenant")["covenant"] == "EXACT OPTIONAL COVENANT"
             assert disclose(reference="covenant")["instructions"] == "EXACT OPTIONAL COVENANT"
         assert "PRIVATE PROJECT BODY" not in prompt
+        instructions_body = agent._prompt_manager.read_instructions("meta_guidance")
+        assert "anticipated long, bulky" in instructions_body
+        assert "expected short results" in instructions_body
+        assert "CLEAR retention targets" in instructions_body
         assert agent._prompt_manager.read_section("character") is None
         pad.write_text("UPDATED PRIVATE MEMORY")
         for boundary in ("rebuild", "refresh", "molt"):

@@ -375,3 +375,32 @@ def test_requested_priority_price_fields_are_not_standard_or_applied_tier_proof(
     text = session_cost_text(cost, OfflineCatalog(entry))
     assert text.startswith("total ~$0.0156")  # standard parent + doubled requested-tier helper
     assert text.endswith("requested-tier est.") and "partial" not in text
+
+
+def test_selective_summary_guidance_keeps_default_and_exact_short_receipt():
+    from lingtai.tools.psyche import get_schema
+    from lingtai.kernel.tool_result_summary import SUMMARIZER_SYSTEM_PROMPT
+
+    control = get_schema()["properties"]["summarize"]
+    assert control["default"] is True
+    assert "long, bulky" in control["description"]
+    assert "short results" in control["description"]
+    assert "CLEAR" in control["description"]
+    assert "status, key fields" in control["description"]
+    assert "unprinted check is not evidence" in SUMMARIZER_SYSTEM_PROMPT
+    assert "critique of the reason" in SUMMARIZER_SYSTEM_PROMPT
+    assert "End with one brief" not in SUMMARIZER_SYSTEM_PROMPT
+    from lingtai.kernel.tool_result_summary import _build_summarizer_prompt
+    prompt = _build_summarizer_prompt("Retain status and assertion count", "OK 3 checks")
+    assert "OK 3 checks" in prompt
+    assert "UNTRUSTED TOOL RESULT" in prompt
+    assert "sentence critiquing" not in prompt
+    raw = {"status": "ok", "exit_code": 0, "stdout": "verified 42"}
+
+    def forbidden(*_args):
+        raise AssertionError("explicit false must not call the summarizer")
+
+    assert maybe_summarize_result(
+        raw, args={"summarize": False}, tool_name="shell",
+        tool_call_id="short-receipt", summarizer_fn=forbidden,
+    ) is raw
