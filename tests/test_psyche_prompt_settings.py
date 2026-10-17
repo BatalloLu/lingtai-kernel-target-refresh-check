@@ -851,7 +851,8 @@ def test_loaded_memory_warning_counts_pins_and_dedups_lifecycle(tmp_path, monkey
         agent._reconstruct_context()
         agent._build_system_prompt()
         pad = agent._prompt_manager.read_section("pad")
-        character = agent._prompt_manager.read_section("character")
+        assert agent._prompt_manager.read_section("character") is None
+        assert "live character" in pad
         assert "PINNED" in pad
         monkeypatch.setenv("LINGTAI_MEMORY_LENGTH_WARNING_CHARS", "20")
         from lingtai.tools.system.settings import _environment_current
@@ -861,7 +862,7 @@ def test_loaded_memory_warning_counts_pins_and_dedups_lifecycle(tmp_path, monkey
         agent._publish_memory_length_warning("refresh-test")
         data = json.loads(path.read_text())["data"]
         assert data == {"lifecycle_id": "refresh-test", "pad_chars": len(pad),
-                        "character_chars": len(character), "total_chars": len(pad)+len(character),
+                        "total_chars": len(pad),
                         "limit_chars": 20}
         prior = path.read_bytes()
         # Ambient edits are not the loaded prompt; no content mutation/reload.
@@ -871,7 +872,7 @@ def test_loaded_memory_warning_counts_pins_and_dedups_lifecycle(tmp_path, monkey
         agent._publish_memory_length_warning("molt-2")
         assert json.loads(path.read_text())["data"]["pad_chars"] == len(pad)
         assert (system / "pad.md").read_text() == "ambient disk edit"
-        monkeypatch.setenv("LINGTAI_MEMORY_LENGTH_WARNING_CHARS", str(len(pad)+len(character)))
+        monkeypatch.setenv("LINGTAI_MEMORY_LENGTH_WARNING_CHARS", str(len(pad)))
         agent._publish_memory_length_warning("molt-3")
         assert not path.exists()  # equality is below-warning, clear current only
         assert agent._prompt_manager.read_section("pad") == pad

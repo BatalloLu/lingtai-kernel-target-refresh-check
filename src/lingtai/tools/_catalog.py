@@ -60,11 +60,13 @@ def parse_markdown_catalog_file(
     """
     try:
         text = path.read_text(encoding="utf-8")
-    except OSError as e:
+    except (OSError, UnicodeError) as e:
         return None, {"folder": label, "reason": f"cannot read {filename}: {e}"}
 
     fm = parse_frontmatter(text)
     name = fm.get("name", "")
+    if filename == "SKILL.md" and "name" not in fm:
+        name = path.parent.name
     description = fm.get("description", "")
     if not name:
         return None, {"folder": label, "reason": f"{filename} missing required frontmatter field: name"}

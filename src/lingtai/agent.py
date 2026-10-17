@@ -392,7 +392,7 @@ class Agent(BaseAgent):
             super().__init__(*args, **kwargs)
             # One canonical full-context reconstruction hook serves both passive
             # molt and the public active context.rebuild operation. Intrinsic
-            # Pad/LingTai boots do initial composition only; they never register
+            # Pad boot does initial composition only; it never registers
             # competing section-specific post-molt loaders.
             self._post_molt_hooks = [self._reconstruct_context]
             # Compose the preset-loader hook so daemon/system tools resolve
@@ -2123,6 +2123,11 @@ class Agent(BaseAgent):
             _resolve_capabilities,
         )
         psyche_pad_file = data.get("pad_file")
+        # Old init remains bootable. Capture its one-way memory input before
+        # teardown; never rewrite it into the retired character source.
+        from lingtai.tools.pad._pad import _legacy_memory_seed
+
+        legacy_memory_seed = _legacy_memory_seed(self._working_dir, data)
         env_file = data.get("env_file")
         import os
 
@@ -2132,13 +2137,13 @@ class Agent(BaseAgent):
         if overwrite_env_file:
             os.environ.pop("LINGTAI_REFRESH_ENV_OVERWRITE", None)
 
-        # Resolve only live init-owned Pad and LingTai seed pointers. Psyche's
+        # Resolve only live init-owned Pad seed pointers. Psyche's
         # six prompt pairs are compatibility-known but inert in init.json; the
         # prevalidated owner candidate is passed to final reconstruction below.
         # Note: top-level "soul" / "soul_file" and "manifest.soul" are retired
         # and remain compatibility-known; they are intentionally not resolved
         # here; the shared reader reports them without rewriting init.json.
-        for key in ("pad", "lingtai"):
+        for key in ("pad",):
             file_key = f"{key}_file"
             if file_key in data:
                 data[key] = resolve_file(data.get(key), data.pop(file_key))
@@ -2402,6 +2407,12 @@ class Agent(BaseAgent):
 
         # Mandatory declared intrinsics are mounted through their own official
         # registrar wiring on refresh as well as on first construction.
+        # Seed before Psyche's Pad boot can merge legacy memory into an empty
+        # body; otherwise a configured initial Pad would be silently skipped.
+        from lingtai.tools.pad._pad import _merge_legacy_memory, _seed_pad
+
+        _seed_pad(self._working_dir / "system", data.get("pad") or "")
+        _merge_legacy_memory(self._working_dir / "system", legacy_memory_seed)
         self._boot_official_intrinsics()
 
         # Install intrinsic manuals (wipe-and-rewrite .library/intrinsic/)
@@ -2410,7 +2421,7 @@ class Agent(BaseAgent):
 
         # Molt passively invokes the exact same full reconstruction contract as
         # refresh and active context.rebuild — one hook, no section-specific
-        # Pad/LingTai aliases or ordering dependency.
+        # Pad aliases or ordering dependency.
         self._post_molt_hooks = [self._reconstruct_context]
 
         # Reload MCP
@@ -2454,19 +2465,18 @@ class Agent(BaseAgent):
             from lingtai.kernel.notifications import clear, submit
 
             pad_chars = len(self._prompt_manager.read_section("pad") or "")
-            character_chars = len(self._prompt_manager.read_section("character") or "")
-            total = pad_chars + character_chars
+            total = pad_chars
             limit = memory_length_warning_chars()
             if total > limit:
                 submit(
                     self, "memory-length", header="Loaded memory exceeds character threshold",
                     icon="🧠", priority="high",
                     data={"lifecycle_id": lifecycle_id, "pad_chars": pad_chars,
-                          "character_chars": character_chars, "total_chars": total,
+                          "total_chars": total,
                           "limit_chars": limit},
                     instructions=(
                         f"Loaded Pad (including pinned references): {pad_chars} characters; "
-                        f"Character: {character_chars}; total {total} exceeds {limit}. "
+                        f"Total {total} exceeds {limit}. "
                         "Review and archive stale/duplicate memory in its proper durable owner. "
                         "This is advisory only: no content was erased or truncated. "
                         "One notification per successful molt/refresh, not per turn."
@@ -2476,7 +2486,7 @@ class Agent(BaseAgent):
                 clear(self, "memory-length")
             self._memory_length_lifecycle_id = lifecycle_id
             self._log("memory_length_checked", lifecycle_id=lifecycle_id,
-                      pad_chars=pad_chars, character_chars=character_chars,
+                      pad_chars=pad_chars,
                       total_chars=total, limit_chars=limit, over_limit=total > limit)
         except Exception as error:
             self._log("memory_length_warning_failed", error=str(error))
@@ -2495,7 +2505,7 @@ class Agent(BaseAgent):
         the already-resolved init mapping during refresh; active rebuild and molt
         omit it so configured and durable sources are re-read from scratch. The
         final flush is deliberately last, ensuring provider replay observes the
-        fully composed prompt rather than an intermediate Pad/LingTai section.
+        fully composed prompt rather than an intermediate Pad section.
         Refresh supplies its pre-teardown Psyche candidate; other callers resolve
         one candidate before the transaction begins.
         """
@@ -2594,11 +2604,11 @@ class Agent(BaseAgent):
             psyche_pad_file = resolved_pad_file
 
         if resolve_init_files:
-            # Resolve active init-owned Pad and LingTai seed pointers. Psyche's
+            # Resolve active init-owned Pad seed pointers. Psyche's
             # prompt-plan inputs are already resolved and are never copied into
             # this effective init mapping.
             from lingtai.kernel.config_resolve import resolve_file
-            for key in ("pad", "lingtai"):
+            for key in ("pad",):
                 file_key = f"{key}_file"
                 if file_key in data:
                     data[key] = resolve_file(data.get(key), data.pop(file_key))
@@ -2684,38 +2694,18 @@ class Agent(BaseAgent):
         else:
             self._prompt_manager.delete_section("covenant")
 
-        # --- Character (configured or self-authored identity — system/lingtai.md alone) ---
-        # `lingtai` is the configured 灵台 / character value: a value supplied inline or
-        # resolved from `lingtai_file` before this point is authoritative when nonempty and replaces
-        # system/lingtai.md during boot, refresh, and post-molt reconstruction.
-        # An absent or empty resolved value selects self-evolve mode and leaves
-        # the existing system/lingtai.md untouched. In either mode the
-        # canonical composer loads that file into `character`. This is the
-        # agent's OWN voice — distinct from `covenant` above, from the
-        # third-party `base_prompt` injection point, and from the mechanical
-        # `identity` section written by BaseAgent. (Renamed from `prompt`; no
-        # legacy alias.)
-        lingtai_seed = data.get("lingtai", "")
-        if lingtai_seed:
-            (system_dir / "lingtai.md").write_text(lingtai_seed, encoding="utf-8")
-        # Delegate to the single canonical composer so boot/refresh/molt all
-        # produce byte-identical `character` content and no longer depend on
-        # post-molt hook ordering.
-        from lingtai.tools.lingtai import _lingtai_load
-        _lingtai_load(self, {}, publish=False)
-
         # --- Pad (pad.md + pinned pad_append.json references) ---
         # Configured Pad content is an initial seed, not an authoritative
         # rewrite: preserve a nonempty durable Pad authored after startup.
         pad_seed = data.get("pad") or ""
-        if not isinstance(pad_seed, str):
-            raise RuntimeError("resolved pad must be a string or null")
-        pad_path = system_dir / "pad.md"
-        if pad_seed and (
-            not pad_path.is_file()
-            or pad_path.read_text(encoding="utf-8") == ""
-        ):
-            pad_path.write_text(pad_seed, encoding="utf-8")
+        from lingtai.tools.pad._pad import (
+            _legacy_memory_seed, _merge_legacy_memory, _seed_pad,
+        )
+
+        _seed_pad(system_dir, pad_seed)
+        _merge_legacy_memory(
+            system_dir, _legacy_memory_seed(self._working_dir, data),
+        )
 
         # Delegate to the single canonical composer rather than re-reading
         # pad.md alone — otherwise the post-molt hook ordering silently drops
@@ -2724,10 +2714,8 @@ class Agent(BaseAgent):
         _pad_load(self, {}, publish=False)
 
         # --- Skills and Knowledge catalogs ---
-        # The four durable substrate domains are Pad, LingTai, Knowledge, and
-        # Skills, and this one reconstruction contract must re-read and
-        # recompose all four. Pad and LingTai are composed above from their
-        # durable files; these two are composed from their on-disk catalogs.
+        # Pad is composed above from unified durable memory; Knowledge and
+        # Skills keep their existing private catalog composers.
         #
         # Composition only. Knowledge's one-time legacy JSON migration is
         # deliberately NOT reachable from here — it writes inside `knowledge/`

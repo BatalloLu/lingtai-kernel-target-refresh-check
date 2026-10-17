@@ -939,14 +939,14 @@ envelope.
 
 **Current state (the paragraph above is migration history).** That family no
 longer exists, and neither do the `pad`/`lingtai`/`knowledge`/`skills` public
-roots that briefly succeeded it. The four durable domains are now taught by one
-read-only root, `psyche` (`pad | lingtai | knowledge | skills | settings |
-manual`,
-`src/lingtai/tools/psyche/CONTRACT.md`, the equation
-`pad + lingtai + knowledge + skills = psyche`): five actions return the domain
-or routing manual; `settings` returns the eight fully redacted Psyche-owned Pad
-and configurable-prompt rows. Every action mutates nothing. Those four packages remain as private lifecycle
-owners — Pad/LingTai composers and the Skills/Knowledge catalogs plus the
+roots that briefly succeeded it. Private Pad and Knowledge memory plus the
+Skills catalog are taught by `psyche` (`pad | knowledge | skills | instructions |
+covenant | settings | manual`, `src/lingtai/tools/psyche/CONTRACT.md`). Four
+manual routes return domain/router guidance; instructions and Covenant disclose
+loaded bodies; settings returns six fully redacted owner rows. Every public
+action is read-only. Pad now preserves legacy character once; no separate
+character loader or `psyche.lingtai` route remains. Pad and Skills/Knowledge keep
+private composition/catalog ownership, including the
 Knowledge legacy migration — and register no tool. Durable mutation of those
 sources happens through `shell` (verified exact edits), which never hot-loads
 prompt state; the retired `pad.append`, `skills.info`, and `knowledge.info`

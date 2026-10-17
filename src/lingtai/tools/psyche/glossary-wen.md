@@ -16,5 +16,4 @@ maintenance: |
 
 **名相对照**
 
-- `psyche`：跨蜕犹存四域（pad、灵台、knowledge、skills）之一门；pad + lingtai + knowledge + skills = psyche。召名仍用 canonical English。
-- 七召皆唯观而 input 严空：五召载文，`covenant` 示当下生效约文，`settings` 示五栏且悉蔽之 Pad 配置；旧 psyche 之 molt、summarize、名号诸事已归 context 与 system，此门不为其别名。
+- `psyche`：跨蜕犹存诸域（pad、knowledge、skills）之一门。召名仍用 canonical English。

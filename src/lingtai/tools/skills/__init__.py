@@ -15,10 +15,11 @@ recursively and contributes to the YAML skill catalog injected into the
 system prompt's ``skills`` section. Paths may be absolute, relative to the
 agent working dir, or tilde-prefixed.
 
-One more path source is composed in, not declared here: every Agent Plugin
-declared in ``manifest.plugins`` contributes each of its containment-validated
-skill directories, which ``Agent`` records on the agent at boot registration.
-See ``_compose_paths``.
+Standard ``.agents/skills`` and ``.claude/skills`` roots are discovered from
+the agent working directory through its nearest Git or validated conventional
+LingTai project boundary, plus the two user-home roots. Without a boundary,
+only the working directory and user roots are considered. Agent Plugin skills remain in the separate ``plugins``
+prompt field; they are never composed into this vanilla catalog.
 
 This capability is pure presentation: it scans whatever is on disk and builds
 the catalog. It never writes to ``.library/``. File installation is the
@@ -88,13 +89,10 @@ def _scan(directory: Path) -> tuple[list[dict], list[dict]]:
 def _scan_one_skill(directory: Path) -> tuple[list[dict], list[dict]]:
     """Scan a path that *is* a skill directory rather than a collection of them.
 
-    ``_scan`` looks for ``<child>/SKILL.md`` under the path it is given. A
-    registered Agent Plugin contributes the individual skill directories that
-    passed §4.1 containment, not their parent, so each of those paths carries its
-    own ``SKILL.md`` one level up from where ``_scan`` would look. This parses it
-    directly, which keeps the mounted set exactly the validated set — composing
-    the parent instead would re-admit a skill the plugin registry rejected,
-    because the recursive scanner follows symlinks.
+    ``_scan`` looks for ``<child>/SKILL.md`` under the path it is given.
+    An explicit or standard root can instead carry its own ``SKILL.md``;
+    parse that file directly without scanning its nested reference bundles.
+    Plugin registration paths never enter this vanilla path composition.
     """
     entry, problem = parse_markdown_catalog_file(
         directory / "SKILL.md", directory.name, filename="SKILL.md",
@@ -102,21 +100,62 @@ def _scan_one_skill(directory: Path) -> tuple[list[dict], list[dict]]:
     return ([entry] if entry else []), ([problem] if problem else [])
 
 
-def _compose_paths(agent: "BaseAgent", paths: list[str]) -> list[str]:
-    """Union the declared Tier-1 paths (vanilla skills only).
+def _standard_paths(working_dir: Path) -> list[Path]:
+    """Find conventional roots without scanning arbitrary ancestor contents.
 
-    Plugin skills deliberately stay out of the vanilla skills catalog: a
-    declared plugin's skills are listed in the ``plugins`` system-prompt field
-    (inside the plugin, readable via file/read from ``<source>``) rather than
-    composed into this catalog. This keeps the two namespaces parallel and
-    closed, per the Agent Plugins presentation contract: ``skills`` shows only
-    vanilla skills, ``plugins`` shows plugin packages as a whole.
-
-    Declared paths come first, duplicates dropped: an operator who lists a
-    directory twice gets one scan, not two entries per skill.
+    Ancestors are eligible through the nearest Git boundary (including a
+    worktree's .git file), or the project above a literal .lingtai ancestor
+    when the current working directory has init.json. Use the nearer boundary;
+    otherwise do not infer a project from ordinary parents.
+    Missing conventional directories are normal and never produce warnings.
     """
-    seen: set[str] = set()
-    return [p for p in paths if not (p in seen or seen.add(p))]
+    current = working_dir.resolve()
+    ancestry = [current, *current.parents]
+    boundary = next(
+        (i for i, directory in enumerate(ancestry)
+         if (directory / ".git").is_dir() or (directory / ".git").is_file()),
+        None,
+    )
+    if (current / "init.json").is_file():
+        lingtai_boundary = next(
+            (i + 1 for i, directory in enumerate(ancestry)
+             if i > 0 and directory.name == ".lingtai"),
+            None,
+        )
+        if lingtai_boundary is not None:
+            boundary = (lingtai_boundary if boundary is None
+                        else min(boundary, lingtai_boundary))
+    directories = ancestry[:boundary + 1] if boundary is not None else [current]
+    roots = [
+        directory / convention / "skills"
+        for directory in [*directories, Path.home()]
+        for convention in (".agents", ".claude")
+    ]
+    return [root for root in roots if root.is_dir()]
+
+
+def _compose_paths(agent: "BaseAgent", paths: list[str]) -> list[str]:
+    """Compose vanilla roots once by canonical path, preserving source order.
+
+    Intrinsic/custom roots precede configured roots, then standard discovery.
+    Plugin registration paths deliberately stay out: the plugins field owns
+    their validated, filtered set and its separate namespace.
+    """
+    working_dir = agent._working_dir
+    roots = [
+        str(working_dir / ".library" / "intrinsic"),
+        str(working_dir / ".library" / "custom"),
+        *paths,
+        *(str(root) for root in _standard_paths(working_dir)),
+    ]
+    seen: set[Path] = set()
+    unique: list[str] = []
+    for raw in roots:
+        canonical = _resolve_path(raw, working_dir).resolve()
+        if canonical not in seen:
+            seen.add(canonical)
+            unique.append(raw)
+    return unique
 
 
 # ---------------------------------------------------------------------------
@@ -129,7 +168,7 @@ def _reconcile(
     *,
     publish: bool = True,
 ) -> dict:
-    """Scan ``.library/`` + Tier-1 paths, inject catalog, report status.
+    """Scan built-in, explicit and standard roots, inject catalog, report status.
 
     The skills capability is pure presentation: it reads whatever the Agent
     initializer wrote to ``.library/intrinsic/`` and the agent wrote to
@@ -149,17 +188,9 @@ def _reconcile(
     status = "ok"
     error: str | None = None
 
-    # Scan intrinsic + custom. If they don't exist, _scan silently returns empty.
+    # Standard discovery is additive; no plugin registration roots enter here.
     all_skills: list[dict] = []
-    int_valid, int_problems = _scan(intrinsic_dir)
-    all_skills.extend(int_valid)
-    problems.extend(int_problems)
-
-    cus_valid, cus_problems = _scan(custom_dir)
-    all_skills.extend(cus_valid)
-    problems.extend(cus_problems)
-
-    # Scan each Tier 1 path, plus every registered plugin's validated skill dirs.
+    builtin_roots = {str(intrinsic_dir), str(custom_dir)}
     paths_report: dict[str, dict] = {}
     for raw in _compose_paths(agent, paths):
         resolved = _resolve_path(raw, working_dir)
@@ -167,21 +198,22 @@ def _reconcile(
         p_valid: list[dict] = []
         p_problems: list[dict] = []
         if exists:
-            # A path that carries SKILL.md is itself one skill (how a plugin
-            # contributes); anything else is a collection to walk.
-            if (resolved / "SKILL.md").is_file():
+            # Explicit/standard roots may themselves be one skill; built-in
+            # libraries remain collections, preserving their existing scan.
+            if raw not in builtin_roots and (resolved / "SKILL.md").is_file():
                 p_valid, p_problems = _scan_one_skill(resolved)
             else:
                 p_valid, p_problems = _scan(resolved)
             all_skills.extend(p_valid)
             problems.extend(p_problems)
-        else:
+        elif raw not in builtin_roots:
             log.warning("skills: path does not exist: %s (resolved=%s)", raw, resolved)
-        paths_report[raw] = {
-            "resolved": str(resolved),
-            "exists": exists,
-            "skills": len(p_valid),
-        }
+        if raw not in builtin_roots:
+            paths_report[raw] = {
+                "resolved": str(resolved),
+                "exists": exists,
+                "skills": len(p_valid),
+            }
 
     # Build and inject catalog.
     lang = agent._config.language
@@ -228,8 +260,8 @@ def setup(agent: "BaseAgent", paths: list[str] | None = None, **_ignored) -> Non
 
     ``paths`` is the Tier 1 list from ``init.json``
     ``manifest.capabilities.skills.paths``. When omitted (e.g. direct
-    ``Agent(capabilities=["skills"])`` use without kwargs), no additional paths
-    are scanned — only the per-agent ``.library/``.
+    ``Agent(capabilities=["skills"])`` use without kwargs), the per-agent
+    ``.library/`` and automatically discovered standard roots are scanned.
 
     The capability itself does not create or populate ``.library/``; the Agent
     initializer's ``_install_intrinsic_manuals`` step handles that. Setup just

@@ -5,6 +5,8 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
+  - tests/test_agents_memory.py
+  - src/lingtai/kernel/prompt.py
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/kernel/base_agent/CONTRACT.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
@@ -339,3 +341,27 @@ Pass only with successful selected tests and every assertion above verified. Fai
 ### Pass / Fail
 Pass only with all assertions above and no live provider or Agent launch. This
 hermetic test does not establish live provider behavior or native Windows results.
+
+## Behavior BA012 — standard instructions and unified private memory survive normal lifecycle
+
+- **id**: BA012
+- **title**: standard instructions and unified private memory survive normal lifecycle
+- **guards**: [agent-runtime § Contract rules](CONTRACT.md#contract-rules)
+- **runner**: a LingTai coding agent with Shell access
+- **prerequisites**: repository checkout and repository Python; no live agent writes
+- **estimate**: 3 minutes
+
+### Steps
+1. Run `.venv/bin/python -m pytest -q tests/test_agents_memory.py` from the repo root.
+2. Inspect the real CLI init and complete-prompt assertions for rebuild, refresh
+   setup and journal-gated molt. No provider request is allowed.
+
+### Expected evidence
+- [ ] Applicable AGENTS.md/CLAUDE.md startup/fresh-context and nested scope guidance
+      is resident, without pasting or overwriting the fixture instruction bodies.
+- [ ] Pad seed, preserved legacy memory and pinned references appear at boot;
+      updated Pad and pins reload across all three boundaries without character injection.
+
+### Pass / Fail
+Pass only if the suite passes on the candidate tree. A compilation or unexecuted
+test is not startup proof; report exact failed or unexecuted checks.

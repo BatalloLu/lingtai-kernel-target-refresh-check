@@ -5,6 +5,7 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
+  - tests/test_agents_memory.py
   - src/lingtai/CONTRACT.md
   - src/lingtai/ANATOMY.md
   - src/lingtai/init_reader.py
@@ -36,7 +37,9 @@ must run from the repo root with the project's Python.
 ### Steps
 1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. In `<scratch>`, write an `init.json` containing a deprecated/ignored field and boot the reader path (boot CLI or refresh `Agent`); hash `<scratch>/init.json` before and after and compare.
-3. Inspect the returned outcome: confirm it reports `FULLY_EFFECTIVE` / `READ_OK_WITH_IGNORED_FIELDS` / `READ_FAILED` with a typed shape decision and the ignored paths, and that the redacted `system/manifest.resolved.json` artifact was produced.
+3. Run `.venv/bin/python -m pytest -q tests/test_agents_memory.py -k legacy_character_seed`
+   from `<repo>`; both old seed spellings must remain accepted and preserve
+   their content once into Pad while leaving init bytes unchanged. Inspect the returned outcome: confirm it reports `FULLY_EFFECTIVE` / `READ_OK_WITH_IGNORED_FIELDS` / `READ_FAILED` with a typed shape decision and the ignored paths, and that the redacted `system/manifest.resolved.json` artifact was produced.
 
 ### Expected evidence
 - [ ] Step 1: the init-reader/schema suites pass, pinning JSONC parsing,

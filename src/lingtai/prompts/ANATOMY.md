@@ -100,7 +100,7 @@ sources, catalog INDEX ↔ catalog sections).
 Rendered system-prompt order is owned by `src/lingtai/kernel/prompt.py`:
 one short fixed `INSTRUCTIONS_ENTRY`, resident user base prompt and optional
 opt-in tool prose; then dynamic skills/plugin/MCP/knowledge catalogs,
-mechanical identity, character and Pad in the second cache batch. Full loaded
+mechanical identity and unified Pad in the second cache batch. Full loaded
 fixed owners are read through `psyche.instructions`, not separate headers.
 
 Each section has a `<section>/<section>.yaml` definition. Bodies split three ways:
@@ -116,8 +116,9 @@ Each section has a `<section>/<section>.yaml` definition. Bodies split three way
   (runtime facts). No packaged body; content is built each turn.
 - **Injected sections** — Covenant is supplied by Psyche's closed owner document,
   with its complete durable mirror/fallback and effective body disclosed by
-  `psyche.covenant`; the short route merges into the unified entry. Character and
-  Pad keep their persistent/configured sources. Comment and rules definitions are
+  `psyche.covenant`; the short route merges into the unified entry. Pad retains
+  its persistent/configured source and preserves legacy character once. Character,
+  comment and rules definitions are
   retirement records, with no active inputs, readers or injection.
 
 For the generated `tools` section, `src/lingtai/kernel/base_agent/tools.py`

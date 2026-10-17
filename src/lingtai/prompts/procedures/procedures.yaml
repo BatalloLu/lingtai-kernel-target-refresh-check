@@ -50,7 +50,7 @@ related_files:
     why: >
       Owns the expanded action guidance this resident section only summarizes:
       progressive disclosure, external side-effect authorization, choosing bash vs
-      daemon vs avatar vs MCP, depositing work into pad/knowledge/skills/character, the
+      daemon vs avatar vs MCP, depositing work into Pad/Knowledge/Skills, the
       molt checklist, skill routing, and deliverable/reporting discipline. Crawl here
       (via the system-manual router) for the why/boundaries — keep them out of the body.
   - path: src/lingtai/prompts/principle/principle.yaml

@@ -451,7 +451,7 @@ def _context_molt(agent, args: dict) -> dict:
     if hasattr(agent, "_notification_persistent_feishu_last_tool_id"):
         agent._notification_persistent_feishu_last_tool_id = None
 
-    # Post-molt hooks — reload character/pad into prompt manager BEFORE new session
+    # Post-molt hooks — reload unified Pad memory into prompt manager BEFORE new session
     for cb in getattr(agent, "_post_molt_hooks", []):
         try:
             cb()

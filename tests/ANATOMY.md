@@ -1,5 +1,6 @@
 ---
 related_files:
+  - tests/test_agents_memory.py
   - src/lingtai/tools/plugin/ANATOMY.md
   - tests/test_plugin_mcp_mode.py
   - ENVIRONMENT_VARIABLES.md

@@ -186,7 +186,9 @@ The kernel root holds the coordinator (`base_agent/`) plus a flat collection of 
 - `prompt.py` — `INSTRUCTIONS_ENTRY` is the single short resident fixed prefix.
   `SystemPromptManager.read_instructions` discloses exact loaded fixed owners;
   `render_batches` projects them to one entry while keeping dynamic catalogs,
-  identity, character and Pad in the second cache batch. `build_system_prompt_batches`
+  mechanical identity and unified Pad in the second cache batch. The short entry
+  recommends applicable AGENTS.md/CLAUDE.md reads at startup/fresh context and
+  nested scope entry, without pasting bodies or authoring those files. `build_system_prompt_batches`
   places the user base prompt immediately after the entry. Covenant's full
   effective body remains separately retained and read by `psyche.covenant`.
   Packaged source mirrors and their fallback/protection remain Agent/Psyche-owned

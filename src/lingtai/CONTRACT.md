@@ -1,8 +1,9 @@
 ---
 name: init-reader
-contract_version: 4
+contract_version: 5
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_agents_memory.py
   - src/lingtai/ANATOMY.md
   - src/lingtai/init.jsonc
   - src/lingtai/init_reader.py
@@ -132,7 +133,14 @@ Guarded by: [K001](kernel/BEHAVIORS.md#behavior-k001), [K002](kernel/BEHAVIORS.m
 5. Compatibility retirement is recorded in this Contract and Git history, not
    per-agent progress files. Unsupported active conflicts fail closed; retired
    compatibility fields are reported as ignored and are never auto-resolved or
-   rewritten.
+   rewritten. Existing string `lingtai`/`lingtai_file` inputs remain accepted
+   for one-way Pad preservation; they MUST NOT block upgrade boot merely for
+   using those old spellings. File-over-inline fallback is resolved once before
+   migration, preserving both disk character and a distinct configured value.
+   After marking, neither old source is a continuing forced/self-evolve binding.
+   New templates/writers omit the keys; old init is never rewritten. Pad owns
+   preservation, not the init reader.
+   Guarded by [IR001](BEHAVIORS.md#behavior-ir001).
 6. Every declared Nudge kind (including the init/config-shape finding) uses the
    ordinary `.notification/nudge.json` transport and shared global
    `LINGTAI_NUDGE_ENABLED` / `LINGTAI_NUDGE_REPEAT_INTERVAL` policy. The goal

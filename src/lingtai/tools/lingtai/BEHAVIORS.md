@@ -5,6 +5,7 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
+  - tests/test_agents_memory.py
   - src/lingtai/tools/lingtai/CONTRACT.md
   - src/lingtai/tools/lingtai/ANATOMY.md
   - src/lingtai/tools/lingtai/__init__.py
@@ -15,33 +16,34 @@ maintenance: |
   lingtai tool behavior clause changes, update the guarding LABT here in the
   same change.
 ---
-> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+# Unified memory acceptance
 
-# LingTai Capability Behavior Tests
-
-Self-contained agent behavior tasks guarding the observable behavior clauses of
-`src/lingtai/tools/lingtai/CONTRACT.md` (manual-only public inventory, retired
-actions fail as unknown, protected character composition). Pinned pytest
-commands must run from the repo root with the project's Python.
-
-## Behavior LG001 — the public inventory is exactly manual, and retired update/load fail as unknown actions
+## Behavior LG001 — retired character has no tool, loader or injected section
 
 - **id**: LG001
-- **title**: the public inventory is exactly manual, and retired update/load fail as unknown actions
-- **guards**: `lingtai-tool-contract` § Public port
-- **runner**: any LingTai agent with `shell` access to this repository
-- **prerequisites**: a clean checkout of `<repo>`; a scratch agent working directory `<scratch>`
-- **estimate**: ≈ 15 minutes
+- **title**: retired character has no tool, loader or injected section
+- **guards**: [lingtai-tool-contract § Public port](CONTRACT.md#public-port)
+- **runner**: a LingTai coding agent with Shell access
+- **prerequisites**: repository checkout, repository Python environment; temporary test workdirs only
+- **estimate**: 3 minutes
 
 ### Steps
-1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
-2. Call `lingtai(action="manual", input={}, reasoning="probe")` and record the flat `{status, manual, manual_path}` result.
-3. Call `lingtai(action="update", input={}, reasoning="probe")` and `lingtai(action="load", input={}, reasoning="probe")`; record both results and confirm no file mutation occurred.
+1. From the repository root, run `.venv/bin/python -m pytest -q tests/test_agents_memory.py tests/test_psyche_family.py tests/test_psyche_prompt_settings.py`.
+2. Inspect the captured results for migration byte preservation, repeated composition,
+   interruption before marking, real CLI init seed wiring and full prompt build.
+3. Confirm the lifecycle case exercises ordinary rebuild, refresh setup and real
+   journal-gated molt without provider requests. Inspect the exact public Psyche
+   inventory: `pad | knowledge | skills | instructions | covenant | settings | manual`.
 
 ### Expected evidence
-- [ ] Step 1: the context-ownership and pad/lingtai split suites pass, pinning the manual-only schema and dispatch and strict retired-action rejection.
-- [ ] Step 2: `manual` resolves the `lingtai-manual` and is flattened once after generic ToolFamily dispatch.
-- [ ] Step 3: retired `update`/`load` fail as unknown actions with no alias and no hidden mutation/reload path; schema and dispatch expose no hidden action on either provider wire.
+- [ ] All selected tests pass; no external provider is called.
+- [ ] Old source bytes survive, Pad contains the legacy body once, and a later Pad
+      rewrite does not resurrect the retired source. No `character` section remains.
+- [ ] Pad and pinned references reload; startup/fresh-context guidance names applicable
+      AGENTS.md/CLAUDE.md and scope entry, but their bodies are not pasted or overwritten.
+- [ ] Old inline/file init seeds remain accepted, preserve their bytes once
+      alongside existing Pad/disk character, and never rewrite init or rebind after marking.
 
 ### Pass / Fail
-Pass when the suites pass and the manual-only/retired-rejection observations hold. Fail on a working `update`/`load`, on a hidden mutation path, or on a non-flat manual result; record the evidence trail in the task report.
+Pass only when every check holds. A failed or unexecuted test is not acceptance;
+record exact output and unresolved risks. No live agent memory may be modified.

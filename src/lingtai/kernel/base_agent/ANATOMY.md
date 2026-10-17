@@ -1,5 +1,7 @@
 ---
 related_files:
+  - tests/test_agents_memory.py
+  - src/lingtai/kernel/prompt.py
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - src/lingtai/tools/context/manual/SKILL.md
@@ -122,6 +124,11 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
 - `base_agent/tools.py` — Tool surface: schemas, dispatch, registry. `_dispatch_tool` (`base_agent/tools.py:14-33`), `_refresh_tool_inventory_section` (`base_agent/tools.py:47-94`) is OPT-IN and DEFAULT OFF behind `LINGTAI_TOOL_PROSE_SECTION_ENABLED` (`kernel/config.py:tool_prose_section_enabled`): by default it deletes any existing `tools` section and returns, because the prose it renders duplicates the tool-calling schema description the provider wire already carries (`kernel/llm/base.py:wire_tool_description`); when opted in it appends the selected-language glossary body to each tool's description via `tool_glossary.append_tool_glossary`, `_build_tool_schemas` (`base_agent/tools.py:53-101`) injects the standard `reasoning` property into every tool schema, `_add_tool` (`base_agent/tools.py:104-132`), `_remove_tool` (`base_agent/tools.py:135-143`), `_override_intrinsic` (`base_agent/tools.py:143-155`), `_has_capability` (`base_agent/tools.py:158-160`).
 - `base_agent/prompt.py` — System prompt building, flushing, updating (80 lines). `_build_system_prompt` (`base_agent/prompt.py:26-37`), `_build_system_prompt_batches` (`base_agent/prompt.py:40-56`), `_flush_system_prompt` (`base_agent/prompt.py:59-66`), `_update_system_prompt` (`base_agent/prompt.py:69-80`).
 - `base_agent/messaging.py` — mail arrival and system-event production. `_enqueue_system_notification` makes its dedupe/append decision from the current `system` payload in one Store compare-update and consumes event identity from `CompareUpdateResult.value`; no caller-held channel lock remains (`_enqueue_system_notification` in `src/lingtai/kernel/base_agent/messaging.py` — function-name anchor, not a line range).
+
+- `src/lingtai/kernel/prompt.py:17` — resident `INSTRUCTIONS_ENTRY` recommends
+  applicable AGENTS.md/CLAUDE.md reads at startup/fresh context and nested scope
+  entry, without body pasting or file creation. Dynamic memory is unified Pad;
+  mechanical identity is unchanged. Guarded by BA012.
 
 ## Connections
 
