@@ -7,6 +7,7 @@ bridge (whatsapp-web.js) over the newline-JSON protocol.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -501,13 +502,15 @@ class WhatsAppManager:
             f"wa_id=\"{from_id}\" to recover the complete message)_"
             if newest_truncated else ""
         )
-        push_inbox_event(
+        # Hash the unsanitized tuple: JSON preserves component boundaries and
+        # avoids collisions from path sanitization/truncation. The fixed-size
+        # ASCII stem satisfies the canonical LICC filename grammar.
+        identity = json.dumps([from_id, msg_id], separators=(",", ":")).encode("utf-8")
+        published = push_inbox_event(
             sender="whatsapp",
             subject=f"whatsapp message from {from_id}",
             body=f"{header}\n\n**Newest WhatsApp message**\n{newest}{newest_note}",
-            # Downstream LICC code may use the event id as a file name, so the
-            # remote-controlled components are sanitized here too.
-            event_id=f"wa:{_safe_component(from_id)}:{_safe_component(msg_id)}",
+            event_id=f"wa-{hashlib.sha256(identity).hexdigest()}",
             metadata={
                 "conversation_ref": ctx["conversation_ref"],
                 "message_id": msg_id,
@@ -518,6 +521,9 @@ class WhatsAppManager:
                 "latest_incoming": ctx["latest_incoming"],
             },
         )
+
+        if not published:
+            log.warning("whatsapp: inbound LICC notification publication failed")
 
     # ------------------------------------------------------------------ identity
 
