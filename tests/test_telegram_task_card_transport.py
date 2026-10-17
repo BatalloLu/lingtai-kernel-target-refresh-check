@@ -176,3 +176,27 @@ def test_public_family_has_a_strict_root_and_action_owned_branches(tmp_path):
         expected = dict(branch)
         expected.pop("title")
         assert condition["then"]["properties"]["input"] == expected
+
+
+def test_tps_includes_thinking_once_preserving_measurement_gate():
+    from lingtai.mcp_servers.task_card.event_projection import TaskCardEventProjection as P
+    for output, thinking, first, generation, expected in (
+        (92, 12, 4.883221582975239, 1.0672153750201687, 15),
+        (939, 461, 14.556054042011965, 6.370571540959645, 45),
+        (1540, 976, 24.029445166990627, 6.780504499969538, 50),
+    ):
+        event = {"type": "llm_response", "api_call_id": "same-call",
+                 "input_tokens": 1000, "cached_tokens": 500,
+                 "output_tokens": output, "thinking_tokens": thinking,
+                 "stream_timing": {"first_token_s": first, "generation_s": generation,
+                                   "generation_tokens": output - thinking}}
+        original = json.dumps(event, sort_keys=True)
+        _, usage = P.project_llm_response_usage(event)
+        text = P.format_divider_info(first + generation + 0.8, usage, stream_metrics=True)
+        assert f"{expected} tok/s" in text
+        assert "⏱0.8s" in text and f"⚡{first:.1f}s" in text
+        assert f"({thinking})" in text
+        assert json.dumps(event, sort_keys=True) == original
+        event["estimated"] = True
+        _, usage = P.project_llm_response_usage(event)
+        assert "tok/s" not in P.format_divider_info(first + generation, usage, stream_metrics=True)

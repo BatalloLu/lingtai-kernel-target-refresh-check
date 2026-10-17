@@ -63,7 +63,7 @@ Pass when the suite passes and the active/diff-only observations hold. Fail on p
 1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
 2. Project one tool-call group whose notification carrier reports `current_call.output`, `current_call.thinking`, cache miss/rate, and session context.
 3. Project one pure-text group whose `llm_response` reports `output_tokens` and `thinking_tokens`, then repeat without a thinking field.
-4. Project text, tool-only and mixed `llm_response.stream_timing` with first actual output 1.2s, generation interval 4s and 180 non-reasoning output tokens; then omit timing or final usage.
+4. Project text, tool-only and mixed `llm_response.stream_timing` with first actual output 1.2s, generation interval 4s and 200 total output tokens (including 20 thinking; retain measured non-reasoning count 180); then omit timing or final usage.
 
 5. Replay and live-append measured IDLE intervals between progress rows, then tool-only, missing-field, ASLEEP and restart-crossing gaps.
 6. Replay and live-append consecutive parent inputs 156185 then 157504 with cached input 153600; include pure-text predecessors, later carriers, duplicate ids, malformed input/generation and lifecycle reset events.
@@ -72,7 +72,7 @@ Pass when the suite passes and the active/diff-only observations hold. Fail on p
 - [ ] Step 1: the automatic event-tail suite passes.
 - [ ] Step 2: the divider contains `↓<output> (<thinking>) ↑<cache-miss>` with compact counts, while `_usage` remains private projection state.
 - [ ] Step 3: the `llm_response` fallback renders the same parenthesized form; an old event without thinking tokens preserves the prior output/cache/context line with no dangling parentheses.
-- [ ] Step 4: time and speed occupy their own line (`↻12.4s · ⚡1.2s · 35 tok/s`), token symbols remain on the next line; unavailable evidence omits the new metric, never inferred zero.
+- [ ] Step 4: time and speed occupy their own line (`↻12.4s · ⚡1.2s · 38 tok/s`), token symbols remain on the next line; unavailable evidence omits the new metric, never inferred zero.
 
 - [ ] Step 5: only complete IDLE evidence adds `☕X.Ys` on the first line; gap, first-output and speed values stay unchanged; unknown coverage omits coffee.
 - [ ] Step 6: the token row shows `Δ +1.3k` separately from `↑3.9k`, with no word `input`; zero and negative changes are valid, unreliable predecessors omit delta, and initial replay matches incremental append without changing other channels.

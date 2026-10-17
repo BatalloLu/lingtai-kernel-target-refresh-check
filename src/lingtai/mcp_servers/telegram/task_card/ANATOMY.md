@@ -1,5 +1,6 @@
 ---
 related_files:
+  - tests/test_telegram_task_card_transport.py
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/BEHAVIORS.md
   - src/lingtai/mcp_servers/telegram/task_card/CONTRACT.md
@@ -78,7 +79,8 @@ onto its one tracked resident Task Card target per account+chat.
   in-memory copy of the other fields.
 - `../../task_card/event_projection.py` — the channel-neutral pure core for safe
   event allowlisting, redaction, API-call grouping, budgets, metadata, and text
-  rendering, including compact per-call output/thinking/cache metrics from the
+  rendering, including API-average TPS from total output (thinking once) and
+  compact per-call output/thinking/cache metrics from the
   normalized current-call carrier or `llm_response` fallback and the safe
   `(summary, time, input in, output out)` line correlated from already-recorded
   event/ledger facts. It also owns strict `lingtai.token_usage.session/v1`

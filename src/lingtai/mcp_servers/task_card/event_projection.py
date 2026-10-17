@@ -1489,8 +1489,11 @@ class TaskCardEventProjection:
             if type(first) in (int, float) and math.isfinite(first) and first >= 0:
                 time_parts.append(f"⚡{first:.1f}s")
                 interval = timing.get("generation_s")
-                tokens = checked_count(timing.get("generation_tokens"))
-                if (tokens is not None and type(interval) in (int, float)
+                # Provider output includes reasoning once; retain the existing
+                # measured/non-estimated evidence gate without rewriting it.
+                tokens = checked_count(usage.get("output"))
+                if (tokens is not None and checked_count(timing.get("generation_tokens")) is not None
+                        and type(interval) in (int, float)
                         and math.isfinite(interval) and interval > 0):
                     # Average over dispatch-to-final-usage, not a buffered
                     # first-output-to-final-usage delivery burst.
