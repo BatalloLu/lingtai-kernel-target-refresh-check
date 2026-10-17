@@ -29,8 +29,8 @@ maintenance: |
 
 ### Steps
 1. From the repository root, run `.venv/bin/python -m pytest -q tests/test_agents_memory.py tests/test_psyche_family.py tests/test_psyche_prompt_settings.py`.
-2. Inspect the captured results for migration byte preservation, repeated composition,
-   interruption before marking, real CLI init seed wiring and full prompt build.
+2. Inspect the compact smoke for initial memory byte preservation, real CLI init
+   seed wiring, complete prompt build and repeated composition.
 3. Confirm the lifecycle case exercises ordinary rebuild, refresh setup and real
    journal-gated molt without provider requests. Inspect the exact public Psyche
    inventory: `pad | knowledge | skills | instructions | covenant | settings | manual`.
@@ -39,10 +39,11 @@ maintenance: |
 - [ ] All selected tests pass; no external provider is called.
 - [ ] Old source bytes survive, Pad contains the legacy body once, and a later Pad
       rewrite does not resurrect the retired source. No `character` section remains.
-- [ ] Pad and pinned references reload; startup/fresh-context guidance names applicable
-      AGENTS.md/CLAUDE.md and scope entry, but their bodies are not pasted or overwritten.
-- [ ] Old inline/file init seeds remain accepted, preserve their bytes once
-      alongside existing Pad/disk character, and never rewrite init or rebind after marking.
+- [ ] Unified Pad reloads; guidance names AGENTS.md/CLAUDE.md without pasting or
+      overwriting the project file. Init and legacy source bytes remain unchanged.
+
+The compact automated smoke omits crash-window, file-seed and pin matrices;
+those cases are not implied by its passing result.
 
 ### Pass / Fail
 Pass only when every check holds. A failed or unexecuted test is not acceptance;

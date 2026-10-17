@@ -133,7 +133,7 @@ print(scratch)
 ### Pass / Fail
 Pass only when every observation holds. Fail on any assertion, unexpected file
 mutation outside scratch, or provider/network activity. This scenario guards
-runtime composition; `tests/test_standard_skill_discovery.py` additionally locks
-plugin registration exclusion, malformed metadata, symlink roots/folders, user
-roots, name collisions, missing-root reporting and subsequent rescans. Do not
-claim plugin runtime conformance solely from this vanilla scenario.
+runtime composition; `tests/test_standard_skill_discovery.py` supplies a compact
+project/user catalog smoke for omitted names, body non-disclosure and malformed
+encoding. It does not automate every boundary, alias or plugin matrix above.
+Do not claim plugin runtime conformance solely from this vanilla scenario.

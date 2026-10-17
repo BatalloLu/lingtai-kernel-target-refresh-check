@@ -66,7 +66,7 @@ completed durable memory preservation remains and is safely reused next time.
 
 ## Evidence
 
-[PD001](BEHAVIORS.md#behavior-pd001) and `tests/test_agents_memory.py` guard
-retained injection, no duplicate character owner, one-time preservation, crash
-recovery, initial seed precedence and normal lifecycle reloading. Parent must
-execute the tests and real complete-prompt proof before acceptance.
+[PD001](BEHAVIORS.md#behavior-pd001) and `tests/test_agents_memory.py` provide a
+compact real-startup/lifecycle smoke for injected memory and one-time preservation.
+It is not exhaustive coverage of crash windows or every legacy-seed combination.
+Parent must execute the smoke and complete-prompt proof before acceptance.
