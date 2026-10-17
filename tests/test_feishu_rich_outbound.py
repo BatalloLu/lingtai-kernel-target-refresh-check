@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -618,3 +619,21 @@ def test_invalid_outbound_union_never_reaches_transport(tmp_path, input_):
     result = _call(manager, "send", input_)
     assert result["status"] == "failed"
     assert account.calls == []
+
+
+def test_channel_event_date_skips_nonfinite_candidates():
+    date = FeishuManager._channel_event_date
+    expected = "2023-11-14T22:13:20Z"
+    raw = {"header": {"create_time": 1_700_000_000_000}, "ts": 1_600_000_000}
+    for value in (1_600_000_000, 1_600_000_000_000):
+        assert date(raw, SimpleNamespace(action_time=value)) == "2020-09-13T12:26:40Z"
+    for value in ("1e999", float("inf"), float("-inf"), float("nan")):
+        event = SimpleNamespace(action_time=value)
+        assert date(raw, event) == expected
+        assert date(
+            {"header": {"create_time": value}, "ts": 1_700_000_000}, event
+        ) == expected
+        before = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        result = date({"header": {"create_time": value}, "ts": value}, event)
+        after = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        assert before <= result <= after
