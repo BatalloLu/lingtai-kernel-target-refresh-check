@@ -1,5 +1,19 @@
 ---
 related_files:
+  - src/lingtai/kernel/project/inventory.py
+  - src/lingtai/kernel/project/external_lifecycle.py
+  - src/lingtai/adapters/project_recipe_native.py
+  - src/lingtai/adapters/project_lifecycle_exchange.py
+  - src/lingtai/cli_project_inventory.py
+  - src/lingtai/cli_project_lifecycle.py
+  - tests/test_project_inventory.py
+  - tests/test_project_recipe_native.py
+  - tests/test_project_external_lifecycle.py
+  - src/lingtai/kernel/project/bundle.py
+  - src/lingtai/adapters/project_bundle.py
+  - src/lingtai/adapters/project_bundle_exchange.py
+  - src/lingtai/cli_project_bundle.py
+  - tests/test_project_bundle.py
   - src/lingtai/kernel/project/recipe.py
   - src/lingtai/adapters/project_recipe.py
   - src/lingtai/adapters/project_recipe_exchange.py
@@ -295,3 +309,86 @@ pending sequence/native identity and separate `legacy_code,legacy_failure`.
 Earlier failed writes/callback effects may survive unknown; lost terminal stays unknown even after ack,
 which proves rendering, NOT prompt write. No retry/rollback/cleanup, Go-write fallback, timeout/thread
 or supervisor; this is not full Project completion or PR activation.
+
+## Materialize a Recipe bundle (native driver)
+
+Use `lingtai-agent project recipe-materialize` with live pipes, not an Agent or
+fresh-creation attempt. This is the existing disk copy, packaged copy and wizard
+local-first staging boundary; apply/configure and TUI selection persistence are
+separate later operations. Exact closed schemas live in the
+[Project bundle contract](../../src/lingtai/kernel/project/CONTRACT.md#recipe-bundle-materialization).
+The matching Go adapter must exist and be accepted before production use.
+
+1. Keep the old exported CopyBundle/CopyEmbeddedBundle signatures. Bind original
+   Go source/destination strings and cwd meaning once; wizard supplies original
+   filepath.Dir(lingtaiDir), global root and name. Send only the selected closed
+   disk/packaged/wizard request, canonical padded base64 of original string bytes.
+   For example `src` and `dst` are:
+
+   ```json
+   {"kind":"disk","source_b64":"c3Jj","destination_b64":"ZHN0"}
+   ```
+
+2. Read each flushed bundle_io frame. Validate the exact request binding,
+   sequence, operation and phase-specific arguments before I/O. Execute only
+   that phase synchronously once, using original native filepath/Stat/ReadDir/
+   Open/copy/JSON operations. Never invoke the whole old CopyBundle as a facade,
+   repeat a stat/copy, select fallback in Go or run a Python equivalent first.
+   Keep original native errors locally, keyed by sequence+operation+arguments.
+   Metadata is full native RecipeInfo decoding; return decoded name and library,
+   leaving empty-name validity to Core. An example first acknowledgement is:
+
+   ```json
+   {"status":"bundle_io_result","sequence":1,"operation":"load_metadata","result":{"name_b64":"Rml4dHVyZQ==","library_b64":null}}
+   ```
+
+3. Core validates before same-path detection or destruction, then replaces
+   .recipe before additive library/network merges. Optional source Stat errors
+   are tolerated observations, not failed operations. Do not strengthen legacy
+   symlink, nonregular, unusual-library, mode/truncation or partial-write behavior.
+   Valid local wins; invalid local falls through; malformed found global never
+   falls back. Keep wizard setup/draft skips and imported preguard unchanged.
+4. For packaged copy, Go supplies only native slash path.Join candidates. Kernel
+   installed catalog owns adaptive/plain/greeter/tutorial without global bootstrap.
+   Metadata bytes are decoded natively. For each delivered member, mkdir parent
+   0755 first, ACK, then kernel reads resource, then native WriteFile0644. Do not
+   prefetch/reorder/batch writes or create empty directories. Runtime Markdown is
+   frontmatter-stripped operational body; raw source export is a different thing.
+5. Validate exactly one bundle_materialized terminal, full acknowledgement
+   transcript, binding/source/outcome/code/failure consistency, EOF, child exit0
+   and empty stderr. Exit0 means accepted DOMAIN result, not successful copy.
+   Only then restore the retained ORIGINAL error with old phase wording/%w;
+   empty-name uses the original message/source label. Wizard adds its wrapper once.
+   Keep headless copy-warning-then-still-apply/missing-disk-skip and required UI
+   state ordering unchanged; this does not authorize embedded headless fallback.
+
+On incomplete/broken/malformed ack, lost/forged terminal or abnormal child exit,
+physical effects are unknown. Never replay, fall back, rollback, repair or clean
+caller trees. An acknowledged failed remove/copy may already have changed bytes;
+there is no transaction. Unexpected installed resource read failure is unknown,
+not a reconstructed Go PathError. Use only existing direct-child close/reap
+contracts. Parent-owned installed wheel/sdist, exact bytes/error chains, native
+POSIX/Windows and actual Go caller proof remain necessary; authored source/tests
+are not full Project completion or release readiness.
+
+## Existing Project callers after creation
+
+Use the kernel-discovered `lingtai-recipe` menu for format/export/validator work;
+resolve its catalog location, not a TUI utilities directory. All four packaged
+Recipe identities ship in kernel wheel/sdist; fresh creation choices are not
+expanded merely because those resources exist.
+
+`project inventory-query` consumes native observed rows only; no Agent/provider
+is built and no scanning/writing permission is implied. Go list and ProjectsModel
+bind the same exact managed-runtime query and validate original row/PID identity.
+Native Recipe mode preserves Go JSON documents/unknown values opaquely;
+`not_read_native` honestly reports that no Python owner reader ran. It cannot
+be used as init readiness. The original raw apply mode remains distinct.
+
+`project lifecycle` needs its bound native driver. The Core emits operations;
+Go executes only original action-bound effects. Never treat stdout exit0 alone
+as success: validate complete terminal/transcript/EOF/exit and original error
+correlation. Unknown/lost output forbids replay or further effects. Force refresh,
+normal CPR, temporary clear, force CLI clean and nirvana retain DIFFERENT old
+orders/refusals; do not substitute one for another or bypass human confirmation.
+No arbitrary host process action is authorized by reading this manual.

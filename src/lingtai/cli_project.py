@@ -30,6 +30,9 @@ def add_project_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentP
     from lingtai.cli_project_recipe import OPERATIONS as RECIPE_OPERATIONS
     for operation in RECIPE_OPERATIONS:
         commands.add_parser(operation, help="Observe/apply a local Recipe from JSON stdin").set_defaults(as_json=True)
+    commands.add_parser("recipe-materialize", help="Materialize a Recipe via bound native I/O").set_defaults(as_json=True)
+    commands.add_parser("inventory-query", help="Query observed running Project inventory").set_defaults(as_json=True)
+    commands.add_parser("lifecycle", help="Run bound external Project lifecycle policy").set_defaults(as_json=True)
     create = commands.add_parser("create", help="Create one Project with one initial agent")
     create.add_argument("--dir", required=True, dest="project_dir", help="Existing project root directory")
     create.add_argument("--name", required=True, dest="agent_name", help="Initial agent name")
@@ -183,6 +186,16 @@ def _create_interactive() -> None:
 
 
 def handle_project_command(args: argparse.Namespace) -> None:
+    if args.project_command == "lifecycle":
+        from lingtai.cli_project_lifecycle import run_project_lifecycle
+        raise SystemExit(run_project_lifecycle())
+    if args.project_command == "inventory-query":
+        from lingtai.cli_project_inventory import run_inventory
+        raise SystemExit(run_inventory(args))
+    if args.project_command == "recipe-materialize":
+        from lingtai.cli_project_bundle import handle_bundle_command
+        handle_bundle_command()
+        return
     from lingtai.cli_project_configuration import OPERATIONS, handle_configuration_command
     if args.project_command in OPERATIONS:
         handle_configuration_command(args.project_command)

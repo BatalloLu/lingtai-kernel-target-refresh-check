@@ -2,6 +2,11 @@
 name: project-membership-behaviors
 labt_version: 3
 related_files:
+  - src/lingtai/kernel/project/bundle.py
+  - src/lingtai/adapters/project_bundle.py
+  - src/lingtai/adapters/project_bundle_exchange.py
+  - src/lingtai/cli_project_bundle.py
+  - tests/test_project_bundle.py
   - src/lingtai/kernel/project/recipe.py
   - src/lingtai/adapters/project_recipe.py
   - src/lingtai/adapters/project_recipe_exchange.py
@@ -163,3 +168,84 @@ silently changed by the bounded rendering seam.
   4. Repeat absent Project/no eligible members (zero callback frames, empty required correlation arrays), all-present including directory init, all-absent, mixed-before-orchestrator and native-byte/surrogate identities. Require existing Core order/role/subset/refusal semantics unchanged. Compare ordinary EOF/multiline `{project_dir}` request/default final shape exactly; no callback-only fields may appear there.
 - **expected_evidence**: exact installed frames/acks/terminal/child status and once-only native-stat ledger; unchanged fixture bytes; full terminal transcript validation; original native error/unwrap equality including Windows branches; no serialized raw exception/manifest/init/private values.
 - **pass_fail**: source authoring alone is not acceptance. Unsupported native host or lost/malformed output remains unresolved, never fullProject/FULL A or safe startup. No process/runtime/cleanup effects are authorized. Root LABT v2 versus this existing v3 file remains an owner-held mismatch, not normalized by this slice.
+
+## Behavior PRJ007 — Bundle Core validates before noop and correlates native phases
+
+- **id**: PRJ007
+- **guards**: `project-creation` § [Recipe bundle materialization](CONTRACT.md#recipe-bundle-materialization)
+- **runner**: acceptance LingTai/coding agent with authorized local shell and installed candidate CLI
+- **prerequisites**: installed candidate `lingtai-agent` on PATH and Python3; permission to launch only this short-lived data-only CLI. The following fixture supplies phase observations, performs NO caller-disk I/O, and is NOT native Go conformance proof. No provider/global/runtime/Project access is needed.
+- **steps**:
+  1. Run this complete kernel protocol exercise from any directory:
+
+     ```python
+     import json, subprocess
+     binding = {"kind":"disk", "source_b64":"cw==", "destination_b64":"cw=="}
+     def run(name):
+         acks = [{"status":"bundle_io_result", "sequence":1,
+                  "operation":"load_metadata",
+                  "result":{"name_b64":name,"library_b64":None}}]
+         if name:
+             acks.append({"status":"bundle_io_result", "sequence":2,
+                          "operation":"absolute_locations",
+                          "result":{"source_b64":"L3M=","destination_b64":"L3M="}})
+         text = "\n".join(json.dumps(v) for v in [binding] + acks) + "\n"
+         p = subprocess.run(["lingtai-agent","project","recipe-materialize"],
+                            input=text, text=True, capture_output=True, check=False)
+         assert p.returncode == 0 and p.stderr == "", (p.returncode,p.stderr)
+         frames = [json.loads(line) for line in p.stdout.splitlines()]
+         terminal = frames.pop()
+         assert [v["operation"] for v in frames] == [v["operation"] for v in acks]
+         assert all(v["status"] == "bundle_io" and v["binding"] == binding for v in frames)
+         assert terminal["status"] == "bundle_materialized" and terminal["binding"] == binding
+         assert terminal["source"] == "explicit" and terminal["failure"] is None
+         assert terminal["transcript"] == [{k:v for k,v in a.items() if k != "status"} for a in acks]
+         assert terminal["outcome"] == ("unchanged" if name else "rejected")
+         assert terminal["code"] == ("" if name else "source_empty_name")
+     run("")
+     run("Rml4dHVyZQ==")
+     ```
+
+  2. Record exact installed candidate identity, stdout/stderr/exit evidence. Do
+     not report this scripted observation boundary as a Go copy or native error
+     test. Separately require parent-owned paired POSIX/Windows once-only native
+     I/O/error-chain and cold resource/wizard/headless acceptance before activation.
+- **expected_evidence**: empty decoded name refuses after metadata alone; valid
+  name then equal successful Abs observations noop without remove/copy; every
+  phase and complete terminal transcript matches, no arbitrary path I/O is done
+  by Python and no runtime/provider/global mutation occurs.
+- **pass_fail**: pass this kernel protocol scenario only when all assertions hold.
+  Any failure/unreadable/lost/extra terminal is unresolved, not no-write proof or
+  replay permission. Native Go and installed resource materialization acceptance
+  remain separate, as do full Project/FULL A and publication. Existing root-LABT
+  v2 versus this pre-existing file's v3 mismatch stays owner-held, not normalized.
+
+## Behavior PRJ008 — Inventory shares identity and failed-scan semantics
+
+- **id**: PRJ008
+- **guards**: `project-creation` § [Inventory shares identity and failed-scan semantics](CONTRACT.md#running-inventory-and-selection)
+- **runner**: acceptance owner using installed candidate kernel and paired Go fixture adapters
+- **prerequisites**: new task-only fixtures/owned child processes; no production agent, credential, shared directory, provider or arbitrary process actions
+- **steps**: Run the installed candidate inventory query over process-only, malformed, human, duplicate-PID and phantom fixtures; then run the retained original Go list/ProjectsModel fixtures through that SAME exact candidate. Rescan a replaced PID before Enter and force a scan/query failure; neither may become empty/success.
+- **expected_evidence**: exact candidate identity, stdout/stderr/exit, native original error/effect trace and unchanged old caller oracles; tests/test_project_inventory.py is complementary Core evidence, not native conformance.
+- **pass_fail**: every stated old behavior and once-only correlation must agree. Unsupported host/unknown output is untested, not PASS or permission to replay. Existing LABT version mismatch remains separately held, not normalized.
+
+## Behavior PRJ009 — Native Recipe decoding keeps opaque owner documents
+
+- **id**: PRJ009
+- **guards**: `project-creation` § [Native Recipe decoding keeps opaque owner documents](CONTRACT.md#native-recipe-owner-documents)
+- **runner**: acceptance owner using installed candidate kernel and paired Go fixture adapters
+- **prerequisites**: new task-only fixtures/owned child processes; no production agent, credential, shared directory, provider or arbitrary process actions
+- **steps**: Compare original native Go decoder/AppendSkillsPath and candidate at depth2000/9999/10000, duplicate/case/null/type errors and exact large integers; compare rewritten bytes, callback empty/binary/order/snapshot and selected-unreadable-locale behavior. Unknown layer transport must stop the actual save caller before configure.
+- **expected_evidence**: exact candidate identity, stdout/stderr/exit, native original error/effect trace and unchanged old caller oracles; tests/test_project_recipe_native.py is complementary Core evidence, not native conformance.
+- **pass_fail**: every stated old behavior and once-only correlation must agree. Unsupported host/unknown output is untested, not PASS or permission to replay. Existing LABT version mismatch remains separately held, not normalized.
+
+## Behavior PRJ010 — External lifecycle keeps distinct native sequences
+
+- **id**: PRJ010
+- **guards**: `project-creation` § [External lifecycle keeps distinct native sequences](CONTRACT.md#external-project-lifecycle)
+- **runner**: acceptance owner using installed candidate kernel and paired Go fixture adapters
+- **prerequisites**: new task-only fixtures/owned child processes; no production agent, credential, shared directory, provider or arbitrary process actions
+- **steps**: Use only owned child/fixture adapters: assert direct/all signal eligibility, refresh default/explicit/Puffo race/failed launch, normal CPR, temporary-clear error precedence, clean rediscovery/new-member/force and DISTINCT nirvana barrier-before-delete. Reject repeated/forged/lost terminal without another effect or false Done.
+- **expected_evidence**: exact candidate identity, stdout/stderr/exit, native original error/effect trace and unchanged old caller oracles; tests/test_project_external_lifecycle.py is complementary Core evidence, not native conformance.
+- **pass_fail**: every stated old behavior and once-only correlation must agree. Unsupported host/unknown output is untested, not PASS or permission to replay. Existing LABT version mismatch remains separately held, not normalized.

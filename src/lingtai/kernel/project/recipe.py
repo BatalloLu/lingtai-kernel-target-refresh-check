@@ -37,6 +37,7 @@ class RecipeInfo:
     name: str
     library_name: str | None = None
     library_path_entry: str = ""  # native relative spelling supplied by adapter
+    invalid_failure: RecipeFailure | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,6 +105,7 @@ class RecipeSkills:
     canonical_changed: bool = False
     code: str = ""
     failure: RecipeFailure | None = None
+    document_handle: int = 0  # operation-local opaque owner identity
 
 
 @dataclass(frozen=True, slots=True)
@@ -214,15 +216,23 @@ class ProjectRecipeUseCase:
         state = RecipeState.EQUAL if dict(selected.files) == dict(snapshot.files) else RecipeState.CHANGED
         return RecipeObservation(state, state is RecipeState.CHANGED)
 
-    def apply(self, request: RecipeApplyRequest) -> RecipeApplyResult:
+    def _load_info(self) -> RecipeInfo:
         info = self.port.load_info()
+        if not info.name:
+            if info.invalid_failure is not None:
+                raise RecipeOperationError("invalid_recipe", info.invalid_failure)
+            raise recipe_error("invalid_recipe")
+        return info
+
+    def apply(self, request: RecipeApplyRequest) -> RecipeApplyResult:
+        info = self._load_info()
         greet = self.port.observe_greet(request.language)
         # The old helper re-loads metadata AFTER the single greet read, and only
         # when the FIRST load declared a library. Failure here is not fatal.
         library_path = ""
         if info.library_name:
             try:
-                library_info = self.port.load_info()
+                library_info = self._load_info()
                 if library_info.library_name:
                     library_path = library_info.library_path_entry or "../../" + library_info.library_name
             except ProjectCreationError:
@@ -294,3 +304,31 @@ class ProjectRecipeUseCase:
         return RecipeApplyResult("partial" if first_code else "complete", tuple(members),
                                  snapshot, greet_status, legacy_code,
                                  legacy_failure if legacy_first else snapshot.failure)
+
+
+@dataclass(frozen=True, slots=True)
+class RecipeOpaquePath:
+    """An original non-text path entry; never its unknown owner subtree."""
+    entry: int
+
+
+@dataclass(frozen=True, slots=True)
+class RecipeLayerStat:
+    exists: bool
+    directory: bool = False
+    identity: bytes = b""
+
+
+class RecipeLayerPort(ABC):
+    @abstractmethod
+    def stat_layer(self, layer: str, language: str) -> RecipeLayerStat: ...
+
+
+def select_recipe_layer(port: RecipeLayerPort, layer: str, language: str) -> bytes:
+    # A successful non-directory stat selects irrevocably. Reading, when needed,
+    # is a separate effect; read failure must not resume the fallback chain.
+    for locale in ((language, "") if language else ("",)):
+        evidence = port.stat_layer(layer, locale)
+        if evidence.exists and not evidence.directory:
+            return evidence.identity
+    return b""

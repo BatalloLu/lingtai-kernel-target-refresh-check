@@ -1,5 +1,39 @@
 ---
 related_files:
+  - src/lingtai/kernel/project/inventory.py
+  - src/lingtai/kernel/project/external_lifecycle.py
+  - src/lingtai/adapters/project_recipe_native.py
+  - src/lingtai/adapters/project_lifecycle_exchange.py
+  - src/lingtai/cli_project_inventory.py
+  - src/lingtai/cli_project_lifecycle.py
+  - tests/test_project_inventory.py
+  - tests/test_project_recipe_native.py
+  - tests/test_project_external_lifecycle.py
+  - src/lingtai/intrinsic_skills/lingtai-recipe/SKILL.md
+  - src/lingtai/intrinsic_skills/lingtai-recipe/reference/recipe-format/SKILL.md
+  - src/lingtai/intrinsic_skills/lingtai-recipe/reference/export-recipe/SKILL.md
+  - src/lingtai/intrinsic_skills/lingtai-recipe/scripts/validate_recipe.py
+  - src/lingtai/intrinsic_skills/lingtai-recipe/assets/gitignore.template
+  - src/lingtai/kernel/project/bundle.py
+  - src/lingtai/adapters/project_bundle.py
+  - src/lingtai/adapters/project_bundle_exchange.py
+  - src/lingtai/cli_project_bundle.py
+  - tests/test_project_bundle.py
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/comment/comment.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/comment/wen/comment.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/comment/zh/comment.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/greet/greet.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/greet/wen/greet.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/greet/zh/greet.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/recipe.json
+  - src/lingtai/kernel/project/recipe_assets/plain/recipe/recipe.json
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/comment/comment.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/comment/wen/comment.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/comment/zh/comment.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/greet/greet.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/greet/wen/greet.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/greet/zh/greet.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/recipe.json
   - src/lingtai/kernel/project/recipe.py
   - src/lingtai/adapters/project_recipe.py
   - src/lingtai/adapters/project_recipe_exchange.py
@@ -167,3 +201,29 @@ The public command procedure is
 [PRJ002/PRJ003/PRJ004/PRJ006](BEHAVIORS.md) retain acceptance scenarios. These slices do not
 own bootstrap, import, registry or lifecycle and are not a full Project migration;
 parent owns execution, installed CLI, Go consumption and native-error acceptance.
+
+## Recipe bundle materialization
+
+- Core closed disk/packaged/wizard requests, directory evidence, specialized phase
+  and resource Ports, and ordered use case: `src/lingtai/kernel/project/bundle.py:10-169` (PRJ007).
+- Installed four-bundle fixed manifest and frontmatter-stripped operational byte
+  projection: `src/lingtai/adapters/project_bundle.py:11-59`. This does not change
+  fresh creation's adaptive-only materialization or operator filesystem traversal.
+- Bound synchronous native-I/O exchange and acknowledgement transcript:
+  `src/lingtai/adapters/project_bundle_exchange.py:28-193`; composition:
+  `src/lingtai/cli_project_bundle.py:15-37`; actual parser/dispatch is in `cli_project.py`.
+- Thin Core/exchange/resource/root-CLI cases: `tests/test_project_bundle.py`;
+  [PRJ007](BEHAVIORS.md#behavior-prj007) covers kernel protocol behavior.
+  Native Go mechanism/error-chain and installed paired acceptance remain separate.
+- This slice has no independent Contract: it implements this Project owner's
+  [bundle promise](CONTRACT.md#recipe-bundle-materialization). Procedure and ABI
+  teaching remain in the existing [Project manual](../../../../docs/references/project-create.md).
+
+## Inventory, native Recipe documents and external lifecycle
+
+- `inventory.py`: typed running observations -> selected identities/role/enterability/order/groups; concrete observation/collation/rebinding is Go-adapter owned.
+- `external_lifecycle.py`: action-specific lifecycle ordering and preset-candidate eligibility through typed Ports; no OS/process/JSON schema dependency.
+- `project_recipe_native.py`: specialized native metadata/opaque owner-document and selected-layer exchange; existing raw Recipe adapter stays supported.
+- `project_lifecycle_exchange.py`: closed action/target/sequence/transcript composition, never a concrete native effects implementation.
+- `cli_project_inventory.py` / `cli_project_lifecycle.py`: actual registered inbound query/exchange composition. The existing Project Contract owns all three Ports; no new subsystem/owner twins.
+- Kernel intrinsic `lingtai-recipe` ships format/export teaching, unchanged structural validator and gitignore asset. Four operational Recipe bundles are kernel package data; native Go remains concrete delivery I/O.

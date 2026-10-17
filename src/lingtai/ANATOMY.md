@@ -1,5 +1,14 @@
 ---
 related_files:
+  - src/lingtai/kernel/project/inventory.py
+  - src/lingtai/kernel/project/external_lifecycle.py
+  - src/lingtai/adapters/project_recipe_native.py
+  - src/lingtai/adapters/project_lifecycle_exchange.py
+  - src/lingtai/cli_project_inventory.py
+  - src/lingtai/cli_project_lifecycle.py
+  - src/lingtai/adapters/project_bundle.py
+  - src/lingtai/adapters/project_bundle_exchange.py
+  - src/lingtai/cli_project_bundle.py
   - src/lingtai/kernel/project/configuration.py
   - src/lingtai/adapters/project_configuration.py
   - src/lingtai/cli_project_configuration.py
@@ -265,3 +274,19 @@ There is no heartbeat or prompt reconstruction producer.
 Existing Project configuration is implemented by `src/lingtai/kernel/project/configuration.py`
 and governed by the Project Contract/PRJ003; outside filesystem and strict JSON
 composition adapters perform owner reads/writes, never runtime or fleet control.
+
+**Recipe bundle composition:** `cli_project.py` registers and dispatches
+`project recipe-materialize`; `cli_project_bundle.py:15-37` injects installed
+resources and a bound synchronous native-I/O exchange into the existing
+[Project owner](kernel/project/ANATOMY.md#recipe-bundle-materialization).
+These adapters/CLI own no independent Contract; the Project Contract owns this
+use case. No caller-disk copying, fallback selection or new Agent runtime is
+implemented in the CLI.
+
+## Additional Project composition
+
+`cli_project_inventory.py` composes the pure running-inventory Core query;
+`cli_project_lifecycle.py` composes external lifecycle/preset evidence exchange.
+`project_recipe_native.py` retains Go owner documents opaquely in the bound
+caller. Their policy Ports and native/unknown-result obligations belong to the
+existing kernel/project Contract, not this outer registration layer.

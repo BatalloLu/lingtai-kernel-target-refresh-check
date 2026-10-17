@@ -3,6 +3,40 @@ name: project-creation
 contract_version: 6
 root_contract: CONTRACT.md
 related_files:
+  - src/lingtai/kernel/project/inventory.py
+  - src/lingtai/kernel/project/external_lifecycle.py
+  - src/lingtai/adapters/project_recipe_native.py
+  - src/lingtai/adapters/project_lifecycle_exchange.py
+  - src/lingtai/cli_project_inventory.py
+  - src/lingtai/cli_project_lifecycle.py
+  - tests/test_project_inventory.py
+  - tests/test_project_recipe_native.py
+  - tests/test_project_external_lifecycle.py
+  - src/lingtai/intrinsic_skills/lingtai-recipe/SKILL.md
+  - src/lingtai/intrinsic_skills/lingtai-recipe/reference/recipe-format/SKILL.md
+  - src/lingtai/intrinsic_skills/lingtai-recipe/reference/export-recipe/SKILL.md
+  - src/lingtai/intrinsic_skills/lingtai-recipe/scripts/validate_recipe.py
+  - src/lingtai/intrinsic_skills/lingtai-recipe/assets/gitignore.template
+  - src/lingtai/kernel/project/bundle.py
+  - src/lingtai/adapters/project_bundle.py
+  - src/lingtai/adapters/project_bundle_exchange.py
+  - src/lingtai/cli_project_bundle.py
+  - tests/test_project_bundle.py
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/comment/comment.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/comment/wen/comment.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/comment/zh/comment.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/greet/greet.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/greet/wen/greet.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/greet/zh/greet.md
+  - src/lingtai/kernel/project/recipe_assets/greeter/recipe/recipe.json
+  - src/lingtai/kernel/project/recipe_assets/plain/recipe/recipe.json
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/comment/comment.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/comment/wen/comment.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/comment/zh/comment.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/greet/greet.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/greet/wen/greet.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/greet/zh/greet.md
+  - src/lingtai/kernel/project/recipe_assets/tutorial/recipe/recipe.json
   - src/lingtai/kernel/project/recipe.py
   - src/lingtai/adapters/project_recipe.py
   - src/lingtai/adapters/project_recipe_exchange.py
@@ -50,7 +84,12 @@ maintenance: |
   Contract. Update the Port, adapter, focused tests, and this contract together
   when its observable creation behavior changes.
 ---
-# Project creation
+# Project
+
+This owner covers creation/configuration, Recipe policy, running-inventory
+selection and external lifecycle decisions. The creation guarantees below stay
+specific to creation; later sections define the additional Ports. Concrete Go
+filesystem/process/JSON behavior remains in bound adapters, not in Core.
 
 `lingtai-agent project create` creates one new local `.lingtai` seed below a
 caller-selected existing directory. It writes a `human` pseudo-agent and one
@@ -686,3 +725,151 @@ unknown, never normal application, rollback or automatic retry. Go must preserve
 original callback panic/Goexit, close input and reap the child while unwinding;
 no kernel finally-snapshot, timeout, supervisor or fallback mutation is added.
 Normal first-error/count and reader-only/removal-only semantics remain unchanged.
+
+## Recipe bundle materialization
+
+Guarded by [PRJ007](BEHAVIORS.md#behavior-prj007). `bundle.py` owns closed
+`DiskBundleCopy`, `PackagedBundleCopy`, `WizardBundleStage`, `BundleMetadata`,
+`RecipeBundlePort`, `RecipeBundleResourcesPort` and `RecipeBundleUseCase`.
+Core owns empty/empty-name validity, local/global/packaged preference, metadata
+before lexical-location noop, and recipe replacement then optional library then
+optional imported network merge/stop. Native path, metadata decoding and physical
+I/O mechanisms stay outside Core. No generic filesystem/RPC capability is exposed.
+
+The actual no-flag `project recipe-materialize` uses one newline-terminated closed
+request: disk `{kind:"disk",source_b64,destination_b64}`, packaged
+`{kind:"packaged",recipe_name_b64,destination_b64}`, or wizard
+`{kind:"wizard",recipe_name_b64,destination_b64,global_dir_b64}`. All base64 is
+canonical padded standard alphabet of original native Go string bytes, including
+empty; no Unicode/path normalization or new filename confinement. The adapter is
+construction-bound to these roots. It never stats/reads/copies caller paths in
+Python. The wizard's destination is the original Go `filepath.Dir(lingtaiDir)`.
+No new line/output cap, deadline, retry, thread or process-control surface is added.
+
+Each flushed stdout frame has exactly status `bundle_io`, binding (the exact
+request), integer sequence starting1, operation, arguments. Ack has exactly status
+`bundle_io_result`, matching sequence/operation, result. Duplicates, nonfinite,
+extra fields, bool sequences, wrong enums/types/base64 and incomplete lines stop
+the exchange. Operations are closed specialized phases, never caller commands:
+
+| operation | arguments | normal result |
+|---|---|---|
+| observe_local_recipe | `{}` | `{kind:K}` |
+| find_global | `{}` | `{found:bool}` |
+| load_metadata | `{source:S}` | `{name_b64,library_b64:null|string}` |
+| absolute_locations | `{source:S}` | `{source_b64:null|string,destination_b64:null|string}` |
+| remove_recipe | `{}` | `{ok:true}` |
+| copy_recipe | `{source:S}` | `{ok:true}` |
+| observe_library / copy_library | `{source:S,library_b64}` | `{kind:K}` / `{ok:true}` |
+| observe_network / copy_network | `{source:S}` | `{kind:K}` / `{ok:true}` |
+| packaged_candidates | `{}` | `{roots_b64:[r1,r2,r3]}` |
+| decode_packaged_metadata | `{root_b64,content_b64:null|string}` | `{name_b64,library_b64:null|string}` |
+| prepare_packaged_file | `{relative_b64}` | `{ok:true}` |
+| write_packaged_file | `{relative_b64,content_b64}` | `{ok:true}` |
+
+K is directory/absent/not_directory/stat_failed. S is explicit/local/global,
+per the bound request and previous evidence. Metadata operations and physical
+remove/copy/prepare/write additionally allow exactly `{failed:true}`. The actual
+original Go error is retained locally under sequence+operation+bound arguments;
+Core receives only the opaque reference. No errno/text-based error reconstruction.
+Full native RecipeInfo struct decoding preserves null/duplicates/casefold/type
+errors and runtime tolerance. Core alone checks empty decoded name. Both Abs calls
+run after valid metadata; null means failed Abs, not refusal. Only two successful
+equal locations noop. Optional source Stat failure/notdir/absence is tolerated.
+
+Wizard valid local `.recipe` wins even with empty requested name; invalid local
+falls through to one original RecipeDir lookup. Found malformed global fails,
+never packaged fallback. Disk RemoveAll(.recipe) precedes native copyTree, then
+nonempty declared library Stat/optional additive copy, then .lingtai Stat/optional
+additive copy. First failure stops; preceding destruction/truncation/writes stay.
+Native copyTree/copyFile preserve original sorted depth-first order, source/target
+symlink/nonregular behavior, modes, Open-before-parent/truncate/copy/close priority.
+No stat duplication, prevalidation, safe-path filter or transaction is authorized.
+
+Packaged candidates are native path.Join results for recommended/intrinsic/examples
+in that order, not native resource lookups. Core picks first existing installed
+catalog directory (including lexical parent/root cases). Native metadata decoding
+receives exact kernel-owned recipe.json bytes and original io/fs source label;
+null is statically absent catalog metadata, realized as native io/fs missing-file
+error, not translated Python failure. After metadata validation, remove .recipe,
+then each depth-first filename-sorted member: native parent MkdirAll0755 ACK,
+installed resource read, native WriteFile0644 ACK. Existing file modes persist;
+empty directories are not materialized. Adaptive/plain/greeter/tutorial ship cold
+under non-dot package paths; Markdown developer frontmatter is stripped to exact
+operational prompt bytes, not raw-source export. Fresh creation remains unchanged.
+Unexpected installed resource read failure is unknown, never a fabricated Go error.
+
+Every accepted domain outcome uses ONE final stdout object, exit0, empty stderr:
+`{status:"bundle_materialized",binding,source,outcome,code,failure,transcript}`.
+source is explicit/local/global/packaged; complete/unchanged have empty code and
+null failure. rejected has empty_paths/packaged_not_found/source_empty_name and
+null failure. failed has source_invalid/remove_recipe_failed/copy_recipe_failed/
+copy_library_failed/copy_network_failed/packaged_create_failed/packaged_write_failed
+and exact `{sequence,operation}` of the actual failed acknowledgement. Transcript
+is every accepted ack projected as `{sequence,operation,result}` in order,
+including tolerated local metadata failures. Exit0 alone is NOT successful copy.
+Go must validate full closed binding/frames/arguments/transcript/terminal,
+source/code/failure consistency, child exit0 and empty stderr BEFORE using it.
+Only then wrap the ORIGINAL retained error with the original CopyBundle or
+CopyEmbeddedBundle phase wording and `%w`; empty-name uses the original non-native
+message/source label. Wizard wraps the chosen copy error once as copyRecipeBundle.
+
+Malformed requests, stopped exchanges and driver failures attempt one static
+stderr `{status:"error",code,error}` and exit1, no normal terminal. Codes are
+invalid_bundle_request/invalid_bundle_exchange/bundle_driver_failed; error is
+`Recipe bundle exchange did not complete`. Lost/extra/forged terminal, broken
+transport, signal/cancellation/abnormal exit remain UNKNOWN partial effects.
+No replay, fallback writer, rollback, repair or cleanup is permitted; only existing
+direct-child close/reap/cancellation contracts apply. Native Go errors, installed
+bytes and real wizard/headless callers require paired acceptance. Existing
+readiness/config/apply/callback/snapshot/legacy terminal promises are unchanged.
+Procedure: [Project manual](../../../../docs/references/project-create.md#materialize-a-recipe-bundle-native-driver).
+
+## Running inventory and selection
+
+`inventory.py` owns duplicate selection, role/enterability precedence, human
+inclusion, stable ordering and grouping from typed `InventoryObservation`. Native
+Go still observes processes, byte identities, manifests/status/heartbeat/lock and
+collation keys; Core neither scans processes nor reparses owner documents. The
+selected decision is bound to original row, directory bytes and PID. CLI list,
+ProjectsModel and its embedded launcher consume the same query; Enter rescans
+and revalidates `(AgentDir, PID)`. Broken/phantom/non-admin rows remain visible
+and disabled, stale heartbeat never hides a process, and scan/query failure is
+not empty success. `Snapshot.Err` is mandatory for Snapshot-only callers.
+
+## Native Recipe owner documents
+
+The Go-driven native variant retains exact Go metadata decoding and opaque init
+owner documents locally. Core owns name acceptance, path append/no-op and member
+ordering; strings/opaque entry identities cross the specialized Port, never
+unknown/deep owner subtrees. Native writes preserve original numeric tokens,
+canonicalization, temp/rename and first-error/partial-write semantics. Old raw
+CLI/rendering callback ABI stays valid. Native written members explicitly use
+`reader_status=not_read_native`: this is NOT a current Python init read,
+FULLY_EFFECTIVE claim or readiness result. Standalone raw-mode diagnostics remain
+unchanged. Comment/covenant selection is locale then root by native stat evidence;
+first successful non-directory selection is irrevocable even if later unreadable.
+Unknown transport must stop live save before configure, never imply absent/default.
+
+## External Project lifecycle
+
+`external_lifecycle.py` owns external sleep/suspend/all targeting, forceful
+refresh, revive/CPR, temporary clear, CLI clean, nirvana and preset-candidate
+selection over `ExternalLifecyclePort`. Go retains native handles, paths, exact
+errors, locks/Puffo ownership checks, config codecs, process effects/watchdog,
+UI generation guards and the existing writer-drain barrier. The CLI is only a
+bound synchronous exchange: no concrete process/filesystem adapter is installed
+inside Python. Native effects are once-only and action-bound; full terminal,
+transcript, EOF and child status must validate before native failure restoration.
+Unknown results never authorize replay, fallback, rollback, repair, re-init or
+wizard continuation. Native best-effort errors remain best-effort.
+
+Force refresh keeps suspend/lock wait/native termination/exact sweep/preset/force
+launch/defensive suspend removal/watchdog order. CPR is normal duplicate-protected
+launch. Temporary clear keeps after-revive capture/write/wait/suspend and error
+precedence. CLI clean suspends then rediscover-unions and checks survivors; force
+bypasses only the old discovery/survivor refusals, not confirmation/suspension.
+Nirvana is DISTINCT: sequential native suspension, exact writer barrier, ignored
+native removal errors, then UI-owned reset only after known completion. Its
+unknown failure remains visible without false Done. Existing kernel self-refresh
+and signal-consumer/watcher ownership is not duplicated or redefined.

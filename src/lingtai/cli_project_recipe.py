@@ -15,7 +15,7 @@ from lingtai.kernel.project.recipe import (
     RecipeRendering, RecipeState, RecipeExchangeStopped, RecipeOperationError, recipe_error,
 )
 
-OPERATIONS = ("recipe-observe", "recipe-apply")
+OPERATIONS = ("recipe-observe", "recipe-apply", "recipe-layer")
 
 
 def observation_payload(result: RecipeObservation, code: str = "") -> dict:
@@ -82,8 +82,12 @@ def execute(operation: str, value: dict, *, rendering_port=None) -> dict:
     if operation == "recipe-observe":
         _keys(value, {"project_dir"})
     elif operation == "recipe-apply":
-        _keys(value, {"project_dir", "lingtai_dir", "language", "rendering_mode"} if interactive
-              else {"project_dir", "language", "rendering"})
+        fields = {"project_dir", "lingtai_dir", "language", "rendering_mode"} if interactive else {"project_dir", "language", "rendering"}
+        if interactive and "owner_mode" in value:
+            fields.add("owner_mode")
+            if value["owner_mode"] != "native":
+                raise recipe_error("invalid_project_request")
+        _keys(value, fields)
     else:
         raise recipe_error("invalid_project_request")
     if not isinstance(value["project_dir"], str):
@@ -120,6 +124,10 @@ def execute(operation: str, value: dict, *, rendering_port=None) -> dict:
     root = Path(value["project_dir"])  # retain caller path; adapter uses Go lexical cleaning
     port = FilesystemProjectRecipeAdapter(root, load_preset=load_preset,
                                          lingtai_dir=Path(value["lingtai_dir"]) if interactive else None)
+    if interactive and value.get("owner_mode") == "native":
+        from lingtai.adapters.project_recipe_native import NativeFilesystemProjectRecipeAdapter, NativeRecipeExchange
+        port = NativeFilesystemProjectRecipeAdapter(root, load_preset=load_preset,
+                lingtai_dir=Path(value["lingtai_dir"]), exchange=NativeRecipeExchange(sys.stdin, sys.stdout))
     usecase = ProjectRecipeUseCase(port, rendering_port if interactive else None)
     try:
         return (observation_payload(usecase.observe()) if request is None
@@ -137,6 +145,9 @@ def handle_recipe_command(operation: str) -> None:
     interactive = False
     try:
         logging.disable(logging.CRITICAL)
+        if operation == "recipe-layer":
+            handle_recipe_layer()
+            return
         if operation == "recipe-apply":
             value, interactive = read_recipe_request(sys.stdin)
         else:
@@ -162,3 +173,21 @@ def handle_recipe_command(operation: str) -> None:
     stream.flush()
     if payload["code"]:
         raise SystemExit(1)
+
+
+def handle_recipe_layer() -> None:
+    from lingtai.adapters.project_recipe_exchange import decode_object, encode_bytes
+    from lingtai.adapters.project_recipe_native import NativeRecipeExchange, NativeRecipeLayerAdapter
+    from lingtai.kernel.project.recipe import select_recipe_layer
+    # Native path construction stays with the bound caller; request fields only
+    # declare the closed query. No filesystem operation runs in this handler.
+    line = sys.stdin.readline()
+    value = decode_object(line)
+    _keys(value, {"language", "layer"})
+    if (not line.endswith("\n") or not isinstance(value["language"], str)
+            or value["layer"] not in ("comment", "covenant")):
+        raise recipe_error("invalid_project_request")
+    selected = select_recipe_layer(NativeRecipeLayerAdapter(NativeRecipeExchange(sys.stdin, sys.stdout)),
+                                   value["layer"], value["language"])
+    sys.stdout.write(json.dumps({"status": "recipe_layer_selected", "path_b64": encode_bytes(selected)}) + "\n")
+    sys.stdout.flush()
