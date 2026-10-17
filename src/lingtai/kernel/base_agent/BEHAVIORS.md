@@ -269,10 +269,10 @@ Pass when both assertions hold and no test sends a real message. Fail if a hidde
 ### Pass / Fail
 Pass when the focused producer tests pass; fail on inferred duration or wall-time subtraction.
 
-## Behavior BA009 — inactivity reminder is context-agnostic
+## Behavior BA009 — inactivity reminder requires current context above 100000
 
 - **id**: BA009
-- **title**: continuous IDLE/ASLEEP time; conditional agent molt choice, never forced molt
+- **title**: continuous IDLE/ASLEEP time and strict current-context gate, never forced molt
 - **guards**: `agent-runtime` § [Contract rules](CONTRACT.md#contract-rules), inactivity-period paragraph
 - **runner**: any LingTai agent with shell access
 - **prerequisites**: this checkout as current directory, test-enabled interpreter `python`; no live agent/provider or shared workdir
@@ -284,10 +284,10 @@ Pass when the focused producer tests pass; fail on inferred duration or wall-tim
 
 ### Expected evidence
 - [ ] Positive finite env duration wins; invalid/missing values use 1800.
-- [ ] At elapsed ≥ duration, low/high/unknown/unloaded context publishes once without estimating context. Before duration, publication remains silent; ACTIVE/STUCK remains suppressed.
+- [ ] At elapsed ≥ duration, context ≤100000 remains silent; >100000 publishes once. Before duration, even large context remains silent.
 - [ ] IDLE↔ASLEEP retains the period; leaving inactivity clears it. ASLEEP publication uses normal sync wake.
 - [ ] Unloaded/unknown context never creates a session; failed publication retries, only success latches.
-- [ ] Actual molt replaces context; a drop below the boundary still permits the next due reminder, whose body does not force another molt.
+- [ ] Actual molt replaces context; a drop below the boundary suppresses the next due reminder despite stale/cumulative token counters.
 - [ ] No forced shed/journal occurs; journal refusal preserves count/history and safe guidance loads in a full Agent prompt.
 
 ### Pass / Fail
