@@ -89,7 +89,7 @@ _MOLT_INPUT_SCHEMA: dict[str, Any] = {
     "properties": {
         "summary": {
             "type": "string",
-            "description": 'Your shortest sufficient successor briefing: active task/state, verified results, pending authority, next steps, live job/thread IDs, artifact or evidence paths, blockers, and essential lessons. Update only durable stores that changed and write the required session journal BEFORE molt. The briefing is saved to `system/summaries/molt_<count>_<ts>.md` and replayed to the next you. See context-manual for handoff guidance. This is domain input the molt itself consumes, not the root `summarize` result-presentation control.',
+            "description": 'Your shortest sufficient successor briefing: active task/state, verified results, pending authority, next steps, live job/thread IDs, artifact or evidence paths, blockers, and essential lessons. Before every deliberate molt, refresh system/pad.md to current state: losslessly archive completed/superseded history to Knowledge with retrieval pointers, retaining active work, authority, holds and unresolved choices. Write the required session journal BEFORE molt; do not append another timeline. The briefing is saved to `system/summaries/molt_<count>_<ts>.md` and replayed to the next you. See context-manual for handoff guidance. This is domain input the molt itself consumes, not the root `summarize` result-presentation control.',
         },
         "session_journal_path": {
             "type": "string",
@@ -362,7 +362,7 @@ _ACTION_ENUM_DESCRIPTION = (
     'IDLE if no real work remains. Follow current pressure and active adapter rules.\n'
     'molt: shed your conversation context, keep the durable stores. Requires '
     '`summary` and a valid `session_journal_path` — write the journal first and '
-    'update only durable stores that changed. Prefer molt over rebuild for '
+    'refresh Pad and archive stale history to Knowledge with pointers. Prefer molt over rebuild for '
     'substantial or noisy history or context pressure when a fresh briefing is '
     'worth its cost. See context-manual.\n'
     'summarize: record your own compact replacements for prior tool results in '

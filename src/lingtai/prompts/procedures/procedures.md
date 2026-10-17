@@ -62,8 +62,10 @@ reliable completion notifications; do not poll just to stay active.
 
 Avoid unnecessary raw bulk; `psyche.instructions` indexes the optional
 `reference="meta_guidance"` loaded owner for result compression and
-current context-pressure guidance. Before molt, read `context-manual` and tend
-the durable stores; do not reset merely because a task ended. Preserve private
+current context-pressure guidance. Before every deliberate molt, read `context-manual`,
+refresh Pad to current work and holds, and losslessly archive completed/superseded
+history to Knowledge with retrieval pointers—do not append another timeline or
+reset merely because a task ended. Preserve private
 facts as knowledge and reusable procedures as skills. At meaningful real-use
 boundaries, ask one focused feedback question and apply the lesson; avoid
 ritual or repetitive requests.

@@ -147,6 +147,10 @@ def test_failed_publish_retries_and_journal_is_still_required(idle_agent, monkey
     assert agent._auto_molt_notified_since == agent._inactive_since_monotonic
     assert "valid session journal" in _events(agent)[0]["body"]
     assert "defer the molt" in _events(agent)[0]["body"]
+    assert "refresh Pad" in _events(agent)[0]["body"]
+    assert "losslessly archive" in _events(agent)[0]["body"]
+    assert "Knowledge with retrieval pointers" in _events(agent)[0]["body"]
+    assert "work and holds" in _events(agent)[0]["body"]
     result = _context_molt(agent, {"summary": "idle", "_tc_id": "missing"})
     assert "error" in result
     assert agent._molt_count == 0

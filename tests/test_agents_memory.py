@@ -59,6 +59,11 @@ def test_real_init_and_lifecycle_keep_unified_pad_and_instruction_guidance(
         assert "Only the newest _meta.agent_meta.agent_state" in schemas["system"].description
         assert "absent from all current copies" in schemas["notification"].description
         assert "Read context-manual before molt" in json.dumps(schemas["context"].parameters)
+        assert "Before every deliberate molt, refresh system/pad.md" in json.dumps(schemas["context"].parameters)
+        procedures = agent._prompt_manager.read_section("procedures")
+        assert "Before every deliberate molt" in procedures
+        assert "losslessly archive completed/superseded" in procedures
+        assert "retrieval pointers" in procedures
         assert "EXACT LOADED ADAPTER RULE" not in prompt
         assert "EXACT OPTIONAL COVENANT" not in prompt
         psyche = agent._intrinsics["psyche"]
