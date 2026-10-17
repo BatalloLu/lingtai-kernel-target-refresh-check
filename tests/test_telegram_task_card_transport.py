@@ -200,3 +200,62 @@ def test_tps_includes_thinking_once_preserving_measurement_gate():
         event["estimated"] = True
         _, usage = P.project_llm_response_usage(event)
         assert "tok/s" not in P.format_divider_info(first + generation, usage, stream_metrics=True)
+
+
+def test_session_average_tps_live_replay_weighted_and_deduplicated(tmp_path, monkeypatch):
+    from copy import deepcopy
+    from tests.test_apriori_summary_session_cost import parent, helper, OfflineCatalog
+    from lingtai.mcp_servers.task_card.event_projection import TaskCardEventProjection as P
+    from lingtai.mcp_servers.telegram.task_card import api_cost
+    monkeypatch.setattr(api_cost, "CATALOG", OfflineCatalog())
+    first, second = parent(), parent(2)
+    first.update(thinking_tokens=60, stream_timing={
+        "first_token_s": .2, "generation_s": .8, "generation_tokens": 40})
+    second.update(output_tokens=900, thinking_tokens=800, stream_timing={
+        "first_token_s": 1., "generation_s": 29., "generation_tokens": 100})
+    second["session_usage"]["output_tokens"] = 1000
+    events = [first, second, deepcopy(second), helper(), helper()]
+    original = deepcopy(events)
+    path = tmp_path / "logs/events.jsonl"
+    path.parent.mkdir()
+    path.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
+    live, _ = _make_manager(tmp_path)
+    live._append_new_lines(path, 0, path.stat().st_size)
+    replay, _ = _make_manager(tmp_path)
+    replay._init_event_tail()
+    for manager in (live, replay):
+        meta = manager._task_card_event_metadata_snapshot()
+        assert meta["session_avg_tps"] == pytest.approx(1000 / 31)
+        assert meta["session_avg_tps_partial"] is False
+        rendered = "\n".join(P.format_metadata(meta))
+        assert "avg 32 tok/s" in rendered
+        from lingtai.mcp_servers.telegram.manager import _telegram_task_card_html
+        context_row = next(line for line in _telegram_task_card_html(P.METADATA_DIVIDER + "\n" + rendered).splitlines()
+                           if line.startswith("<b>Context</b>"))
+        assert "avg 32 tok/s" in context_row
+        assert meta["output_tokens"] == 1200 and meta["api_calls"] == 3
+        assert meta["context_tokens"] == 1000
+    assert events == original
+
+
+def test_session_average_tps_missing_history_timing_and_molt():
+    from copy import deepcopy
+    from tests.test_apriori_summary_session_cost import parent
+    from lingtai.mcp_servers.task_card.event_projection import TaskCardEventProjection as P
+    state = P.reduce_session_usage_event(None, parent(2))
+    rate = P.session_average_tps(state)
+    assert rate["value"] == pytest.approx(100 / 5.2) and rate["partial"]
+    invalid = parent(3)
+    invalid["estimated"] = True
+    state = P.reduce_session_usage_event(state, invalid)
+    assert P.session_average_tps(state)["partial"]
+    for timing in ({}, {"first_token_s": 0., "generation_s": 0., "generation_tokens": 100}):
+        event = parent(); event["stream_timing"] = timing
+        assert P.session_average_tps(P.reduce_session_usage_event(None, event)) is None
+    reset = P.reduce_session_usage_event(state, {"type": "psyche_molt", "molt_count": 1})
+    assert P.session_average_tps(reset) is None
+    reset = P.reduce_session_usage_event(reset, parent(generation=1))
+    assert P.session_average_tps(reset) == {"value": 100 / 5.2, "partial": False}
+    before = deepcopy(reset)
+    reset = P.reduce_session_usage_event(reset, parent(2, generation=0))
+    assert P.session_average_tps(reset) == P.session_average_tps(before)

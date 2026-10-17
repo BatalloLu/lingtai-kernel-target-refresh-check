@@ -1,6 +1,6 @@
 ---
 name: telegram-task-card-projection
-contract_version: 16
+contract_version: 17
 root_contract: CONTRACT.md
 related_files:
   - tests/test_telegram_task_card_transport.py
@@ -257,6 +257,15 @@ semantics live here. The public producer contract lives in
     snapshots render no SESSION; lower generation/index snapshots cannot replace
     a newer accepted state. Per-call dividers and all non-token metadata retain
     their existing sources and rendering.
+    Telegram also appends `avg N tok/s` to SESSION's Context row: total provider
+    output (thinking once) divided by summed first-output wait plus generation
+    seconds for observed, accepted, measured/non-estimated main responses in
+    this molt generation, never an arithmetic mean of rounded per-call rates.
+    Each parent index counts once. Missing history/timing adds `partial`;
+    no eligible sample omits the metric. Summary/daemon calls do not enter this
+    stream-based average; existing token totals and per-call metrics stay intact.
+    Live append and bounded replay share the reducer and molt reset; no extra
+    scan/store/provider call is added. Guarded by [TT002](BEHAVIORS.md#behavior-tt002).
 15. Telegram alone adds one SESSION row directly after Session's existing rows:
     `Cost · total ~$<total> · in $<input> · write $<write> · read $<read> · out $<output>` (HTML `<b>Cost</b> · …`). It
     sums, over the since-molt main `llm_response` rounds whose v1 snapshot the
@@ -379,7 +388,9 @@ this component.
     parent snapshots, per-call index, context, TPS, and Delta remain unchanged. Restart rehydrate
     applies the existing event window to SESSION events even when the recent tail
     has no projectable activity rows; it must not retain or scan the full history
-    merely to recover an older visible row. The behavior 15 Cost row is the only
+    merely to recover an older visible row. Behavior 14's observed-call average
+    is a separate timing statistic with explicit partial coverage, never a
+    reconstruction of authoritative token/count totals. The behavior 15 Cost row is the only
     Telegram-owned monetary sum; token/count supplementation belongs to the
     shared projector, not a second Telegram accumulator. Per-round bill facts
     fold beside that same reducer over the

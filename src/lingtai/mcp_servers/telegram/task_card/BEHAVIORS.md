@@ -67,6 +67,7 @@ Pass when the suite passes and the active/diff-only observations hold. Fail on p
 
 5. Replay and live-append measured IDLE intervals between progress rows, then tool-only, missing-field, ASLEEP and restart-crossing gaps.
 6. Replay and live-append consecutive parent inputs 156185 then 157504 with cached input 153600; include pure-text predecessors, later carriers, duplicate ids, malformed input/generation and lifecycle reset events.
+7. Run `.venv/bin/python -m pytest -q tests/test_telegram_task_card_transport.py -k session_average_tps`: two main calls report 100/900 total output over 1/30 seconds; duplicate the second and append a summary receipt. Then test missing history/timing and molt reset.
 
 ### Expected evidence
 - [ ] Step 1: the automatic event-tail suite passes.
@@ -75,6 +76,7 @@ Pass when the suite passes and the active/diff-only observations hold. Fail on p
 - [ ] Step 4: time and speed occupy their own line (`↻12.4s · ⚡1.2s · 38 tok/s`), token symbols remain on the next line; unavailable evidence omits the new metric, never inferred zero.
 
 - [ ] Step 5: only complete IDLE evidence adds `☕X.Ys` on the first line; gap, first-output and speed values stay unchanged; unknown coverage omits coffee.
+- [ ] Step 7: SESSION's actual HTML Context row shows `avg 32 tok/s` (1000/31, not mean 65); helpers/replays do not change it. Missing coverage says `partial`, no timing omits it, and molt clears the prior average.
 - [ ] Step 6: the token row shows `Δ +1.3k` separately from `↑3.9k`, with no word `input`; zero and negative changes are valid, unreliable predecessors omit delta, and initial replay matches incremental append without changing other channels.
 
 ### Pass / Fail

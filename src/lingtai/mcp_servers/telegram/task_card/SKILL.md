@@ -149,6 +149,16 @@ Reading it:
   round facts and show `cost n/a (model unknown)`; no price is invented for them.
   Feishu and other channels render exactly as before.
 
+## SESSION average TPS (Telegram only)
+
+SESSION's Context row adds `avg 32 tok/s` when measured main-call samples exist.
+It divides their total provider output (including thinking once) by their summed
+first-output wait plus generation seconds, not by session wall time or an
+arithmetic mean of per-call rates. Summary/daemon calls are excluded. Missing
+parent history or compatible timing adds `partial`; no usable sample omits it.
+It resets at molt and uses the same bounded replay/live reducer, without wider
+history scans. Token/cost totals and existing per-call symbols remain unchanged.
+
 ## SESSION Cost row (Telegram only)
 
 Under SESSION the card adds one row with the since-molt total of the same

@@ -752,6 +752,25 @@ class TaskCardEventProjection:
                 gaps[tool_id] = True
         for helper in helpers.values():
             gaps.pop(helper.get("tool_call_id"), None)
+        # Reuse the accepted parent cursor: three scalar totals, no new history map.
+        totals = (state or {}).get("speed_totals", (0, 0., 0)) if same_generation else (0, 0., 0)
+        if event.get("type") == "psyche_molt" and (molt is None or known is None or molt > known):
+            totals = (0, 0., 0)
+        accepted = cls.project_llm_response_session_usage(event)
+        previous_index = (state or {}).get("api_call_index", 0) if same_generation else 0
+        if (accepted and result.get("source") == "v1" and result.get("snapshot") == accepted
+                and accepted["api_call_index"] > previous_index
+                and "em_id" not in event and "run_id" not in event):
+            projected = cls.project_llm_response_usage(event)
+            usage = projected[1] if projected is not None else {}
+            timing = usage.get("stream_timing") or {}
+            first, duration = timing.get("first_token_s"), timing.get("generation_s")
+            if (checked_count(usage.get("output")) is not None
+                    and checked_count(timing.get("generation_tokens")) is not None
+                    and first is not None and duration is not None and duration > 0
+                    and math.isfinite(first + duration)):
+                totals = (totals[0] + usage["output"], totals[1] + first + duration, totals[2] + 1)
+        result["speed_totals"] = totals
         result["summary_receipts"] = helpers
         result["summary_gaps"] = gaps
         result["summary_excluded_tools"] = excluded
@@ -961,6 +980,21 @@ class TaskCardEventProjection:
             {"call_id": call_id, "input": total, "generation": generation, "index": index},
             delta,
         )
+
+    @staticmethod
+    def session_average_tps(state: dict[str, Any] | None) -> dict[str, Any] | None:
+        """Duration-weighted observed main-call output rate, not decoder speed."""
+        if not state or state.get("source") != "v1":
+            return None
+        output, seconds, count = state.get("speed_totals", (0, 0., 0))
+        if not count or not math.isfinite(seconds) or seconds <= 0:
+            return None
+        try:
+            speed = output / seconds
+        except OverflowError:
+            return None
+        return ({"value": speed, "partial": count != state["api_call_index"]}
+                if math.isfinite(speed) else None)
 
     @staticmethod
     def session_usage_metadata(state: dict[str, Any] | None) -> dict[str, Any]:
@@ -1647,6 +1681,10 @@ class TaskCardEventProjection:
         output = cls.format_count(metadata.get("output_tokens"))
         if output is not None:
             session_parts.append(f"out {output}")
+        average = cls._finite_number(metadata.get("session_avg_tps"))
+        if average is not None and average >= 0:
+            partial = " partial" if metadata.get("session_avg_tps_partial") is True else ""
+            session_parts.append(f"avg {average:.0f} tok/s{partial}")
         cache_rate = metadata.get("session_cache_rate")
         if (
             type(cache_rate) in {int, float}
