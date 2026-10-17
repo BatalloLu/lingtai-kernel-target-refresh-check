@@ -257,7 +257,14 @@ exact path and obtain path-scoped authorization first.
 ## Unified instructions and retired inputs
 
 The resident kernel prefix preserves general operating principles with a short
-route to tool schemas and the reference index. `psyche.instructions` with empty input returns only that index; optional
+route to tool schemas and the reference index. It also contains the complete
+runtime-metadata interpretation rule: only the latest `agent_meta.agent_state`
+is current; older snapshots are historical. Delivered notifications remain usable
+task records subject to newer human instructions and producer safeguards; later
+empty tails do not resolve them. New canonical tool/notification sidecars omit
+`agent_meta.instruction`; historical sidecars are never rewritten. The optional
+full `meta_guidance` reference remains available without a mandatory extra read.
+`psyche.instructions` with empty input returns only that index; optional
 `reference` reads one exact loaded fixed owner, including assembled catalog,
 _meta readme and adapter static rules. Covenant is an optional indexed reference,
 not a second mandatory orientation read. Base prompt remains resident after the

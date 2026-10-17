@@ -68,6 +68,7 @@ from .config import (
     system_prompt_pressure_ratio,
 )
 from .i18n import t as _t
+from .prompt import AGENT_META_INSTRUCTION
 from .reminders.context_pressure import (
     current_molt_emission_descriptor,
     render_forced_rebuild_failed_warning,
@@ -92,12 +93,6 @@ GUIDANCE_KEY = "guidance"
 NOTIFICATIONS_KEY = "notifications"
 NOTIFICATION_GUIDANCE_KEY = "notification_guidance"
 NOTIFICATION_PERSISTENT_KEY = "notification_persistent"
-AGENT_META_INSTRUCTION = (
-    "Only the latest agent_meta.agent_state is current runtime state; older "
-    "runtime snapshots are historical traces. Delivered notification messages "
-    "remain usable task records, subject to newer human instructions and "
-    "producer safeguards; an empty later tail does not resolve them."
-)
 # Telegram lives under an `mcp` namespace level to mirror the ephemeral
 # `notifications.mcp.telegram` shape and match Jason #6148: the required path is
 # `_meta.agent_meta.notifications.persistent.mcp.telegram` (NOT
@@ -4108,7 +4103,6 @@ def build_synthetic_meta_envelope(
     envelope: dict = {
         TOOL_META_KEY: tool_meta,
         AGENT_META_KEY: {
-            "instruction": AGENT_META_INSTRUCTION,
             "agent_state": state,
             "notifications": {
                 "attention": _cap_notification_attention(
@@ -4710,8 +4704,7 @@ def _attach_active_notifications_locked(
         if target is not None:
             current = target.metadata.get(AGENT_META_KEY)
             if not isinstance(current, dict):
-                current = {"instruction": AGENT_META_INSTRUCTION, "agent_state": {}, "guidance": {}}
-            current["instruction"] = AGENT_META_INSTRUCTION
+                current = {"agent_state": {}, "guidance": {}}
             current["notifications"] = {}
             current.setdefault("guidance", {})["transient"] = {}
             target.metadata[AGENT_META_KEY] = current
@@ -4756,7 +4749,6 @@ def _attach_active_notifications_locked(
     sanitize_whatsapp_notification_after_persistent(payload)
     sanitize_email_notification_after_persistent(payload)
     agent_meta = target.metadata.setdefault(AGENT_META_KEY, {
-        "instruction": AGENT_META_INSTRUCTION,
         "agent_state": {},
         "notifications": {},
         "guidance": {},
@@ -4764,7 +4756,6 @@ def _attach_active_notifications_locked(
     # Compose the two current axes. Runtime owns agent_state and persistent
     # guidance; notification attachment owns notifications and transient
     # guidance. Neither phase may replace the other phase's current subtree.
-    agent_meta["instruction"] = AGENT_META_INSTRUCTION
     agent_meta.setdefault("notifications", {})["attention"] = _cap_notification_attention(
         agent, payload.get(NOTIFICATIONS_KEY, {})
     )
@@ -5015,7 +5006,6 @@ def attach_active_taskcard(
 
     def _carrier() -> dict:
         return target.metadata.setdefault(AGENT_META_KEY, {
-            "instruction": AGENT_META_INSTRUCTION,
             "agent_state": {},
             "guidance": {},
         })
@@ -5149,7 +5139,6 @@ def attach_active_runtime(
     existing_agent_meta = target_block.metadata.get(AGENT_META_KEY)
     existing_agent_meta = existing_agent_meta if isinstance(existing_agent_meta, dict) else {}
     target_block.metadata[AGENT_META_KEY] = {
-        "instruction": AGENT_META_INSTRUCTION,
         "agent_state": agent_meta["agent_state"],
         "notifications": existing_agent_meta.get("notifications", {}),
         **({TASKCARD_KEY: existing_agent_meta[TASKCARD_KEY]}
@@ -5178,11 +5167,11 @@ def attach_daemon_agent_meta(
     Daemon sessions deliberately do not have the parent ``BaseAgent``'s
     notification/communication state, so they cannot use
     :func:`attach_active_runtime` directly.  This small projector nevertheless
-    keeps the canonical envelope, instruction, and final-carrier/latest-snapshot
+    keeps the canonical envelope and final-carrier/latest-snapshot
     semantics in one place.  It does not manufacture a guidance reference because
-    daemon prompts do not contain the main agent's resident ``meta_guidance``
-    section.  The supplied ``agent_state`` is daemon-local runtime/token/context
-    state; if omitted, the
+    daemon prompts carry the interpretation rule directly, not the main
+    agent's optional full ``meta_guidance`` reference. The supplied ``agent_state``
+    is daemon-local runtime/token/context state; if omitted, the
     private ``_agent_pending`` capture staged by ``ToolExecutor`` is promoted.
     Older result blocks remain historical and the newest final result is the
     only current ``agent_meta`` carrier.
@@ -5204,7 +5193,6 @@ def attach_daemon_agent_meta(
     if not isinstance(state, Mapping):
         return target
     target.metadata[AGENT_META_KEY] = {
-        "instruction": AGENT_META_INSTRUCTION,
         "agent_state": _copy.deepcopy(dict(state)),
     }
     return target
@@ -5215,7 +5203,8 @@ def finalize_two_axis_sidecars(tool_results: list) -> None:
 
     Handler content is deliberately left as the handler returned it.  This is
     called once after notification/runtime attachment and before results return
-    to the model; old holders in history are never rewritten.
+    to the model; old holders in history are never rewritten. Static interpretation
+    rules live in the system prompt, not in newly constructed sidecars.
     """
     for block in tool_results:
         metadata = getattr(block, "metadata", None)
@@ -5227,10 +5216,8 @@ def finalize_two_axis_sidecars(tool_results: list) -> None:
         metadata.pop("_agent_pending", None)
         agent = metadata.get(AGENT_META_KEY)
         if isinstance(agent, dict):
-            agent["instruction"] = AGENT_META_INSTRUCTION
             agent_state = agent.get("agent_state", {})
             normalized_agent = {
-                "instruction": agent["instruction"],
                 "agent_state": agent_state,
             }
             daemon_local_state = (

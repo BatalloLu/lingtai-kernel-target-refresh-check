@@ -240,7 +240,10 @@ by default or one exact current fixed owner by bounded `reference`. Its renderer
 the resident user base prompt. `psyche.instructions` binds this narrow read via
 `adapters/tool_plugin_host.py::AgentPsycheSettingsAdapter`; no source reread,
 arbitrary section selector, mutation or reconstruction is available. Runtime metadata refs route
-there for catalog/readme/adapter detail. The old comment and rules loaders and
+there for catalog/readme/adapter detail. `INSTRUCTIONS_ENTRY` contains the full
+latest-state/historical-notification safety rule, shared with the daemon static
+prompt and optional readme; new `meta_block` sidecars omit `instruction` at
+construction, not through a history projection. The old comment and rules loaders and
 heartbeat consumer are removed; existing runtime files are never purged.
 
 ## Loaded memory advisory lifecycle seam
