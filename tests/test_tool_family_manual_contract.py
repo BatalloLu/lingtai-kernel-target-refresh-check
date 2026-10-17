@@ -266,3 +266,27 @@ def test_web_manual_rejects_nonempty_input(tmp_path):
     result = manager.handle({"action": "manual", "input": {"topic": "search"}, "reasoning": "x"})
     assert result["status"] == "failed"
     assert result["error_code"] == "INVALID_ARGUMENT"
+
+
+def test_context_overlapping_empty_inputs_keep_selected_action_strict():
+    from types import SimpleNamespace
+    from lingtai.tools import context
+
+    schema = context.get_schema()
+    branches = schema["properties"]["input"]["anyOf"]
+    assert [branch["title"] for branch in branches] == [
+        "molt input", "summarize input", "rebuild input", "manual input"
+    ]
+    assert len(schema["allOf"]) == len(branches)
+    calls = []
+    host = SimpleNamespace(context_runtime=SimpleNamespace(
+        molt=lambda args: calls.append(("molt", args)),
+        summarize=lambda args: calls.append(("summarize", args)),
+        rebuild=lambda args: calls.append(("rebuild", args)),
+    ), workdir=SimpleNamespace())
+    family = context._build_family(host)
+    family.handle({"action": "rebuild", "input": {}, "reasoning": "test"})
+    assert calls == [("rebuild", {})]
+    rejected = family.handle({"action": "rebuild", "input": {"summary": "foreign"}, "reasoning": "test"})
+    assert rejected["status"] == "failed"
+    assert calls == [("rebuild", {})]
