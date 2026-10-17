@@ -2927,6 +2927,10 @@ class TelegramManager:
             metadata = self._task_card_event_metadata
             snapshot = dict(metadata) if isinstance(metadata, dict) else {}
             session_cost = _api_cost.session_cost_text(self._task_card_session_cost_state)
+            average = TaskCardEventProjection.session_average_tps(self._task_card_session_usage_state)
+        if average is not None:
+            snapshot["session_avg_tps"] = average["value"]
+            snapshot["session_avg_tps_partial"] = average["partial"]
         if session_cost:
             snapshot["session_cost"] = session_cost
         lifecycle = self._task_card_agent_lifecycle_status()

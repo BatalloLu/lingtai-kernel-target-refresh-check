@@ -1,5 +1,6 @@
 ---
 related_files:
+  - tests/test_agents_memory.py
   - src/lingtai/tools/plugin/ANATOMY.md
   - tests/test_plugin_mcp_mode.py
   - tests/test_project_recipe.py
@@ -32,6 +33,7 @@ related_files:
   - tests/test_kernel_version_nudge.py
   - tests/test_large_result_rescan.py
   - tests/test_mcp_identity_discovery.py
+  - tests/test_whatsapp_notification_id.py
   - tests/test_molt_notification_persistence.py
   - tests/test_post_molt_notification.py
   - tests/test_preset_context_guard.py

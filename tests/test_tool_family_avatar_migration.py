@@ -404,6 +404,9 @@ def test_avatar_spawn_carries_only_psyche_prompt_owner_for_both_modes(
         )
     )
     assert not (child / "settings" / "system.json").exists()
+    child_init = json.loads((child / "init.json").read_text(encoding="utf-8"))
+    assert "lingtai" not in child_init
+    assert "lingtai_file" not in child_init
 
     from lingtai.agent import Agent
     from lingtai.kernel.prompt import COVENANT_ROUTE
@@ -422,7 +425,7 @@ def test_avatar_spawn_carries_only_psyche_prompt_owner_for_both_modes(
         }) == {"status": "ok", "covenant": "PARENT COVENANT"}
         prompt = child_agent._build_system_prompt()
         assert "PARENT COVENANT" not in prompt
-        assert 'psyche(action="covenant", input={})' in prompt
+        assert 'psyche(action="covenant", input={})' in child_agent._prompt_manager.read_instructions()
         assert (child / "system/covenant.md").read_text() == "PARENT COVENANT"
     finally:
         child_agent.stop(timeout=1.0)

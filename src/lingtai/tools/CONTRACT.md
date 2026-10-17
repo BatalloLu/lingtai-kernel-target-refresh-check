@@ -153,10 +153,13 @@ is emitted. Guarded by [LP001](BEHAVIORS.md#behavior-lp001).
   action's independent implementation input.
 - `summarize` is a root-only boolean with JSON Schema `default: true`; omission
   enables a-priori summarization. Explicit `false` requests raw presentation
-  (subject to existing caps/spills). Agents MUST proactively set it to `false`
-  whenever raw results are required: verbatim manuals and mandatory gates, exact
-  names/paths, field presence, source, diffs, or evidence. With summary enabled,
-  `reasoning` MUST specify the retention contract. Generated summaries are lossy
+  (subject to existing caps/spills). Agents SHOULD select it for anticipated
+  long, bulky output and set it to `false` for expected short results. Agents
+  MUST set it to `false` when the current task requires exact raw
+  text (such as a verbatim mandatory gate, name/path, field, source, diff or
+  evidence), explain that need in `reasoning`, and narrow the read. With summary enabled,
+  `reasoning` MUST clearly specify status, key fields, counts, anchors or evidence
+  to retain, not extra interpretation or conclusions. Generated summaries are lossy
   and noncanonical, not replacements for preserved raw evidence. Guarded by
   [LP003](BEHAVIORS.md#behavior-lp003). It is universal
   cross-cutting result post-processing for every migrated family, not an action
@@ -939,14 +942,14 @@ envelope.
 
 **Current state (the paragraph above is migration history).** That family no
 longer exists, and neither do the `pad`/`lingtai`/`knowledge`/`skills` public
-roots that briefly succeeded it. The four durable domains are now taught by one
-read-only root, `psyche` (`pad | lingtai | knowledge | skills | settings |
-manual`,
-`src/lingtai/tools/psyche/CONTRACT.md`, the equation
-`pad + lingtai + knowledge + skills = psyche`): five actions return the domain
-or routing manual; `settings` returns the eight fully redacted Psyche-owned Pad
-and configurable-prompt rows. Every action mutates nothing. Those four packages remain as private lifecycle
-owners — Pad/LingTai composers and the Skills/Knowledge catalogs plus the
+roots that briefly succeeded it. Private Pad and Knowledge memory plus the
+Skills catalog are taught by `psyche` (`pad | knowledge | skills | instructions |
+covenant | settings | manual`, `src/lingtai/tools/psyche/CONTRACT.md`). Four
+manual routes return domain/router guidance; instructions and Covenant disclose
+loaded bodies; settings returns six fully redacted owner rows. Every public
+action is read-only. Pad now preserves legacy character once; no separate
+character loader or `psyche.lingtai` route remains. Pad and Skills/Knowledge keep
+private composition/catalog ownership, including the
 Knowledge legacy migration — and register no tool. Durable mutation of those
 sources happens through `shell` (verified exact edits), which never hot-loads
 prompt state; the retired `pad.append`, `skills.info`, and `knowledge.info`

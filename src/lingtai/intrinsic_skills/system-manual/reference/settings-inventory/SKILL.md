@@ -291,11 +291,12 @@ future fields cannot vanish silently:
 
 - Concrete ToolPlugin owners stay out of System: Shell; Daemon;
   Notification; Vision; Web; Task Card; Plugin/Psyche;
-  Skills; LingTai character; MCP, curated addons, and their config/session
+  Skills; unified Pad memory; MCP, curated addons, and their config/session
   paths. Psyche owns the live Pad prompt inputs at root `pad`/`pad_file` and
-  the six configurable system-prompt inputs in `settings/psyche.json`.
-  `manifest.capabilities`, `manifest.plugins`, root `addons`/`mcp`, and root
-  `lingtai`/`lingtai_file` therefore are not System rows.
+  the four configurable system-prompt inputs in `settings/psyche.json`.
+  `manifest.capabilities`, `manifest.plugins`, and root `addons`/`mcp`
+  therefore are not System rows. Old `lingtai`/`lingtai_file` strings remain
+  accepted one-way memory migration inputs, not live settings sources.
 - Inert/compatibility **init inputs** are not settings sources:
   `manifest.context_limit`, `manifest.snapshot_interval`, `manifest.max_rpm`,
   `manifest.max_aed_attempts`, `manifest.aed_timeout`, `manifest.streaming`,

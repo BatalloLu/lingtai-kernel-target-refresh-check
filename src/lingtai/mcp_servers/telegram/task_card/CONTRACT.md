@@ -1,8 +1,9 @@
 ---
 name: telegram-task-card-projection
-contract_version: 15
+contract_version: 17
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_telegram_task_card_transport.py
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/ANATOMY.md
   - src/lingtai/mcp_servers/telegram/task_card/BEHAVIORS.md
@@ -96,11 +97,11 @@ semantics live here. The public producer contract lives in
    malformed, or output-less count is omitted without a dangling parenthesis,
    preserving old-event rendering and never exposing reasoning text.
     Telegram opts into two metrics lines: time and speed first
-    (`↻12.4s · ⚡1.2s · 35 tok/s`), tokens next (existing
+    (`↻12.4s · ⚡1.2s · 38 tok/s`), tokens next (existing
     output/thinking/cache/context symbols). `⚡` is seconds from actual dispatch to first nonempty text or
     tool name/argument payload, excluding ids, reasoning, lifecycle, heartbeat,
-    usage and empty events. Speed is final provider non-reasoning output tokens
-    (including tools) / measured dispatch-to-final-usage seconds
+    usage and empty events. Speed is final provider total output tokens
+    (including thinking exactly once and tools) / measured dispatch-to-final-usage seconds
     (`first_token_s + generation_s`), only with explicit compatible counts and
     finite positive generation and combined intervals. This is API-average
     output throughput, not server-only generation speed. Text, tool-only
@@ -256,6 +257,15 @@ semantics live here. The public producer contract lives in
     snapshots render no SESSION; lower generation/index snapshots cannot replace
     a newer accepted state. Per-call dividers and all non-token metadata retain
     their existing sources and rendering.
+    Telegram also appends `avg N tok/s` to SESSION's Context row: total provider
+    output (thinking once) divided by summed first-output wait plus generation
+    seconds for observed, accepted, measured/non-estimated main responses in
+    this molt generation, never an arithmetic mean of rounded per-call rates.
+    Each parent index counts once. Missing history/timing adds `partial`;
+    no eligible sample omits the metric. Summary/daemon calls do not enter this
+    stream-based average; existing token totals and per-call metrics stay intact.
+    Live append and bounded replay share the reducer and molt reset; no extra
+    scan/store/provider call is added. Guarded by [TT002](BEHAVIORS.md#behavior-tt002).
 15. Telegram alone adds one SESSION row directly after Session's existing rows:
     `Cost · total ~$<total> · in $<input> · write $<write> · read $<read> · out $<output>` (HTML `<b>Cost</b> · …`). It
     sums, over the since-molt main `llm_response` rounds whose v1 snapshot the
@@ -378,7 +388,9 @@ this component.
     parent snapshots, per-call index, context, TPS, and Delta remain unchanged. Restart rehydrate
     applies the existing event window to SESSION events even when the recent tail
     has no projectable activity rows; it must not retain or scan the full history
-    merely to recover an older visible row. The behavior 15 Cost row is the only
+    merely to recover an older visible row. Behavior 14's observed-call average
+    is a separate timing statistic with explicit partial coverage, never a
+    reconstruction of authoritative token/count totals. The behavior 15 Cost row is the only
     Telegram-owned monetary sum; token/count supplementation belongs to the
     shared projector, not a second Telegram accumulator. Per-round bill facts
     fold beside that same reducer over the

@@ -58,8 +58,8 @@ canonical message; plain text output is private diary, not a reply channel.
 
 ## Memory
 
-Conversation is temporary. Pad carries current work; LingTai/character carries
-identity and standing relationships; knowledge carries private facts; skills
+Conversation is temporary. Pad and Knowledge are private memory: Pad carries
+working state, identity lessons and relationships; Knowledge carries private facts; skills
 carry reusable know-how. Keep the grain in its owning layer before shedding
 context. Completion alone is not a reason to molt.
 

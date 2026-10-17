@@ -236,12 +236,11 @@ Conversation is temporary. Durable layers are:
 
 | Layer | Purpose | Typical contents |
 |---|---|---|
-| **Pad** | Current work and indexes | Active task, next steps, open branches, who is waiting, pointers into knowledge/reports |
-| **Character / lingtai** | Identity and standing relationships | Long-term specialties, collaboration topology, stable preferences and obligations |
+| **Pad** | Unified private memory and indexes | Active tasks, next steps, preferences, identity lessons, standing relationships and pointers into Knowledge |
 | **Knowledge** | Private durable memory | Project facts, decisions, local paths, journals, raw observations, collaborator context |
 | **Skills** | Portable know-how | Reusable workflows, command recipes, checklists, scripts, templates |
 
-Knowledge flows outward from conversation into those four layers; the routing
+Knowledge flows outward from conversation into those three layers; the routing
 rule is resident substrate's Memory section and the store-tending procedure is
 `context-manual` §2.
 When context pressure rises, tend durable stores before molting. The detailed
@@ -260,7 +259,7 @@ The network is part of the agent's durable body. Keep topology knowledge in four
 places:
 
 - contacts: addresses and aliases;
-- character: stable collaborators and specialties;
+- Pad: stable collaborators and specialties;
 - pad: active delegations and who is waiting on whom;
 - mail/chat history: evidence of actual interactions.
 

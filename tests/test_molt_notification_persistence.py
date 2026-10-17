@@ -10,6 +10,7 @@ See: fix/molt-notification-persistence branch.
 from __future__ import annotations
 
 import json
+import pytest
 from unittest.mock import MagicMock, patch
 
 
@@ -377,3 +378,35 @@ class TestNotificationTrackingStateAfterMolt:
         finally:
             agent.stop()
 
+
+
+@pytest.mark.parametrize("kind", ["agent", "system"])
+def test_molt_archive_appends_utf8_under_ascii_default(tmp_path, monkeypatch, kind):
+    import builtins
+    from lingtai.kernel.llm.interface import ToolCallBlock
+    from lingtai.tools.context._molt import _context_molt, context_forget
+    real_open = builtins.open
+    def ascii_default(file, mode="r", *args, **kwargs):
+        if "a" in mode and "b" not in mode and "encoding" not in kwargs:
+            kwargs["encoding"] = "ascii"
+        return real_open(file, mode, *args, **kwargs)
+    monkeypatch.setattr(builtins, "open", ascii_default)
+    agent = _make_agent_with_context(tmp_path / kind)
+    try:
+        interface = _setup_mock_chat(agent)
+        args = {"summary": "保留🌙", "_tc_id": "utf8-molt",
+                "session_journal_path": _write_session_journal(agent)}
+        interface.entries = [MagicMock(role="assistant", content=[
+            ToolCallBlock(id="utf8-molt", name="context", args={"action": "molt", "input": {}})
+        ])]
+        history = agent._working_dir / "history"
+        history.mkdir(exist_ok=True)
+        text = json.dumps({"text": "保留中文🌙"}, ensure_ascii=False) + "\n"
+        (history / "chat_history.jsonl").write_text(text, encoding="utf-8")
+        archive = history / "chat_history_archive.jsonl"
+        archive.write_text("{}\n", encoding="utf-8")
+        result = _context_molt(agent, args) if kind == "agent" else context_forget(agent)
+        assert result["status"] == "ok"
+        assert archive.read_bytes() == ("{}\n" + text).encode("utf-8")
+    finally:
+        agent.stop(timeout=1)

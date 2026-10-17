@@ -87,7 +87,7 @@ both built from the same deep-copied canonical child schemas:
    `allOf`/`if`/`then` schema without error on the current route (see
    `_scrub_responses_schema` in `../../llm/openai/adapter.py` for the
    corresponding wire-level change and its own scope note).
-2. **Typed `input.oneOf` disclosure:** `input` explicitly declares the common
+2. **Typed `input.anyOf` disclosure:** `input` explicitly declares the common
    `type: object` constraint required of every action, then embeds the same
    per-child `input_schema`s verbatim under a `title` for model discoverability
    of every action's exact shape in one place. The direct type is redundant for
@@ -115,7 +115,9 @@ package does not own or enforce. Today `web`, `mcp`, `plugin`, `vision`,
 `telegram`, `feishu`, `imap`, `wechat`, `whatsapp`, and `cloud_mail` are on that
 allowlist. Their root control defaults to `true` in both schema and runtime;
 explicit canonical `false` always requests raw presentation, even alongside
-legacy `summary=true`. Present null/malformed values retain literal-True
+legacy `summary=true`. Caller guidance selects summaries for anticipated long,
+bulky output and raw presentation for expected short results or required exact
+text, with explicit retention targets rather than extra interpretation. Present null/malformed values retain literal-True
 semantics and dispatch validation; unrelated external domain fields are not
 reinterpreted. Guarded by [LP003](../BEHAVIORS.md#behavior-lp003). Thus `summarize` is
 meaningful for the families that use this infrastructure; a family adopting
@@ -455,8 +457,9 @@ Guarded by: [T006](BEHAVIORS.md#behavior-t006) and
 - `build_schema()` MUST declare the aggregate `input` property as direct
   `type: object`, then embed each child's own object `input_schema` verbatim
   (no copy-and-reshape) under a branch pairing it with that child's `title`.
-  The branch keyword is `oneOf` for opted-out families and `anyOf` for an
-  opted-in settings family, avoiding duplicate strict-empty branch invalidity.
+  The branch keyword MUST be `anyOf`: action inputs can overlap even without
+  settings (for example, Context rebuild and manual both accept `{}`).
+  The selected action remains constrained by the root `allOf` and dispatch.
   It MUST declare a root `reasoning` string property and include
   `reasoning` in the root `required` list — `reasoning` is Host
   InvocationContext/audit metadata, not left to Agent schema composition's
@@ -570,7 +573,9 @@ proves the composed schema (including required `reasoning`) survives both
 Chat Completions and Responses wires (including a real Agent
 startup for `web`) at the existing OpenAI adapter seam with zero adapter code
 changes, and that `ChildTool.diagnostics` text never appears anywhere in
-either wire's tool schema. `tests/test_tool_family_manual_contract.py` invokes the actual
+either wire's tool schema. `tests/test_tool_family_manual_contract.py` also proves overlapping Context
+empty inputs use `anyOf` while real dispatch still rejects a foreign field.
+It invokes the actual
 generic manual child handler (not an unused presentational helper) and
 proves the ManualTool reserved name, strict empty input, the canonical
 `content[0].text`/`structuredContent.manual_path` return shape,

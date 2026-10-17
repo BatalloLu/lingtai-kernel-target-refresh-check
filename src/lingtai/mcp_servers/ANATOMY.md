@@ -54,6 +54,7 @@ related_files:
   - src/lingtai/mcp_servers/wechat/_family.py
   - src/lingtai/mcp_servers/wechat/plugin.py
   - src/lingtai/mcp_servers/whatsapp/manager.py
+  - tests/test_whatsapp_notification_id.py
   - src/lingtai/mcp_servers/whatsapp/_family.py
   - src/lingtai/mcp_servers/whatsapp/plugin.py
   - ENVIRONMENT_VARIABLES.md
@@ -181,6 +182,12 @@ Curated and built-in MCP server package implementations shipped inside the `ling
 | Per-package `SKILL.md` | The human/agent-facing bundled manual. If a manual has sidecars, the sidecar inventory and relative paths live in this markdown, not in the tool payload. |
 | `feishu/reference/` | Packaged Feishu references: model-facing message/card/settings semantics, app permissions/events/callbacks, complete account config and canary/rollback, safe diagnostic flows, and the Telegram comparison/non-goal matrix. `feishu/SKILL.md` is their progressive-disclosure catalog. |
 | `pyproject.toml` package-data entries | Ships every curated MCP `SKILL.md`; `reference/**/*` and `assets/**/*` are also packaged for future sidecar files (`pyproject.toml:175-186`). |
+
+WhatsApp inbound publication (`src/lingtai/mcp_servers/whatsapp/manager.py:466`) preserves archive then
+seen-guard ordering and hashes the raw sender/message-ID tuple into a bounded
+LICC filename; failed publication logs a content-free warning without retry.
+`tests/test_whatsapp_notification_id.py` drives that seam with the canonical
+writer; operational boundaries remain in `whatsapp/SKILL.md`.
 
 ## Connections
 

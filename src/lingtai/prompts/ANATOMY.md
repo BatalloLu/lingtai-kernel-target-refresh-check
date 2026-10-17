@@ -100,8 +100,9 @@ sources, catalog INDEX ↔ catalog sections).
 Rendered system-prompt order is owned by `src/lingtai/kernel/prompt.py`:
 one short fixed `INSTRUCTIONS_ENTRY`, resident user base prompt and optional
 opt-in tool prose; then dynamic skills/plugin/MCP/knowledge catalogs,
-mechanical identity, character and Pad in the second cache batch. Full loaded
-fixed owners are read through `psyche.instructions`, not separate headers.
+mechanical identity and unified Pad in the second cache batch. Full loaded
+fixed owners are read through bounded `psyche.instructions.reference`; empty input
+returns only the index. Covenant remains optional through `psyche.covenant`.
 
 Each section has a `<section>/<section>.yaml` definition. Bodies split three ways:
 
@@ -116,8 +117,9 @@ Each section has a `<section>/<section>.yaml` definition. Bodies split three way
   (runtime facts). No packaged body; content is built each turn.
 - **Injected sections** — Covenant is supplied by Psyche's closed owner document,
   with its complete durable mirror/fallback and effective body disclosed by
-  `psyche.covenant`; the short route merges into the unified entry. Character and
-  Pad keep their persistent/configured sources. Comment and rules definitions are
+  `psyche.covenant`; the short route merges into the unified entry. Pad retains
+  its persistent/configured source and preserves legacy character once. Character,
+  comment and rules definitions are
   retirement records, with no active inputs, readers or injection.
 
 For the generated `tools` section, `src/lingtai/kernel/base_agent/tools.py`
@@ -191,7 +193,10 @@ and `override_policy`.
 
 ## Current resident projection and retirement
 
-The one resident fixed prefix is `kernel/prompt.py::INSTRUCTIONS_ENTRY`.
+The one resident fixed prefix is `kernel/prompt.py::INSTRUCTIONS_ENTRY`. It
+contains the complete runtime-state versus delivered-notification interpretation
+rule (`AGENT_META_INSTRUCTION`), also used by the daemon static prompt and
+optional full readme. New metadata construction does not repeat that prose.
 Principle/substrate/procedures retain their full packaged loaded bodies and
 mirrors, disclosed by `psyche.instructions`; assembled meta guidance and adapter
 static rules use the same route. Covenant fulltext uses `psyche.covenant`; its

@@ -78,7 +78,7 @@ fails the whole action as bounded `SETTINGS_UNAVAILABLE`, without partial rows.
 `type` is `shallow`, `dry_run` and `confirm` are false when
 nullable inputs are omitted/null. These four rows describe call defaults only.
 Shallow copies rewritten init plus narrow Psyche inputs; deep adds durable
-identity/knowledge state. See the payload reference before assuming isolation.
+unified Pad/Knowledge state. See the payload reference before assuming isolation.
 
 ### Spawn validation policy
 

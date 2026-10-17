@@ -223,7 +223,7 @@ def resolve_paths(data: dict, working_dir: str | Path) -> None:
     """Make every path field in init.json absolute, resolved against working_dir.
 
     Mutates *data* in place. Handles live init-owned top-level paths:
-    env_file, venv_path, pad_file, and lingtai_file. Psyche prompt pointers
+    env_file, venv_path, and pad_file. Psyche prompt pointers
     have their own closed owner reader.
 
     MCP-related paths (init.json's `mcp.<name>.env.LINGTAI_*_CONFIG`) are
@@ -236,9 +236,7 @@ def resolve_paths(data: dict, working_dir: str | Path) -> None:
     # are compatibility-known init fields, deliberately left out of active path
     # resolution. They must not become observable sources simply because an old
     # init.json carries them.
-    for key in ("env_file", "venv_path",
-                "pad_file",
-                "lingtai_file"):
+    for key in ("env_file", "venv_path", "pad_file"):
         if key in data and isinstance(data[key], str) and data[key]:
             p = Path(data[key]).expanduser()
             if not p.is_absolute():

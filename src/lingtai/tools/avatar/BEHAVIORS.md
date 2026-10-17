@@ -72,3 +72,23 @@ Pass when SHOW is exact, fresh, bounded, source-backed, read-only, and omits all
 private/non-setting state. Fail if an environment shadow changes current policy,
 a private or partial row appears, a mutation form is accepted, or existing
 spawn/rules behavior changes.
+
+## Behavior AV003 — shallow and deep children never regenerate retired character seeds
+
+- **id**: AV003
+- **title**: shallow and deep children never regenerate retired character seeds
+- **guards**: [avatar-contract § State & storage](CONTRACT.md#state--storage)
+- **runner**: a LingTai coding agent with Shell access
+- **prerequisites**: repository checkout and repository Python; fake launcher only
+- **estimate**: 1 minute
+
+### Steps
+1. From the repo root run `.venv/bin/python -m pytest -q tests/test_tool_family_avatar_migration.py -k avatar_spawn_carries_only_psyche_prompt_owner_for_both_modes`.
+2. Inspect both shallow/deep child-init assertions and the unchanged Covenant inheritance proof.
+
+### Expected evidence
+- [ ] Both cases pass without launching a child process or contacting a provider.
+- [ ] Neither `lingtai` nor `lingtai_file` is generated; Covenant and base owner inputs retain their meaning.
+
+### Pass / Fail
+Pass only on both passing cases. No real Avatar launch is authorized by this task.

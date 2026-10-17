@@ -67,7 +67,7 @@ passive lifecycle scenarios.
 - `_snapshots.py` — atomic pre-molt snapshots and retrospective persistence.
 - `agent.py`
   - `_reload_prompt_sections` is the authoritative all-source composer and
-    reuses private `_lingtai_load`/`_pad_load`, consuming either its caller's
+    reuses the unified private `_pad_load`, consuming either its caller's
     immutable Psyche candidate or one owner read;
   - `_reconstruct_context` wraps that composer and the final full prompt flush
     in one applied-prompt-generation rollback boundary;
@@ -88,7 +88,7 @@ context official mount handler
   -> _rebuild_action
   -> Agent._reconstruct_context
      -> Agent._reload_prompt_sections
-        -> private LingTai/Pad composers + every other canonical source
+        -> private unified Pad composer + every other canonical source
      -> virtual full prompt build/flush to disk and live interface
   -> private summary engine (new and/or pending summaries)
   -> chat.request_history_rebuild (provider replay)
@@ -99,16 +99,16 @@ Refresh supplies already-resolved init data and later rebuilds its session with
 preserved history; its Psyche candidate is resolved before teardown and reused
 by reconstruction. Molt invokes the one registered `_reconstruct_context` hook
 before `ensure_session`. A failed reconstruction restores the prior in-memory
-prompt generation and derived base/covenant/system mirrors. Pad/LingTai boot
-functions only perform initial composition; they do not register hooks.
+prompt generation and derived base/covenant/system mirrors. Pad boot
+only performs initial composition; they do not register hooks.
 
 ## State and invariants
 
 Context-owned persistent paths are `system/summaries/`, `history/snapshots/`,
 `history/chat_history.jsonl`, `history/chat_history_archive.jsonl`, and the
-post-molt notification. Pad and LingTai files are durable sources owned by their
-families/file mutation, but the context reconstruction path composes them along
-with base prompt, covenant, packaged layers, rules, comment, guidance,
+post-molt notification. Unified Pad is durable private memory (including one-time preserved legacy
+character); the context reconstruction path composes it along
+with base prompt, Covenant, packaged layers and guidance,
 and current tool/meta sections.
 
 `summarize` never reconstructs. `rebuild` always composes before history

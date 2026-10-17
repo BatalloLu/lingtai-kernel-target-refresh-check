@@ -380,7 +380,8 @@ def render_current_molt_context(
         "rebuild is strongly discouraged. "
         f"The recovery target is {recovery_text}; if a batched summarize/"
         "reconstruction pass still leaves context above 85%, stop repeating summarize "
-        "and molt deliberately: tend changed stores, write the session journal and "
+        "and molt deliberately: refresh Pad, losslessly archive stale history to "
+        "Knowledge with pointers, retain active work and holds, write the session journal and "
         "a short handoff. See context-manual."
     )
 

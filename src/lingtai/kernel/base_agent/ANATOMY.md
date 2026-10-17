@@ -1,5 +1,7 @@
 ---
 related_files:
+  - tests/test_agents_memory.py
+  - src/lingtai/kernel/prompt.py
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - src/lingtai/tools/context/manual/SKILL.md
@@ -123,6 +125,11 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
 - `base_agent/prompt.py` — System prompt building, flushing, updating (80 lines). `_build_system_prompt` (`base_agent/prompt.py:26-37`), `_build_system_prompt_batches` (`base_agent/prompt.py:40-56`), `_flush_system_prompt` (`base_agent/prompt.py:59-66`), `_update_system_prompt` (`base_agent/prompt.py:69-80`).
 - `base_agent/messaging.py` — mail arrival and system-event production. `_enqueue_system_notification` makes its dedupe/append decision from the current `system` payload in one Store compare-update and consumes event identity from `CompareUpdateResult.value`; no caller-held channel lock remains (`_enqueue_system_notification` in `src/lingtai/kernel/base_agent/messaging.py` — function-name anchor, not a line range).
 
+- `src/lingtai/kernel/prompt.py:17` — resident `INSTRUCTIONS_ENTRY` recommends
+  applicable AGENTS.md/CLAUDE.md reads at startup/fresh context and nested scope
+  entry, without body pasting or file creation. Dynamic memory is unified Pad;
+  mechanical identity is unchanged. Guarded by BA012.
+
 ## Connections
 
 - All submodules are leaves — they import nothing from `base_agent/`. Cross-module communication is mediated through the `agent` parameter (the BaseAgent instance).
@@ -153,6 +160,12 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
 - **Siblings:** `event_journal/`, `llm/`, `services/`, `i18n/`, `session.py`, `tool_executor.py`, `loop_guard.py`, `prompt.py`, `meta_block.py`, `config.py`, `state.py`, `workdir.py`, `message.py`.
 
 ## State
+
+- The post-turn boundary reconciles terminal ASLEEP with unfinished ACTIVE/STUCK
+  state through `_set_state`, preserving explicit sleep/suspend transitions
+  (`src/lingtai/kernel/base_agent/turn.py:1940-1947`). The existing state owner
+  clears `active_turn` (`src/lingtai/kernel/base_agent/__init__.py:1301-1305`).
+  Guarded by [BA011](BEHAVIORS.md#behavior-ba011).
 
 - `_effective_covenant` retains the complete loaded constructor/mirror body;
   only `COVENANT_ROUTE` enters the protected resident slot. Agent reconstruction

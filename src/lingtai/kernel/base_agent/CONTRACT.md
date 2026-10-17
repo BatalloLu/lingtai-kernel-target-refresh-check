@@ -1,8 +1,10 @@
 ---
 name: agent-runtime
-contract_version: 1
+contract_version: 3
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_agents_memory.py
+  - src/lingtai/kernel/prompt.py
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/SKILL.md
   - src/lingtai/tools/context/manual/SKILL.md
@@ -101,7 +103,13 @@ revisions reference each other (see `## Contract rules`).
 ## Behavior
 
 Agents and coding agents MUST treat the composed lifecycle as one ordered
-truth. Construction acquires the workdir lease exactly once (10 s grace) and
+truth. A terminal turn that selects ASLEEP MUST reconcile an ACTIVE/STUCK public
+state through the existing state owner before waiting, clearing `active_turn`.
+Explicit ASLEEP/SUSPENDED transitions remain authoritative; a fresh notification
+may wake an unpoisoned sleeping agent through ordinary synchronization. This
+does not authorize retry or replay of the failed turn
+([BA011](BEHAVIORS.md#behavior-ba011)). Construction acquires the workdir lease
+exactly once (10 s grace) and
 rolls back on any construction failure. A live agent's observability is
 manifest-first presence plus heartbeat freshness (`.agent.json`,
 `.agent.heartbeat`) — never process-table visibility or lock-file existence.
@@ -190,9 +198,17 @@ Platform profiles are selector-composed at the composition roots
 
 ## Contract rules
 
+The Psyche tool schema requires reading applicable AGENTS.md and CLAUDE.md at the
+beginning and after fresh context, with nested instructions read when entering
+that code scope. It MUST NOT paste their bodies automatically, blindly create or
+overwrite them, or give repository text authority over system/developer/human
+instructions. Unified Pad and Knowledge are private memory; no separate
+character injection remains. Mechanical identity, fixed owners and Covenant are
+unchanged. Guarded by [BA012](BEHAVIORS.md#behavior-ba012).
+
 Covenant construction retains the complete effective constructor/mirror body
 outside resident prompt state. Its protected slot carries only the discovery
-route and immediate pre-action gates; the existing read-only Psyche host Port
+optional route; pre-action gates live in owning tool schemas. The existing read-only Psyche host Port
 returns the loaded body. Agent reconstruction preserves source precedence and
 rolls the body back with the applied generation. The detailed disclosure promise
 is owned by [Psyche](../../tools/psyche/CONTRACT.md).

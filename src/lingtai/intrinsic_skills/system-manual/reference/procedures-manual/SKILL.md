@@ -91,7 +91,7 @@ discipline is resident. Two things it does not spell out:
 Examples of external side effects that normally need explicit confirmation:
 creating/filing issues, opening PRs, pushing commits, merging, deleting/closing
 resources, changing public visibility, publishing packages, changing persistent
-configuration, and rotating credentials. Read the local pad/character for any
+configuration, and rotating credentials. Read the local Pad for any
 standing exceptions.
 
 ## 3. Use the right body
@@ -156,7 +156,7 @@ same call.
 If rediscovering a workflow would be painful, make or update a skill immediately.
 
 After non-trivial work, deposit the grain into the layer that fits its lifetime
-— the pad / knowledge / skill / character routing is resident, and `psyche-manual`
+— the Pad / Knowledge / Skills routing is resident, and `psyche-manual`
 carries the canonical store table. What this section adds:
 
 - A broadly useful skill is worth publishing to a shared library, if appropriate
@@ -169,7 +169,7 @@ carries the canonical store table. What this section adds:
 At a meaningful use-cycle or stage boundary, rather than every turn, ask one
 focused question about what helped, failed, or should change. Use the answer first
 to improve the current instance. Then route reusable lessons to the appropriate
-durable layer: character/lingtai for operating style, knowledge for private facts
+durable layer: Pad for operating style, knowledge for private facts
 and patterns, a skill for a reusable procedure, or the product implementation for
 code behavior. Do not turn collecting feedback into ritual or user harassment;
 skip it when there has been no meaningful use or the question would add noise.

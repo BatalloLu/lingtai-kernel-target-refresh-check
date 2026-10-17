@@ -5,6 +5,8 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
+  - tests/test_agents_memory.py
+  - src/lingtai/kernel/prompt.py
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/kernel/base_agent/CONTRACT.md
   - src/lingtai/kernel/base_agent/ANATOMY.md
@@ -317,3 +319,49 @@ coverage; report those limits separately.
 
 ### Pass / Fail
 Pass only with successful selected tests and every assertion above verified. Fail on loss of returned usage due to text validation, fabricated exception usage, parent SessionManager mutation, a changed default summary policy, or any live provider/network side effect.
+
+## Behavior BA011 — terminal sleep publishes state and fresh notifications can wake
+
+- **id**: BA011
+- **title**: terminal sleep publishes state and fresh notifications can wake
+- **guards**: `agent-runtime` § [Behavior](CONTRACT.md#behavior)
+- **runner**: any LingTai coding agent with shell access to this repository
+- **prerequisites**: repository Python environment; fake provider work only
+- **estimate**: ≈ 1 minute
+
+### Steps
+1. Run `python -m pytest -q tests/test_aed_recovery.py` from this checkout.
+2. Inspect `test_terminal_sleep_publishes_state_and_new_notification_wakes` and `test_post_turn_preserves_explicit_lifecycle_state`.
+
+### Expected evidence
+- [ ] NoCandidate, no-AED terminal, client no-op, and over-window zero-progress exits publish ASLEEP before waiting; the production state owner clears `active_turn`.
+- [ ] Fresh mail drives a second fake-provider turn through real notification synchronization; the failed request is not rebuilt/replayed, and unchanged delivered mail does not wake again.
+- [ ] Notification sync retains cancellation until the fresh dequeue; explicit ASLEEP/SUSPENDED and shutdown signals survive post-turn handling. Existing partial-stream and worker-poison guards pass.
+
+### Pass / Fail
+Pass only with all assertions above and no live provider or Agent launch. This
+hermetic test does not establish live provider behavior or native Windows results.
+
+## Behavior BA012 — standard instructions and unified private memory survive normal lifecycle
+
+- **id**: BA012
+- **title**: standard instructions and unified private memory survive normal lifecycle
+- **guards**: [agent-runtime § Contract rules](CONTRACT.md#contract-rules)
+- **runner**: a LingTai coding agent with Shell access
+- **prerequisites**: repository checkout and repository Python; no live agent writes
+- **estimate**: 3 minutes
+
+### Steps
+1. Run `.venv/bin/python -m pytest -q tests/test_agents_memory.py` from the repo root.
+2. Inspect the real CLI init and complete-prompt assertions for rebuild, refresh
+   setup and journal-gated molt. No provider request is allowed.
+
+### Expected evidence
+- [ ] Applicable AGENTS.md/CLAUDE.md startup/fresh-context and nested scope guidance
+      is in the Psyche schema, without pasting or overwriting fixture instruction bodies.
+- [ ] Pad seed, preserved legacy memory and pinned references appear at boot;
+      updated Pad and pins reload across all three boundaries without character injection.
+
+### Pass / Fail
+Pass only if the suite passes on the candidate tree. A compilation or unexecuted
+test is not startup proof; report exact failed or unexecuted checks.

@@ -535,6 +535,46 @@ def test_manual_performs_no_mailbox_io(tmp_path):
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.parametrize("projection", ["_render_unread_digest", "_unread_notification_context"])
+def test_unread_projections_skip_read_bodies(tmp_path, monkeypatch, projection):
+    """Real inbox I/O is limited to unread directories without changing projections."""
+    from lingtai.tools.email import primitives
+
+    agent = _agent(tmp_path)
+    for msg_id, timestamp in [("old", "2026-01-01"), ("new", "2026-03-01"),
+                              ("middle", "2026-02-01"), ("read", "2026-04-01")]:
+        _seed_inbox(agent, msg_id, received_at=timestamp, message=f"body {msg_id}",
+                    _mailbox_id="forged-payload-id")
+    primitives._save_read_ids(agent, {"read"})
+    all_messages = primitives._list_inbox(agent)
+    render = getattr(primitives, projection)
+    # Reference the original full-scan-then-filter input, not the optimized scan.
+    with monkeypatch.context() as legacy:
+        legacy.setattr(primitives, "_list_inbox", lambda *a, **kw: [
+            m for m in all_messages if m["_mailbox_id"] != "read"
+        ])
+        expected = render(agent, max_entries=2)
+    loaded = []
+    read_text = Path.read_text
+
+    def track_read(path, *args, **kwargs):
+        if path.name == "message.json":
+            loaded.append(path.parent.name)
+        return read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", track_read)
+    assert render(agent, max_entries=2) == expected
+    assert sorted(loaded) == ["middle", "new", "old"]
+    if projection == "_render_unread_digest":
+        assert expected[1:] == (3, "2026-03-01")
+    else:
+        assert expected[1] == ["new", "middle"]
+        assert [m["message"] for m in expected[0]] == ["body new", "body middle"]
+    loaded.clear()
+    assert len(primitives._list_inbox(agent)) == 4
+    assert sorted(loaded) == ["middle", "new", "old", "read"]
+
+
 def test_read_returns_bodies_marks_read_and_rerenders_the_digest(tmp_path):
     agent = _agent(tmp_path)
     seeded = _seed_inbox(agent, "read-receipt-id", message="body to read")

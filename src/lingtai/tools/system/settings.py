@@ -189,8 +189,6 @@ SYSTEM_INIT_CONCRETE_TOOL_EXCLUSIONS = frozenset(
         # must not stack duplicate rows.
         "/pad",
         "/pad_file",
-        "/lingtai",
-        "/lingtai_file",
         "/manifest/capabilities",
         "/manifest/plugins",
         # Email owns these mail-adapter subscription paths. Its owner-local
@@ -200,6 +198,9 @@ SYSTEM_INIT_CONCRETE_TOOL_EXCLUSIONS = frozenset(
 )
 SYSTEM_INIT_INERT_OR_COMPATIBILITY_EXCLUSIONS = frozenset(
     {
+        # Accepted one-way legacy-memory migration data, not live settings.
+        "/lingtai",
+        "/lingtai_file",
         # Psyche owns the active prompt document. Their old init fields remain
         # recognized solely as untyped compatibility input and never become
         # System rows or active readers.

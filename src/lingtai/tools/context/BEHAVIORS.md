@@ -199,7 +199,10 @@ if process exit + file consumption are observed.
 ### Expected evidence
 - [ ] Molt result `status == "ok"` and `molt_count` is an integer ≥ 1.
 - [ ] `.notification/email.json` survived with unchanged content. Already-delivered event identity remains retained in the same process; no-carrier/failed attempts remain retryable, and new post-molt/new producer events still deliver. Focused executable coverage: `retired-test:test_notification_one_shot::test_real_molt_retains_delivery_identity_and_retries_undelivered`.
-- [ ] `system/pad.md` survived with unchanged content.
+- [ ] `system/pad.md` survived with unchanged content **by the molt tool**.
+  Before calling it, the agent refreshes current work/holds and losslessly
+  archives superseded history to Knowledge with retrieval pointers; the runtime
+  does not automatically rewrite private memory.
 - [ ] The session-journal sub-entry survived.
 - [ ] The summary file exists at `<WD>/system/summaries/molt_<count>_<ts>.md` and
       records `session_journal_path`.

@@ -327,3 +327,19 @@ class TestSpawnNameValidation:
 
         # src untouched
         assert (src / "system" / "important.md").read_text() == "do not delete"
+
+
+def test_spawn_ledger_appends_utf8_under_ascii_default(tmp_path, monkeypatch):
+    import builtins
+    from types import SimpleNamespace
+    real_open = builtins.open
+    def ascii_default(file, mode="r", *args, **kwargs):
+        if "a" in mode and "b" not in mode and "encoding" not in kwargs:
+            kwargs["encoding"] = "ascii"
+        return real_open(file, mode, *args, **kwargs)
+    monkeypatch.setattr(builtins, "open", ascii_default)
+    manager = object.__new__(AvatarManager)
+    manager._host = SimpleNamespace(workdir=SimpleNamespace(path=tmp_path))
+    manager._append_ledger("avatar", "知微🌙", mission="保留原文")
+    row = json.loads((tmp_path / "delegates/ledger.jsonl").read_text(encoding="utf-8"))
+    assert row["name"] == "知微🌙" and row["mission"] == "保留原文"

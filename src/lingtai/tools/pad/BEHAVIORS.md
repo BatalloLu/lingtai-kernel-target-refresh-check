@@ -5,6 +5,7 @@ labt_version: 2
 contract: CONTRACT.md
 anatomy: ANATOMY.md
 related_files:
+  - tests/test_agents_memory.py
   - src/lingtai/tools/pad/CONTRACT.md
   - src/lingtai/tools/pad/ANATOMY.md
   - src/lingtai/tools/pad/__init__.py
@@ -15,33 +16,35 @@ maintenance: |
   tool behavior clause changes, update the guarding LABT here in the same
   change.
 ---
-> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
+# Unified memory acceptance
 
-# Pad Capability Behavior Tests
-
-Self-contained agent behavior tasks guarding the observable behavior clauses of
-`src/lingtai/tools/pad/CONTRACT.md` (append/ manual only, validation before
-persistence, no hot load, delayed activation). Pinned pytest commands must run
-from the repo root with the project's Python.
-
-## Behavior PD001 — append validates every path and the aggregate limit before persisting, and never hot-loads the prompt
+## Behavior PD001 — unified Pad stays injected and preserves legacy memory once
 
 - **id**: PD001
-- **title**: append validates every path and the aggregate limit before persisting, and never hot-loads the prompt
-- **guards**: `pad-contract` § Public port
-- **runner**: any LingTai agent with `shell` access to this repository
-- **prerequisites**: a clean checkout of `<repo>`; a scratch agent working directory `<scratch>` with existing UTF-8 text files
-- **estimate**: ≈ 15 minutes
+- **title**: unified Pad stays injected and preserves legacy memory once
+- **guards**: [pad-contract § Legacy preservation](CONTRACT.md#legacy-preservation)
+- **runner**: a LingTai coding agent with Shell access
+- **prerequisites**: repository checkout, repository Python environment; temporary test workdirs only
+- **estimate**: 3 minutes
 
 ### Steps
-1. From `<repo>`, **Automated step unavailable: pytest recipe retired (2026-10-12); no replacement conformance claimed** and capture the outcome.
-2. Call `pad(action="append", input={"files": ["<scratch>/a.txt"]}, reasoning="probe")` and record the receipt; confirm `system/pad_append.json` was written and `prompt_reload` is `false`.
-3. Call `pad(action="append", input={"files": ["<scratch>/missing.txt"]}, reasoning="probe")` and confirm the invalid path is rejected before persistence; call `pad(action="edit", input={...}, reasoning="probe")` and confirm it fails as an unknown action.
+1. From the repository root, run `.venv/bin/python -m pytest -q tests/test_agents_memory.py tests/test_psyche_family.py tests/test_psyche_prompt_settings.py`.
+2. Inspect the compact smoke for initial memory byte preservation, real CLI init
+   seed wiring, complete prompt build and repeated composition.
+3. Confirm the lifecycle case exercises ordinary rebuild, refresh setup and real
+   journal-gated molt without provider requests. Inspect the exact public Psyche
+   inventory: `pad | knowledge | skills | instructions | covenant | settings | manual`.
 
 ### Expected evidence
-- [ ] Step 1: the pad suite passes, pinning the exact action set, strict retirement, validation-before-persistence, and delayed activation.
-- [ ] Step 2: the append receipt contains `status`, `files`, `count`, `prompt_reload: false`, and `takes_effect`; the persisted list is `system/pad_append.json`.
-- [ ] Step 3: an invalid path fails before any write; retired `edit`/`load` fail loudly before I/O; no prompt flush or prompt-manager section change occurs.
+- [ ] All selected tests pass; no external provider is called.
+- [ ] Old source bytes survive, Pad contains the legacy body once, and a later Pad
+      rewrite does not resurrect the retired source. No `character` section remains.
+- [ ] Unified Pad reloads; guidance names AGENTS.md/CLAUDE.md without pasting or
+      overwriting the project file. Init and legacy source bytes remain unchanged.
+
+The compact automated smoke omits crash-window, file-seed and pin matrices;
+those cases are not implied by its passing result.
 
 ### Pass / Fail
-Pass when the suite passes and the validate-before-persist/no-hot-load observations hold. Fail on a persisted invalid path, on a working retired action, or on any prompt reload side effect from append; record the evidence trail in the task report.
+Pass only when every check holds. A failed or unexecuted test is not acceptance;
+record exact output and unresolved risks. No live agent memory may be modified.

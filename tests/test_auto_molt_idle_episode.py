@@ -84,6 +84,8 @@ def test_asleep_continuity_and_existing_sync_wake(idle_agent, monkeypatch):
     since = agent._inactive_since_monotonic
     clock.advance_monotonic(500)
     agent._set_state(AgentState.ASLEEP)
+    agent._set_state(AgentState.IDLE)
+    agent._set_state(AgentState.ASLEEP)
     agent._asleep.set()
     clock.advance_monotonic(500)
     _maybe_notify_auto_molt(agent)
@@ -116,6 +118,18 @@ def test_unknown_context_does_not_create_session(idle_agent, monkeypatch, unknow
     assert agent._auto_molt_notified_since is None
 
 
+@pytest.mark.parametrize("state", [AgentState.ACTIVE, AgentState.STUCK])
+def test_busy_state_suppresses_reminder(idle_agent, state):
+    agent, clock = idle_agent
+    clock.advance_monotonic(1000)
+    agent._set_state(state)
+    _maybe_notify_auto_molt(agent)
+    assert not _events(agent)
+    assert agent._inactive_since_monotonic is None
+    assert agent._auto_molt_notified_since is None
+
+
+
 def test_failed_publish_retries_and_journal_is_still_required(idle_agent, monkeypatch):
     agent, clock = idle_agent
     monkeypatch.setattr(agent._chat.interface, "estimate_context_tokens", lambda: 100001)
@@ -133,6 +147,10 @@ def test_failed_publish_retries_and_journal_is_still_required(idle_agent, monkey
     assert agent._auto_molt_notified_since == agent._inactive_since_monotonic
     assert "valid session journal" in _events(agent)[0]["body"]
     assert "defer the molt" in _events(agent)[0]["body"]
+    assert "refresh Pad" in _events(agent)[0]["body"]
+    assert "losslessly archive" in _events(agent)[0]["body"]
+    assert "Knowledge with retrieval pointers" in _events(agent)[0]["body"]
+    assert "work and holds" in _events(agent)[0]["body"]
     result = _context_molt(agent, {"summary": "idle", "_tc_id": "missing"})
     assert "error" in result
     assert agent._molt_count == 0

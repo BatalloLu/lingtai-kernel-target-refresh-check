@@ -1,7 +1,7 @@
 ---
 name: avatar-contract
 tool: avatar
-contract_version: 10
+contract_version: 11
 related_files:
   - src/lingtai/tools/avatar/BEHAVIORS.md
   - src/lingtai/tools/avatar/__init__.py
@@ -316,8 +316,10 @@ the network root (`<parent>/..`):
 Old `system/rules.md` and `.rules` files are inert and left untouched. No
 heartbeat consumer or protected rules injection remains.
 
+Guarded by [AV003](BEHAVIORS.md#behavior-av003).
+
 The avatar's `init.json` is a deep copy of the parent's with: `agent_name` set,
-`lingtai` seed blanked, `admin` cleared, inert legacy and retired prompt fields and
+retired `lingtai`/`lingtai_file` keys removed, `admin` cleared, inert legacy and retired prompt fields and
 kernel/secretary prompt-override fields plus `addons` stripped, relative preset
 paths re-rooted, and the avatar pinned to the parent's **default** preset. Its
 separate Psyche document retains only parent base/covenant inputs and anchors

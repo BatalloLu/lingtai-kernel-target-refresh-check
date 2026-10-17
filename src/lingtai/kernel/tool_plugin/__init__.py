@@ -252,8 +252,11 @@ class PsycheSettingsPort(Protocol):
     def read_snapshot(self) -> PsycheSettingsSnapshotPort:
         """Return the current applied Psyche owner-input snapshot."""
 
-    def read_instructions(self) -> str:
-        """Return current loaded fixed instructions; no source I/O or mutation."""
+    def read_instructions(self, reference: str | None = None) -> str:
+        """Return the index or one fixed loaded owner (including effective Covenant).
+
+        No source I/O or mutation is granted.
+        """
 
     def read_covenant(self) -> str:
         """Return the current loaded Covenant body, including mirror fallback.

@@ -401,9 +401,11 @@ verification and are the only code the task runs.
    becomes a presentation control merely by exposing a field named `summarize`.
 3. Inspect `src/lingtai/tools/tool_family/__init__.py` and
    `src/lingtai/mcp_servers/cloud_mail/_family.py`: both root schemas advertise
-   boolean `summarize` with `default: true`, proactive explicit false for raw
-   manuals/mandatory gates, exact names/paths/fields, source/diffs/evidence,
-   and a retention specification in `reasoning`.
+   boolean `summarize` with `default: true`, an exact-raw opt-out, and a retention
+   specification in `reasoning`. The shared schema recommends summaries for
+   anticipated long, bulky output and explicit false for expected short results
+   or required exact text. Retention targets name status, key fields, counts
+   and evidence; the summarizer compresses faithfully without extra conclusions.
 
 ### Expected evidence
 

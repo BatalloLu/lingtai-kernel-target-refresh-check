@@ -1,8 +1,9 @@
 ---
 name: init-reader
-contract_version: 4
+contract_version: 6
 root_contract: CONTRACT.md
 related_files:
+  - tests/test_agents_memory.py
   - src/lingtai/ANATOMY.md
   - src/lingtai/init.jsonc
   - src/lingtai/init_reader.py
@@ -135,7 +136,14 @@ Guarded by: [K001](kernel/BEHAVIORS.md#behavior-k001), [K002](kernel/BEHAVIORS.m
 5. Compatibility retirement is recorded in this Contract and Git history, not
    per-agent progress files. Unsupported active conflicts fail closed; retired
    compatibility fields are reported as ignored and are never auto-resolved or
-   rewritten.
+   rewritten. Existing string `lingtai`/`lingtai_file` inputs remain accepted
+   for one-way Pad preservation; they MUST NOT block upgrade boot merely for
+   using those old spellings. File-over-inline fallback is resolved once before
+   migration, preserving both disk character and a distinct configured value.
+   After marking, neither old source is a continuing forced/self-evolve binding.
+   New templates/writers omit the keys; old init is never rewritten. Pad owns
+   preservation, not the init reader.
+   Guarded by [IR001](BEHAVIORS.md#behavior-ir001).
 6. Every declared Nudge kind (including the init/config-shape finding) uses the
    ordinary `.notification/nudge.json` transport and shared global
    `LINGTAI_NUDGE_ENABLED` / `LINGTAI_NUDGE_REPEAT_INTERVAL` policy. The goal
@@ -251,9 +259,18 @@ exact path and obtain path-scoped authorization first.
 
 ## Unified instructions and retired inputs
 
-The resident kernel prefix is one short entry. Current loaded full fixed owners
-are disclosed read-only by `psyche.instructions`, including assembled catalog,
-_meta readme and adapter static rules. Base prompt remains resident after the
+The resident kernel prefix preserves general operating principles with a short
+route to tool schemas and the reference index. It also contains the complete
+runtime-metadata interpretation rule: only the latest `agent_meta.agent_state`
+is current; older snapshots are historical. Delivered notifications remain usable
+task records subject to newer human instructions and producer safeguards; later
+empty tails do not resolve them. New canonical tool/notification sidecars omit
+`agent_meta.instruction`; historical sidecars are never rewritten. The optional
+full `meta_guidance` reference remains available without a mandatory extra read.
+`psyche.instructions` with empty input returns only that index; optional
+`reference` reads one exact loaded fixed owner, including assembled catalog,
+_meta readme and adapter static rules. Covenant is an optional indexed reference,
+not a second mandatory orientation read. Base prompt remains resident after the
 entry; dynamic memories and full effective `psyche.covenant` remain separate.
 Comment/comment_file now receive the existing unknown-field diagnostic with
 migrate-to-Pad guidance (strict rejection in the Psyche owner, warning in init).

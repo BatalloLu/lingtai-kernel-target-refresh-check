@@ -1,9 +1,11 @@
 ---
 name: lingtai-tool-contract
 tool: lingtai
-contract_version: 2
+contract_version: 3
 root_contract: CONTRACT.md
 related_files:
+  - src/lingtai/tools/lingtai/BEHAVIORS.md
+  - tests/test_agents_memory.py
   - src/lingtai/tools/lingtai/ANATOMY.md
   - src/lingtai/tools/lingtai/__init__.py
   - src/lingtai/tools/lingtai/_lingtai.py
@@ -15,84 +17,34 @@ related_files:
 maintenance: |
   This component contract is governed by root CONTRACT.md. Keep the paired
   ANATOMY.md, manual, schema, glossary resources, and focused tests in sync.
-  Bump contract_version for breaking changes. Version 2 makes the public family
-  a manual-only signpost and removes update/load without aliases.
+  Bump contract_version for breaking changes. The character domain and loader
+  are retired; Pad owns one-time legacy preservation without deleting sources.
 ---
-> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
-
-
-# LingTai capability contract
+# Retired LingTai character domain
 
 ## Purpose and ownership
-Guarded by: [LG001](BEHAVIORS.md#behavior-lg001)
 
-
-`lingtai` is the model-visible signpost for the agent's 灵台: durable character
-content in `system/lingtai.md`, rendered into the protected `character` prompt
-section. The public action inventory is exactly `manual`.
-
-Durable mutation of `system/lingtai.md` happens through `shell`: create or
-overwrite the complete identity file, or perform an exact text replacement
-after verifying the old text exists exactly once, then read the file back to
-verify.
-
-No filesystem operation hot-loads the prompt. Apply durable identity changes through
-one explicit `context.rebuild`, or let passive refresh/molt reconstruction apply
-them. Retired `lingtai.update` and `lingtai.load` have no aliases and fail as
-unknown actions.
+The separate character/LingTai domain is retired by human instruction. This does
+not retire the `lingtai` Python package or mechanical identity.
+Guarded by [LG001](BEHAVIORS.md#behavior-lg001).
 
 ## Public port
 
-The strict LTP v2 root envelope is exactly `action`, `input`, `reasoning`, and
-optional root `summarize`, with `additionalProperties: false`; `action`, `input`,
-and `reasoning` are required. The sole action is:
+No tool, loader, `psyche.lingtai` route, or compatibility alias remains. Old
+string `lingtai`/`lingtai_file` init values remain accepted for one-way Pad
+preservation, not a continuing character binding. A readable file wins over
+inline fallback. Disk character and a distinct configured value both survive;
+no old init is rewritten and no existing upgrade is blocked just for those keys.
+New serializers/templates omit them. Forced/self-evolve semantics are retired.
 
-| Action | Input | Result |
-|---|---|---|
-| `manual` | strict empty `{}` | flat `{status, manual, manual_path}` (+ degraded `error`) |
+## Memory preservation
 
-A manual-only family still has the full valid strict envelope, action/input
-correlation, and provider-wire representation. Non-empty/non-object manual input,
-unknown root fields, and a non-boolean root `summarize` fail with LTP v2
-`INVALID_ARGUMENT`. Root `summarize`, `reasoning`, and `_tc_id` never become
-manual input.
+Existing `system/lingtai.md` is never removed or emptied. Its contents are
+preserved once by the [Pad contract](../pad/CONTRACT.md#legacy-preservation),
+without any separate `character` injection. Subsequent memory edits belong in
+`system/pad.md` or Knowledge. Names and Covenant keep their existing owners.
 
-## Internal composition and identity modes
+## Evidence
 
-`_lingtai_load` remains private and is not a compatibility alias. It is the
-single canonical writer of the protected `character` prompt section, composing
-from `system/lingtai.md` only; it never touches `covenant` or mechanical
-`identity`.
-
-`Agent._reload_prompt_sections` reuses this composer inside the shared
-`Agent._reconstruct_context` path:
-
-- a nonempty configured `lingtai`/resolved `lingtai_file` value is authoritative
-  and is materialized into `system/lingtai.md` before composition;
-- absent/empty configuration preserves the self-authored durable file.
-
-`boot(agent)` performs initial internal composition only. It does not register a
-post-molt hook. Agent owns one full reconstruction hook used by refresh, molt,
-and active `context.rebuild`.
-
-## Contract rules and evidence
-
-- `manual` resolves `lingtai-manual` and is flattened once after generic
-  ToolFamily dispatch.
-- Schema and dispatch expose no hidden mutation/reload action on either provider
-  wire.
-- `lingtai` remains in `_LTP_V2_MIGRATED_FAMILIES` and
-  `EMANATION_BLACKLIST`; no settings file exists.
-- The package owns guidance for identity, not generic file mutation or active
-  prompt reload.
-
-Focused evidence:
-
-```text
-Automated recipe retired by test pruning (2026-10-12).
-No replacement conformance claimed for: test_context_ownership_redesign, test_pad_lingtai_split.
-```
-
-The tests pin the manual-only schema and dispatch, strict retired-action
-rejection, file no-hot-load behavior, canonical private composition, identity
-separation, provider-wire parity, and the single lifecycle reconstruction hook.
+[LG001](BEHAVIORS.md#behavior-lg001), `tests/test_agents_memory.py` and the Psyche
+inventory tests guard strict retirement and non-destructive migration.

@@ -1,9 +1,11 @@
 ---
 name: pad-contract
 tool: pad
-contract_version: 2
+contract_version: 3
 root_contract: CONTRACT.md
 related_files:
+  - src/lingtai/tools/pad/BEHAVIORS.md
+  - tests/test_agents_memory.py
   - src/lingtai/tools/pad/ANATOMY.md
   - src/lingtai/tools/pad/__init__.py
   - src/lingtai/tools/pad/_pad.py
@@ -19,89 +21,59 @@ related_files:
 maintenance: |
   This component contract is governed by root CONTRACT.md. Keep the paired
   ANATOMY.md, manual, schemas, results, glossary resources, and focused tests in
-  sync. Bump contract_version for breaking public changes. Version 2 removes
-  public edit/load and makes append persistence explicitly non-hot-loading.
+  sync. Bump contract_version for breaking behavior changes. Unified Pad owns
+  one-time legacy preservation; no public Pad tool or append action remains.
 ---
-> Test-reference maintenance (2026-10-12): `retired-test:` identifiers below name removed pytest coverage, not runnable selectors or replacement conformance. Product promises are unchanged; manual acceptance remains necessary where automated coverage was surrendered.
-
-
-# Pad capability contract
+# Pad memory contract
 
 ## Purpose and ownership
-Guarded by: [PD001](BEHAVIORS.md#behavior-pd001)
 
-
-`pad` is a mandatory, model-visible LTP v2 family for the durable pinned
-reference list associated with the agent's prompt sketchboard. Its public action
-inventory is exactly `append | manual`.
-
-Durable mutation of `system/pad.md` happens through `shell`: create or
-overwrite the whole file, or perform an exact text replacement after verifying
-the old text exists exactly once, then read the file back to verify.
-
-No filesystem mutation may reload or otherwise mutate the current prompt. The
-retired public `pad.edit` and `pad.load` actions have no alias or compatibility
-path and fail as unknown Pad actions.
+Pad (`system/pad.md`) plus Knowledge are the agent's private memory system.
+Pad stays injected, including pinned `system/pad_append.json` references.
+Mechanical identity and Covenant remain separate and unchanged.
+Guarded by [PD001](BEHAVIORS.md#behavior-pd001).
 
 ## Public port
 
-The strict root envelope is exactly `action`, `input`, `reasoning`, and optional
-root `summarize`, with `additionalProperties: false`; `action`, `input`, and
-`reasoning` are required. Root `summarize` is Host presentation only and never
-reaches a child.
-
-| Action | Input | Result |
-|---|---|---|
-| `append` | strict `{files}`; array/null; `[]` clears, null queries | set/clear/query receipt containing `status`, `files`, `count`, `prompt_reload: false`, and `takes_effect`; set/clear also has `action` |
-| `manual` | strict `{}` | flat `{status, manual, manual_path}` (+ degraded `error`) |
-
-`append` validates every supplied path as an existing UTF-8 text file and checks
-the aggregate 100,000-token limit **before** persisting
-`system/pad_append.json`. It never invokes `_pad_load`, flushes a prompt, or
-changes a prompt-manager section. Its changes become active only through a
-later explicit `context.rebuild` or passive refresh/molt reconstruction.
-
-The list query is also non-mutating and carries the same delayed-effect fields so
-results cannot imply a hot load.
+No public `pad` tool, append/edit/load action, or alias exists. Read the Pad
+manual through `psyche(action="pad", input={}, reasoning="...")`. Source edits
+use authorized Shell operations; ordinary edits do not hot-load a prompt.
 
 ## Internal composition
 
-`_pad_load` is private, not a public action. It is the canonical Pad composer
-reused by `Agent._reload_prompt_sections`, which is wrapped by
-`Agent._reconstruct_context`. It reads `system/pad.md` plus every persisted
-append reference into the derived `pad` prompt section. `boot(agent)` performs
-initial internal composition only; it does not register a post-molt hook.
-Agent owns exactly one post-molt hook, `_reconstruct_context`, shared with
-refresh and active `context.rebuild`.
+`_seed_pad` uses configured Pad only for a missing/empty body, before the legacy
+merge on real init boot. `_legacy_memory_seed` resolves accepted old inline/file
+init strings before teardown, preserving readable-file bytes with inline fallback.
+It performs no old-source I/O after the completion marker exists. `_pad_load` is the canonical composer for Psyche boot,
+Agent rebuild, refresh and the single post-molt reconstruction hook. It reads
+Pad and pinned references, removes stale `character`, then publishes only when
+requested. Knowledge and Skills keep their existing catalog owners.
 
-## Contract rules
+## Legacy preservation
 
-- Schema and dispatch derive from the same child registry; action/input
-  correlation survives Chat and Responses adapters.
-- Unknown actions, including `edit` and `load`, fail loudly before I/O. Unknown
-  root/input fields, non-object input, and non-boolean root `summarize` produce
-  LTP v2 `INVALID_ARGUMENT` failures.
-- `_tc_id`, `reasoning`, and root `summarize` never become child input.
-- The manual is `pad-manual`, flattened once after generic dispatch.
-- `pad` remains in `_LTP_V2_MIGRATED_FAMILIES` and `EMANATION_BLACKLIST`.
-- No Pad settings file exists.
+Before composing, `_merge_legacy_memory` preserves all UTF-8 legacy
+`system/lingtai.md` bytes and a distinct resolved configured legacy value in Pad,
+including line endings. Neither may overwrite configured or existing Pad memory.
+A direct Psyche boot with staged init defers migration until canonical setup or
+rebuild has its configured inputs, rather than marking disk-only preservation early. Existing Pad bytes are
+preserved as a prefix. When the exact legacy body already occurs in Pad, no
+second copy is appended. The legacy source is never deleted, emptied or written.
+An atomic binary replacement precedes the durable one-time marker
+`system/lingtai-merged-into-pad`; interruption before marking is recoverable by
+exact containment. Once marked, later legacy edits or deliberate Pad rewrites do
+not re-append anything. No disk or configured input creates no marker; an explicitly empty old input
+is marked without appending. A missing configured file uses its inline fallback. Invalid UTF-8 or a symlink Pad fails without a lossy
+merge. The workdir lease serializes runtime writers; concurrent external source
+edits and power-loss filesystem guarantees are not a distributed transaction.
+Failed prompt publication may roll back the applied prompt generation, but the
+completed durable memory preservation remains and is safely reused next time.
 
-## State and evidence
+## Evidence
 
-Persistent state is `system/pad.md` and `system/pad_append.json`; `system/pad.md`
-is mutated only through `shell` — there is no Pad-owned body writer. The prompt `pad` section and
-`system/system.md` are derived by the private `_pad_load` composer.
-
-Focused evidence:
-
-```text
-Automated recipe retired by test pruning (2026-10-12).
-No replacement conformance claimed for: test_context_ownership_redesign, test_pad, test_pad_lingtai_split.
-```
-
-These tests pin the exact action set, strict retirement, no-hot-load file and
-append behavior, delayed activation, validation-before-persistence, manual
-shape, both provider wires, and the one canonical lifecycle hook.
+[PD001](BEHAVIORS.md#behavior-pd001) and `tests/test_agents_memory.py` provide a
+compact real-startup/lifecycle smoke for injected memory and one-time preservation.
+It is not exhaustive coverage of crash windows or every legacy-seed combination.
+Parent must execute the smoke and complete-prompt proof before acceptance.
 
 Fresh interactive Project seeds may put the selected Recipe comment body in the
 current init `pad` seed (explicit nonempty caller Pad wins), never the retired

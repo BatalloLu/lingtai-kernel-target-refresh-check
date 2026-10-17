@@ -138,9 +138,9 @@ capability names and lazy adapters.
   those families)
   (`src/lingtai/tools/tool_family/ANATOMY.md`).
 - `psyche/` — mandatory public durable-self family: its static fifteenth
-  declaration preserves the six-action signpost/settings surface, binds only
-  `workdir` plus the read-only last-applied eight-value `psyche_settings`
-  snapshot, and retains Pad/LingTai composition through its intrinsic lifecycle
+  declaration preserves the seven-action read-only routing/settings surface, binds only
+  `workdir` plus the read-only last-applied six-value `psyche_settings`
+  snapshot, and retains unified Pad composition through its intrinsic lifecycle
   shim (`src/lingtai/tools/psyche/ANATOMY.md`).
 - `plugin/` — the `plugin` capability: the per-agent Agent Plugins
   (agent-plugins.org, v1.0.0) catalog and registration snapshot, structural twin
@@ -198,12 +198,10 @@ capability names and lazy adapters.
   summary application, then provider replay. Refresh/molt invoke the same
   internal contract passively. It builds its family per call and
   alone consumes kernel `_tc_id`.
-- `pad/` — mandatory `append | manual` family. `append` validates/persists pinned
-  references without hot-loading; private `_pad_load` participates only in the
-  Agent's canonical reconstruction path (`src/lingtai/tools/pad/ANATOMY.md`).
-- `lingtai/` — mandatory manual-only identity signpost. Private
-  `_lingtai_load` composes character during canonical reconstruction; durable
-  mutation happens through `shell` (`src/lingtai/tools/lingtai/ANATOMY.md`).
+- `pad/` — private unified-memory composer, pinned references and one-time
+  legacy preservation; guidance is `psyche.pad` (`src/lingtai/tools/pad/ANATOMY.md`).
+- `lingtai/` — retirement records only; no character loader or public route
+  remains (`src/lingtai/tools/lingtai/ANATOMY.md`).
 - `email/` — the filesystem-based `email` intrinsic: mailbox I/O, composition,
   search, contacts, and delivery, migrated to the LTP v2 family envelope
   (`src/lingtai/tools/email/ANATOMY.md`).

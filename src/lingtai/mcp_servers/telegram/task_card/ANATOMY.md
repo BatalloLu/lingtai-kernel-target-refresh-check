@@ -1,5 +1,6 @@
 ---
 related_files:
+  - tests/test_telegram_task_card_transport.py
   - tests/test_apriori_summary_session_cost.py
   - src/lingtai/mcp_servers/telegram/task_card/BEHAVIORS.md
   - src/lingtai/mcp_servers/telegram/task_card/CONTRACT.md
@@ -58,7 +59,9 @@ onto its one tracked resident Task Card target per account+chat.
   Beside the SESSION reducer state it keeps `_task_card_session_cost_state`,
   folded by `api_cost.fold_session_cost` in both live append and bounded
   rehydrate, and `_task_card_event_metadata_snapshot()` prices it at render
-  into the `session_cost` metadata value.
+  into the `session_cost` metadata value. The same snapshot adds the optional
+  observed main-call weighted `session_average_tps` projection; the existing
+  SESSION reducer owns its generation/index deduplication and coverage.
   `_taskcard_display_expression()` reads the durable declarative display
   expression from `TelegramService` at each automatic projection tick
   (`_broadcast_task_card_event_window`, `_ensure_task_card_resident`) and
@@ -78,7 +81,8 @@ onto its one tracked resident Task Card target per account+chat.
   in-memory copy of the other fields.
 - `../../task_card/event_projection.py` — the channel-neutral pure core for safe
   event allowlisting, redaction, API-call grouping, budgets, metadata, and text
-  rendering, including compact per-call output/thinking/cache metrics from the
+  rendering, including API-average TPS from total output (thinking once) and
+  compact per-call output/thinking/cache metrics from the
   normalized current-call carrier or `llm_response` fallback and the safe
   `(summary, time, input in, output out)` line correlated from already-recorded
   event/ledger facts. It also owns strict `lingtai.token_usage.session/v1`
