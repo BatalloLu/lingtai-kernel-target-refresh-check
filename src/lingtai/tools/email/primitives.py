@@ -53,13 +53,15 @@ def _load_message(agent, msg_id: str) -> dict | None:
         return None
 
 
-def _list_inbox(agent) -> list[dict]:
-    """List all inbox messages, sorted newest first (by received_at)."""
+def _list_inbox(agent, *, exclude_ids: set[str] | None = None) -> list[dict]:
+    """List inbox messages newest-first, skipping excluded directory IDs before I/O."""
     inbox = _inbox_dir(agent)
     if not inbox.is_dir():
         return []
     messages = []
     for msg_dir in inbox.iterdir():
+        if exclude_ids and msg_dir.name in exclude_ids:
+            continue
         if not msg_dir.is_dir():
             continue
         msg_file = msg_dir / "message.json"
@@ -328,8 +330,7 @@ def _unread_notification_context(
     the unread-mail content boundary.
     """
     read_ids = _read_ids(agent)
-    inbox = _list_inbox(agent)  # already newest-first per existing semantics
-    unread = [m for m in inbox if m.get("_mailbox_id") not in read_ids]
+    unread = _list_inbox(agent, exclude_ids=read_ids)  # still globally newest-first
     shown = unread[:max_entries]
     recipient_id = getattr(agent, "_agent_id", "")
     emails: list[dict] = []
@@ -406,8 +407,7 @@ def _render_unread_digest(
     from lingtai.kernel.time_veil import veil
 
     read_ids = _read_ids(agent)
-    inbox = _list_inbox(agent)  # already newest-first per existing semantics
-    unread = [m for m in inbox if m.get("_mailbox_id") not in read_ids]
+    unread = _list_inbox(agent, exclude_ids=read_ids)  # still globally newest-first
     count = len(unread)
     if count == 0:
         return ("", 0, None)
