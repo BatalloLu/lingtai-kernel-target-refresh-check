@@ -355,6 +355,11 @@ def _build_family(
 #: :func:`get_schema` rather than being lost.
 _ACTION_ENUM_DESCRIPTION = (
     'Required operation. '
+    'Read context-manual before molt or context-loss recovery, and before unfamiliar or '
+    'consequential Context work. Do not molt merely because a task ended: use sustained '
+    'pressure, explicit human reset, confusion or an eligible inactivity reminder. Preserve '
+    'unfinished authorized work and defer unsafe shedding; reorient after molt and remain '
+    'IDLE if no real work remains. Follow current pressure and active adapter rules.\n'
     'molt: shed your conversation context, keep the durable stores. Requires '
     '`summary` and a valid `session_journal_path` — write the journal first and '
     'update only durable stores that changed. Prefer molt over rebuild for '

@@ -40,17 +40,22 @@ only if the domain is unclear. There is no required router-then-domain double re
 | `psyche(action="pad", input={}, reasoning="load Pad guidance")` | Pad manual: `system/pad.md`, `system/pad_append.json` |
 | `psyche(action="knowledge", input={}, reasoning="load knowledge guidance")` | Knowledge manual: `knowledge/<name>/KNOWLEDGE.md` |
 | `psyche(action="skills", input={}, reasoning="load skills guidance")` | Skills manual: `.library/{intrinsic,custom}/` and configured paths |
-| `psyche(action="instructions", input={}, reasoning="orientation")` | current loaded fixed instructions, including runtime and adapter rules; no ambient reread |
+| `psyche(action="instructions", input={}, reasoning="reference index")` | short table of contents only; optional `reference` reads one exact loaded owner |
 | `psyche(action="covenant", input={}, reasoning="load the effective Covenant")` | current loaded Covenant body, not a tool manual; custom source/mirror preserved |
 | `psyche(action="settings", input={}, reasoning="inspect Psyche settings")` | redacted settings SHOW |
 | `psyche(action="manual", input={}, reasoning="load the routing table")` | this router |
 
-All seven actions require strict empty `input` and are read-only: no authoring,
+All actions are read-only; input is strict empty except `instructions`, whose
+optional nullable `reference` is exactly `principle`, `covenant`, `substrate`, `procedures`,
+or `meta_guidance`. Use it only for needed full detail (including exact loaded
+adapter rules); absent/null returns the index. No arbitrary section access,
+ambient source read or lifecycle effect is available. There is no authoring,
 editing, pinning, installing, migration, catalog rescan, or prompt reload. Keep
 root `summarize=false` when exact guidance matters.
 
-Read `covenant` on first orientation and before discussing duties, collaboration,
-learning, or memory, not on every call. It returns the current effective body;
+`covenant` is an optional reference in the index, not a second mandatory
+orientation read. Use `instructions` with `reference="covenant"` or the optional
+`covenant` action on demand for Covenant-specific detail. Both return the current effective body;
 ambient edits do not change it until successful reconstruction. No installed
 manual/default substitutes for a configured Covenant. Empty means none is loaded.
 

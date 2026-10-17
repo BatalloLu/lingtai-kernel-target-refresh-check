@@ -94,7 +94,7 @@ class AgentPsycheSettingsAdapter:
         self,
         read: Callable[[], "PsycheSettingsSnapshotPort"],
         read_covenant: Callable[[], str] | None = None,
-        read_instructions: Callable[[], str] | None = None,
+        read_instructions: Callable[..., str] | None = None,
     ) -> None:
         self._read = read
         self._read_covenant = read_covenant
@@ -104,11 +104,13 @@ class AgentPsycheSettingsAdapter:
         """Return the current immutable Psyche owner-input snapshot."""
         return self._read()
 
-    def read_instructions(self) -> str:
-        """Disclose the applied in-memory owners, never ambient sources."""
+    def read_instructions(self, reference: str | None = None) -> str:
+        """Disclose the index or one applied owner, never ambient sources."""
+        if reference == "covenant":
+            return self.read_covenant()
         if self._read_instructions is None:
             raise RuntimeError("Instructions reader is unavailable")
-        return self._read_instructions()
+        return self._read_instructions(reference) if reference is not None else self._read_instructions()
 
     def read_covenant(self) -> str:
         """Read the loaded body, never the ambient source or configured input."""

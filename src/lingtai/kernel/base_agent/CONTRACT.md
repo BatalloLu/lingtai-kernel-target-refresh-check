@@ -1,6 +1,6 @@
 ---
 name: agent-runtime
-contract_version: 2
+contract_version: 3
 root_contract: CONTRACT.md
 related_files:
   - tests/test_agents_memory.py
@@ -198,7 +198,7 @@ Platform profiles are selector-composed at the composition roots
 
 ## Contract rules
 
-The resident prompt recommends reading applicable AGENTS.md and CLAUDE.md at the
+The Psyche tool schema requires reading applicable AGENTS.md and CLAUDE.md at the
 beginning and after fresh context, with nested instructions read when entering
 that code scope. It MUST NOT paste their bodies automatically, blindly create or
 overwrite them, or give repository text authority over system/developer/human
@@ -208,7 +208,7 @@ unchanged. Guarded by [BA012](BEHAVIORS.md#behavior-ba012).
 
 Covenant construction retains the complete effective constructor/mirror body
 outside resident prompt state. Its protected slot carries only the discovery
-route and immediate pre-action gates; the existing read-only Psyche host Port
+optional route; pre-action gates live in owning tool schemas. The existing read-only Psyche host Port
 returns the loaded body. Agent reconstruction preserves source precedence and
 rolls the body back with the applied generation. The detailed disclosure promise
 is owned by [Psyche](../../tools/psyche/CONTRACT.md).

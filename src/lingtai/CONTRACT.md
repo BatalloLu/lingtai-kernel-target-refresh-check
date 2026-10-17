@@ -1,6 +1,6 @@
 ---
 name: init-reader
-contract_version: 5
+contract_version: 6
 root_contract: CONTRACT.md
 related_files:
   - tests/test_agents_memory.py
@@ -256,9 +256,11 @@ exact path and obtain path-scoped authorization first.
 
 ## Unified instructions and retired inputs
 
-The resident kernel prefix is one short entry. Current loaded full fixed owners
-are disclosed read-only by `psyche.instructions`, including assembled catalog,
-_meta readme and adapter static rules. Base prompt remains resident after the
+The resident kernel prefix preserves general operating principles with a short
+route to tool schemas and the reference index. `psyche.instructions` with empty input returns only that index; optional
+`reference` reads one exact loaded fixed owner, including assembled catalog,
+_meta readme and adapter static rules. Covenant is an optional indexed reference,
+not a second mandatory orientation read. Base prompt remains resident after the
 entry; dynamic memories and full effective `psyche.covenant` remain separate.
 Comment/comment_file now receive the existing unknown-field diagnostic with
 migrate-to-Pad guidance (strict rejection in the Psyche owner, warning in init).

@@ -18,6 +18,7 @@ def test_real_init_and_lifecycle_keep_unified_pad_and_instruction_guidance(
     system.mkdir()
     legacy = system / "lingtai.md"
     legacy.write_bytes(b"LEGACY IDENTITY\r\n")
+    (system / "covenant.md").write_text("EXACT OPTIONAL COVENANT")
     instructions = tmp_path / "AGENTS.md"
     instructions.write_text("PRIVATE PROJECT BODY")
     data = {"manifest": {"agent_name": "memory-test", "llm": {
@@ -27,6 +28,9 @@ def test_real_init_and_lifecycle_keep_unified_pad_and_instruction_guidance(
     init.write_text(json.dumps(data))
     original_init = init.read_bytes()
     service = make_mock_llm_service()
+    service.static_adapter_comment.return_value = {
+        "adapter": "hermetic", "rules": "EXACT LOADED ADAPTER RULE",
+    }
     service._base_url = None
     service._context_window = CONSERVATIVE_CONTEXT_WINDOW
     service._provider_defaults = {"anthropic": {"max_rpm": 60}}
@@ -49,9 +53,47 @@ def test_real_init_and_lifecycle_keep_unified_pad_and_instruction_guidance(
         )
         prompt = agent._build_system_prompt()
         assert "INITIAL PAD" in prompt and "LEGACY IDENTITY" in prompt
-        assert "AGENTS.md and CLAUDE.md" in prompt
+        schemas = {schema.name: schema for schema in agent._build_tool_schemas()}
+        assert "AGENTS.md and CLAUDE.md" in schemas["psyche"].description
+        assert "exact human-specified review window" in schemas["daemon"].description
+        assert "Only the newest _meta.agent_meta.agent_state" in schemas["system"].description
+        assert "absent from all current copies" in schemas["notification"].description
+        assert "Read context-manual before molt" in json.dumps(schemas["context"].parameters)
+        assert "EXACT LOADED ADAPTER RULE" not in prompt
+        assert "EXACT OPTIONAL COVENANT" not in prompt
+        psyche = agent._intrinsics["psyche"]
+
+        def disclose(action="instructions", **action_input):
+            return psyche({"action": action, "input": action_input,
+                           "reasoning": "inspect current reference"})
+
+        index = disclose()["instructions"]
+        assert len(index) < 2000 and "reference index" in index
+        assert "Covenant (optional, on demand)" in index
+        assert "EXACT LOADED ADAPTER RULE" not in index
+        assert "EXACT OPTIONAL COVENANT" not in index
+        assert disclose(reference=None)["instructions"] == index
+        for reference in ("principle", "substrate", "procedures", "meta_guidance"):
+            body = disclose(reference=reference)["instructions"]
+            assert body and body == agent._prompt_manager.read_section(reference)
+        assert "EXACT LOADED ADAPTER RULE" in disclose(reference="meta_guidance")["instructions"]
+        assert disclose("covenant")["covenant"] == "EXACT OPTIONAL COVENANT"
+        assert disclose(reference="covenant")["instructions"] == "EXACT OPTIONAL COVENANT"
+        assert disclose(reference="pad")["error_code"] == "INVALID_ARGUMENT"
+        assert disclose("covenant", reference="principle")["error_code"] == "INVALID_ARGUMENT"
+        # Index and exact references use the applied in-memory generation only.
+        with monkeypatch.context() as guard:
+            def forbidden(*_args, **_kwargs):
+                raise AssertionError("reference attempted source I/O or reconstruction")
+            guard.setattr(type(tmp_path), "read_text", forbidden)
+            guard.setattr(type(tmp_path), "write_text", forbidden)
+            guard.setattr(agent, "_reconstruct_context", forbidden)
+            assert disclose()["instructions"] == index
+            assert "EXACT LOADED ADAPTER RULE" in disclose(reference="meta_guidance")["instructions"]
+            assert disclose("covenant")["covenant"] == "EXACT OPTIONAL COVENANT"
+            assert disclose(reference="covenant")["instructions"] == "EXACT OPTIONAL COVENANT"
         assert "PRIVATE PROJECT BODY" not in prompt
-        instructions_body = agent._prompt_manager.read_instructions()
+        instructions_body = agent._prompt_manager.read_instructions("meta_guidance")
         assert "anticipated long, bulky" in instructions_body
         assert "expected short results" in instructions_body
         assert "CLEAR retention targets" in instructions_body

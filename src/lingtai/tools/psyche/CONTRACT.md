@@ -1,6 +1,6 @@
 ---
 name: psyche-tool-contract
-contract_version: 7
+contract_version: 8
 root_contract: CONTRACT.md
 related_files:
   - tests/test_agents_memory.py
@@ -124,8 +124,8 @@ owner-file resolution or durable mirror fallback), or an empty string when none
 is loaded. It MUST NOT reread ambient sources, return an installed default, or
 trigger reconstruction. BaseAgent initial loading and Agent reconstruction retain
 the complete body outside the resident prompt and merge the protected
-Covenant route into the single resident entry. Load it on first orientation and for duties, collaboration,
-learning, or memory discussions, not on every call. Failed reconstruction restores
+Covenant discovery into the short reference index. It is optional on demand for
+Covenant-specific questions, not a second mandatory orientation read. Failed reconstruction restores
 the previous loaded body along with the rest of the applied generation. The
 configured source, durable fulltext mirror, override precedence, and Avatar
 inheritance remain intact; daemon's separate surface still excludes Psyche.
@@ -184,15 +184,17 @@ and `reasoning` are required. The public action inventory is exactly:
 | `pad` | strict empty `{}` | flat `{status, manual, manual_path}` (+ degraded `error`) — `pad-manual` |
 | `knowledge` | strict empty `{}` | same shape — the installed knowledge manual |
 | `skills` | strict empty `{}` | same shape — the installed skills manual |
-| `instructions` | strict empty `{}` | `{status: "ok", instructions: <current loaded fixed bodies>}`; no source reread |
+| `instructions` | `{}` or optional `reference` | `{status: "ok", instructions: <short index or one exact loaded owner>}`; no source reread |
 | `covenant` | strict empty `{}` | `{status: "ok", covenant: <current loaded body>}`; not a generic manual |
 | `settings` | strict empty `{}` | exact `{settings: [...]}` inventory with six fully redacted five-field rows |
 | `manual` | strict empty `{}` | same shape — `psyche-manual`, the routing table |
 
 Every call carries required root `action`, `input`, and `reasoning`; a public
 call is spelled `psyche(action="<domain>", input={}, reasoning="...")`. All
-seven children share one strict-empty `input` schema, so every `input` key is an
-unknown key. Unknown or missing actions, any `input` key, non-object `input`,
+children except `instructions` use strict-empty input. `instructions` accepts only
+optional nullable `reference`: `principle`, `covenant`, `substrate`, `procedures`,
+or `meta_guidance`; absent/null returns the short index. Covenant's existing
+separate action remains an optional equivalent reference. Unknown or missing actions, invalid input keys/references, non-object `input`,
 unknown root fields, and a non-boolean root `summarize` fail with the LTP v2
 envelope errors before any file is read. Root `summarize`, `reasoning`, and the
 intrinsic-only `_tc_id` never become child input.
@@ -278,8 +280,8 @@ Automated recipe retired by test pruning (2026-10-12).
 No replacement conformance claimed for: test_psyche_family, test_psyche_prompt_settings.
 ```
 
-These pin the exact seven-action inventory and order; strict-empty input on every
-child; strict bounded owner parsing and file-over-inline resolution; ambient
+These pin the exact seven-action inventory and order; strict-empty input except
+the bounded optional `instructions.reference`; strict bounded owner parsing and file-over-inline resolution; ambient
 edit isolation; last-good preservation after failed reconstruction; exact
 five-field projection, six-row order, defaults, anchors, and full redaction;
 whole-inventory failure;
@@ -306,12 +308,17 @@ transactional rollback, and two cache batches remain intact. `base_prompt` stays
 resident immediately after that entry; catalogs, mechanical identity and Pad
 remain separate dynamic owners. No generic section selector or opt-out exists.
 
-`instructions` takes strict empty input and returns `{status: "ok", instructions:
-<current loaded fixed bodies>}` through `PsycheSettingsPort.read_instructions`.
-It performs no disk I/O, reconstruction, or mutation. Read it on first orientation
-and before unfamiliar/consequential work. Its runtime guidance includes the
-current adapter's contribution with that adapter still owning the source.
-`covenant` continues to return the full effective body independently.
+`instructions` with `{}` returns only a short table of contents/reference index.
+Its optional nullable `reference` selects exactly one existing loaded owner:
+`principle`, `covenant`, `substrate`, `procedures`, or `meta_guidance`, through
+`PsycheSettingsPort.read_instructions(reference)`. No arbitrary prompt-section
+access, source I/O, reconstruction, or mutation is granted. Full runtime guidance
+includes the current adapter contribution, with that adapter still owning the
+source. Necessary actionable rules and manual gates live in owning tool schemas;
+manuals and these references retain full detail. Covenant is an optional index
+reference via `instructions(reference="covenant")` or the unchanged optional
+`covenant` action, never a second mandatory read.
+Guarded by [PY001](BEHAVIORS.md#behavior-py001).
 
 `comment` and `comment_file` are unknown owner fields. Old configs must remove
 these keys and put desired working instructions in Pad through authorized edits.

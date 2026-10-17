@@ -31,7 +31,7 @@ maintenance: >
 ---
 # LingTai Fixed Instructions Map
 
-The resident prefix is one short operating entry. `psyche(action="instructions", input={})` discloses these current loaded fixed owners, including runtime and adapter rules, without source rereads. Read on first orientation and before unfamiliar or consequential work, not routinely. This map names internal owners, not separate resident sections; reference manuals carry examples and troubleshooting.
+The resident prefix routes to tool schemas and a short reference index. `psyche(action="instructions", input={})` returns only that index; optional `reference` loads one current fixed owner on demand without source rereads. Necessary actionable rules and manual gates live in owning tool schemas; Covenant is an optional reference, not a second mandatory orientation read. This map names internal owners, not separate resident sections; reference manuals carry examples and troubleshooting.
 
 | Section | Purpose |
 |---|---|
