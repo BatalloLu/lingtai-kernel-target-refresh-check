@@ -57,6 +57,11 @@ Pinned pytest commands must run from the repo root with the project's Python.
    with the prior generation's existing rollback state.
 
 ### Expected evidence
+- [ ] Empty `instructions` input returns only a short reference index, not concatenated
+      owner bodies. Optional `reference` returns one exact loaded principle/Covenant/substrate/
+      procedures/meta_guidance body, including the active adapter rules. Unknown
+      references and cross-action input keys fail before source access. Covenant is
+      an optional index route, never a second mandatory orientation read.
 - [ ] Step 1: both focused Psyche suites pass, pinning exact manual routing,
       settings discovery, strict owner parsing, and read-only behavior.
 - [ ] Step 2: the four manual bodies are nonempty and distinct.

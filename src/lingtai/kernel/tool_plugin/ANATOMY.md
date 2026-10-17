@@ -451,6 +451,12 @@ member, in order, and are not transactional: a failure raised by `grant`,
 and claimed and propagates. Rolling those back would need an unmount port this
 component does not own.
 
+The existing `PsycheSettingsPort.read_instructions(reference=None)` read returns
+a short index by default or one bounded fixed loaded owner on demand. It grants
+no arbitrary section access, source I/O, writes or reconstruction; the production
+adapter uses its existing effective-Covenant reader for `reference="covenant"`
+and forwards other references to `SystemPromptManager`.
+
 ## State
 
 - `OFFICIAL_TOOL_PLUGIN_NAMES` — module-level immutable tuple; the reserved

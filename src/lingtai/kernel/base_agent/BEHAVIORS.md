@@ -358,7 +358,7 @@ hermetic test does not establish live provider behavior or native Windows result
 
 ### Expected evidence
 - [ ] Applicable AGENTS.md/CLAUDE.md startup/fresh-context and nested scope guidance
-      is resident, without pasting or overwriting the fixture instruction bodies.
+      is in the Psyche schema, without pasting or overwriting fixture instruction bodies.
 - [ ] Pad seed, preserved legacy memory and pinned references appear at boot;
       updated Pad and pins reload across all three boundaries without character injection.
 

@@ -184,11 +184,11 @@ The kernel root holds the coordinator (`base_agent/`) plus a flat collection of 
 - `process_scan.py` — Core-owned outbound Port for observing visible process command lines. The *authority* for refusing a second agent per working directory is `workdir_lease/`; this scan is deliberate defense-in-depth beside it, catching the window where an old process is mid-teardown (heartbeat withdrawn, lease about to release) but still visible in the process table, and turning it into an exact operator-facing message instead of a confusing lease error. It is capability-local to that duplicate-launch guard — one observation operation, no liveness, no supervision framework. POSIX and Windows adapters live outside Core at `src/lingtai/adapters/{posix,windows}/process_scan.py` behind the `src/lingtai/adapters/process_scan.py` selector (`src/lingtai/kernel/process_scan.py:1-12`).
 - **Intrinsic Task Card producer — moved out of messaging adapters and the kernel.** The public, model-facing `task_card` capability is owned by `src/lingtai/tools/task_card/` (paired `ANATOMY.md`/`CONTRACT.md`, packaged manual). It runs a workdir-contained Python renderer, writes `<workdir>/taskcard/taskcard.md`, writes exact `active`/`inactive` to `<workdir>/taskcard/status`, and owns one watch per agent. `base_agent/lifecycle.py` only calls `shutdown_for_agent_stop()` on that intrinsic manager during teardown so `inactive` is durable before the watch stops. Telegram and Feishu are read-only projectors: each polls the intrinsic artifact and composes active nonempty bodies into its resident programmable slot while preserving its automatic event-journal slot. Retained Telegram `task_card` controller files are historical compatibility code, not the current public ownership path (see `src/lingtai/tools/task_card/ANATOMY.md` and `mcp_servers/ANATOMY.md`).
 - `prompt.py` — `INSTRUCTIONS_ENTRY` is the single short resident fixed prefix.
-  `SystemPromptManager.read_instructions` discloses exact loaded fixed owners;
+  `SystemPromptManager.read_instructions` returns an index or one bounded loaded reference;
   `render_batches` projects them to one entry while keeping dynamic catalogs,
   mechanical identity and unified Pad in the second cache batch. The short entry
-  recommends applicable AGENTS.md/CLAUDE.md reads at startup/fresh context and
-  nested scope entry, without pasting bodies or authoring those files. `build_system_prompt_batches`
+  routes to tool schemas, where Psyche owns applicable AGENTS.md/CLAUDE.md reads
+  at startup/fresh context and nested scope entry, without pasting or authoring them. `build_system_prompt_batches`
   places the user base prompt immediately after the entry. Covenant's full
   effective body remains separately retained and read by `psyche.covenant`.
   Packaged source mirrors and their fallback/protection remain Agent/Psyche-owned

@@ -666,7 +666,7 @@ def test_base_and_covenant_mirrors_fall_back(tmp_path: Path) -> None:
         assert "BASE" in prompt
         assert "COVENANT" not in prompt
         assert agent._effective_covenant == "COVENANT"
-        assert 'psyche(action="covenant", input={})' in prompt
+        assert 'psyche(action="covenant", input={})' in agent._prompt_manager.read_instructions()
         assert "COMMENT" not in prompt
     finally:
         agent.stop(timeout=1.0)
@@ -716,11 +716,13 @@ def test_covenant_body_is_current_read_only_and_not_resident(tmp_path, monkeypat
         assert call() == expected
         prompt = agent._build_system_prompt()
         assert body not in prompt
-        assert 'psyche(action="covenant", input={})' in prompt
-        assert 'psyche(action="covenant", input={})' in prompt
-        assert "first orientation" in prompt
-        assert "duties, collaboration" in prompt
-        assert "learning or memory" in prompt
+        index = agent._intrinsics["psyche"]({
+            "action": "instructions", "input": {}, "reasoning": "reference index",
+        })["instructions"]
+        assert 'psyche(action="covenant", input={})' in index
+        assert "optional, on demand" in index
+        assert "second mandatory orientation read" in prompt
+        assert body not in index
         before = {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
         sections = deepcopy(agent._prompt_manager._sections)
         snapshot = agent._psyche_settings_snapshot
@@ -760,7 +762,7 @@ def test_covenant_mirror_frontmatter_has_equal_initial_and_reload_body(tmp_path)
         assert initial == "# Body only\n"
         agent._reconstruct_context()
         assert agent._effective_covenant == initial
-        assert 'psyche(action="covenant", input={})' in agent._build_system_prompt()
+        assert 'psyche(action="covenant", input={})' in agent._prompt_manager.read_instructions()
         assert "operator: retained" in (tmp_path / "system/covenant.md").read_text()
     finally:
         agent.stop(timeout=1.0)
@@ -805,7 +807,7 @@ def test_base_agent_initial_covenant_body_and_read_only_route(tmp_path, from_mir
     try:
         assert agent._effective_covenant == body
         assert body not in agent._build_system_prompt()
-        assert 'psyche(action="covenant", input={})' in agent._build_system_prompt()
+        assert 'psyche(action="covenant", input={})' in agent._prompt_manager.read_instructions()
         assert agent._intrinsics["psyche"]({
             "action": "covenant", "input": {}, "reasoning": "orientation",
         }) == {"status": "ok", "covenant": body}

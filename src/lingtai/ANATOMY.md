@@ -235,11 +235,11 @@ and guarded by `retired-test:test_codex_credits`.
 
 ## Unified fixed projection
 
-`kernel/prompt.py::SystemPromptManager.read_instructions` reads the exact current
-in-memory fixed owners. Its renderer emits one short `INSTRUCTIONS_ENTRY` before
+`kernel/prompt.py::SystemPromptManager.read_instructions` returns a short index
+by default or one exact current fixed owner by bounded `reference`. Its renderer emits one short `INSTRUCTIONS_ENTRY` before
 the resident user base prompt. `psyche.instructions` binds this narrow read via
 `adapters/tool_plugin_host.py::AgentPsycheSettingsAdapter`; no source reread,
-selector, mutation or reconstruction is available. Runtime metadata refs route
+arbitrary section selector, mutation or reconstruction is available. Runtime metadata refs route
 there for catalog/readme/adapter detail. The old comment and rules loaders and
 heartbeat consumer are removed; existing runtime files are never purged.
 

@@ -101,7 +101,8 @@ Rendered system-prompt order is owned by `src/lingtai/kernel/prompt.py`:
 one short fixed `INSTRUCTIONS_ENTRY`, resident user base prompt and optional
 opt-in tool prose; then dynamic skills/plugin/MCP/knowledge catalogs,
 mechanical identity and unified Pad in the second cache batch. Full loaded
-fixed owners are read through `psyche.instructions`, not separate headers.
+fixed owners are read through bounded `psyche.instructions.reference`; empty input
+returns only the index. Covenant remains optional through `psyche.covenant`.
 
 Each section has a `<section>/<section>.yaml` definition. Bodies split three ways:
 

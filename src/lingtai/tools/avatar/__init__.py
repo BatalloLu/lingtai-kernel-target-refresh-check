@@ -144,7 +144,11 @@ _DESCRIPTION = (
     "(default) or deep, and root reasoning is the mission/first prompt. "
     "Use dry_run to preview; confirm acknowledges only mission review. "
     "settings and manual are read-only. Read avatar-manual for unfamiliar or "
-    "consequential lifecycle, authority, recovery, or footprint decisions."
+    "consequential lifecycle, authority, recovery, or footprint decisions. Honor explicit "
+    "human model/backend choices and scoped authority; the parent owns validation, "
+    "synthesis and reporting. Before review delegation re-read recent human-channel "
+    "instructions through the producer using the exact specified window, then frame "
+    "the reviewer with latest scope, exclusions and unauthorized side effects."
 )
 
 

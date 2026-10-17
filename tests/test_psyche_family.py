@@ -78,7 +78,7 @@ def test_root_is_the_closed_strict_ltp_v2_envelope():
     assert schema["additionalProperties"] is False
 
 
-def test_every_child_input_is_the_canonical_strict_empty_object():
+def test_child_inputs_are_strict_empty_except_bounded_instructions_reference():
     schema = psyche_tool.get_schema()
     branches = schema["properties"]["input"]["anyOf"]
     assert [b["title"] for b in branches] == [
@@ -92,7 +92,14 @@ def test_every_child_input_is_the_canonical_strict_empty_object():
     ]
     for branch in branches:
         assert branch["type"] == "object"
-        assert branch["properties"] == {}
+        if branch["title"] == "instructions input":
+            assert list(branch["properties"]) == ["reference"]
+            assert branch["properties"]["reference"]["enum"] == [
+                "principle", "covenant", "substrate", "procedures", "meta_guidance", None,
+            ]
+            assert branch["required"] == []
+        else:
+            assert branch["properties"] == {}
         assert branch["additionalProperties"] is False
 
 
@@ -210,7 +217,8 @@ def test_router_manual_discloses_depth_and_first_call_guard(tmp_path):
         body = result["manual"]
         assert "reference/settings/SKILL.md" in body
         assert "Neither `.rules` nor `system/rules.md` is read" in body
-        assert "strict empty `input`" in body
+        assert "instructions" in body and "reference" in body
+        assert "input is strict empty except `instructions`" in body
         assert "manual first" in body
         assert len(body) < 10000
         manual_path = Path(result["manual_path"])
@@ -929,7 +937,8 @@ def test_substrate_prompt_section_is_untouched_by_the_rename(tmp_path):
         assert body and body.strip()
         mirror = agent._working_dir / "system" / "substrate.md"
         assert mirror.is_file() and mirror.read_text(encoding="utf-8").strip()
-        assert body in _call(agent, "instructions")["instructions"]
+        assert body not in _call(agent, "instructions")["instructions"]
+        assert body == _call(agent, "instructions", {"reference": "substrate"})["instructions"]
         assert body not in agent._build_system_prompt()
 
         # A second rebuild recomposes and publishes it byte-identically.
