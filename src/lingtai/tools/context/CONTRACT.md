@@ -147,15 +147,13 @@ frontmatter. Validation and keep-list checks occur before snapshot/archive/wipe
 or count mutation. The true system-forced `context_forget` path remains distinct
 and synthesizes its own model-visible call/result pair. Durable history and
 summary paths remain under `history/` and `system/summaries/`; notification files
-survive the shed. A `system.auto_molt` reminder is published after continuous
-IDLE/ASLEEP time ≥ the positive env duration (default 1800 s), regardless of
-context, as owned by [BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009).
-Real work always wins. Only if CURRENT context is strictly >100000, consider ONE
-safe-boundary molt with a valid journal; preserve unfinished authorized duties
-and defer the molt rather than discard them. Otherwise do absolutely nothing:
-no tools, external reply, or molt; return IDLE. After molt reorientation stay
-IDLE until real work; even below that boundary later due reminders still publish.
-This is a cache-warm attempt, not a cache TTL or free-turn guarantee.
+survive the shed. Eligible inactivity is an actionable safe-boundary molt reason,
+not a forced shed or automatic journal. Preserve unfinished authorized work and
+explicitly defer the molt; after an inactivity molt with no real work remaining,
+reorient then stay IDLE until real input. Eligibility requires both continuous
+IDLE/ASLEEP time ≥ the positive env duration (default 1800 s) and CURRENT context
+strictly >100000, as owned by [BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009).
+Molt does not promise a context size below that boundary.
 
 ## Evidence
 

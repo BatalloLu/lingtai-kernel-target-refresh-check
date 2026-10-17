@@ -966,7 +966,7 @@ _AUTO_MOLT_SOURCE = "system.auto_molt"
 
 
 def _maybe_notify_auto_molt(agent) -> None:
-    """Publish once per due IDLE/ASLEEP period, regardless of context size.
+    """Publish once per due IDLE/ASLEEP period with current context >100000.
 
     The period anchor and one-shot latch are owned by ``BaseAgent._set_state``
     (IDLE<->ASLEEP keeps the period; ACTIVE/STUCK/SUSPENDED clears it). This
@@ -988,22 +988,36 @@ def _maybe_notify_auto_molt(agent) -> None:
     if elapsed < threshold:
         return
 
+    # Read the canonical current wire, not cumulative spending or the last
+    # provider input snapshot. Never create a session from the heartbeat.
+    session = getattr(agent, "_session", None)
+    chat = getattr(session, "chat", None)
+    if chat is None:
+        return
+    try:
+        context_tokens = chat.interface.estimate_context_tokens()
+    except Exception:
+        return  # Unknown context is not eligible.
+    if type(context_tokens) is not int or context_tokens <= 100_000:
+        return
+
     ref_id = f"auto_molt:{since}"
     try:
         agent._enqueue_system_notification(
             source=_AUTO_MOLT_SOURCE,
             ref_id=ref_id,
             body=(
-                f"Inactivity reminder: idle or asleep for at least {threshold:g} "
-                "seconds. Real work always takes priority. If your CURRENT context "
-                "is strictly above 100000 tokens, consider ONE safe idle-boundary "
-                "molt: follow the context manual, tend only changed durable stores, "
-                "and write a valid session journal. Preserve unfinished authorized "
-                "duties and defer the molt rather than discard context. Otherwise "
-                "do absolutely nothing: no tools, external reply, or molt; return "
-                "IDLE. After any molt reorientation, remain IDLE until real work. "
-                "This is only a cache-warm attempt, not a cache TTL or free-turn "
-                "guarantee, forced reset, or automatic journal."
+                f"Inactivity reminder: this agent has been idle or asleep for "
+                f"at least {threshold:g} seconds and its current context exceeds "
+                f"100000 tokens. This eligible inactivity event is a valid "
+                f"actionable molt reason. Read the context manual "
+                f'(context(action="manual")), tend only changed durable stores, '
+                f"write a valid session journal, then call context molt once "
+                f"at a safe idle boundary. After reorientation, remain IDLE "
+                f"until human input or other real work arrives. If authorized "
+                f"work is unfinished, explicitly preserve it and defer the molt "
+                f"rather than discarding context. This is a reminder, not a "
+                f"forced reset or automatic journal."
             ),
             skip_if_ref_id_exists=True,
         )
