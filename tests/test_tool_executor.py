@@ -294,7 +294,7 @@ def test_apriori_default_curated_schema_and_real_manual_dispatch(name, control):
     prop = schema["properties"]["summarize"]
     assert prop["type"] == "boolean"
     assert prop["default"] is True
-    assert "Proactively set summarize=false" in prop["description"]
+    assert "summarize=false" in prop["description"]
     assert "reasoning" in prop["description"]
     assert "noncanonical" in prop["description"]
     assert "summarize" not in schema["required"]
@@ -355,6 +355,8 @@ def test_apriori_default_shared_schema_and_unrelated_domain_isolation():
     schema = ToolFamily("shell", [ChildTool("probe", {"type": "object", "properties": {}}, lambda a: {})]).build_schema()
     assert schema["properties"]["summarize"]["default"] is True
     assert "summarize" not in schema["required"]
+    assert "routine Shell output and manual lookups" in schema["properties"]["summarize"]["description"]
+    assert "exact raw text" in schema["properties"]["summarize"]["description"]
     for name in (None, "external", "Context.summarize", "CloudMail", "cloud-mail"):
         assert summary_requested({}, name) is False
         assert summary_requested({"summarize": True}, name) is False

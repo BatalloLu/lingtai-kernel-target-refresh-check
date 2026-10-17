@@ -401,9 +401,11 @@ verification and are the only code the task runs.
    becomes a presentation control merely by exposing a field named `summarize`.
 3. Inspect `src/lingtai/tools/tool_family/__init__.py` and
    `src/lingtai/mcp_servers/cloud_mail/_family.py`: both root schemas advertise
-   boolean `summarize` with `default: true`, proactive explicit false for raw
-   manuals/mandatory gates, exact names/paths/fields, source/diffs/evidence,
-   and a retention specification in `reasoning`.
+   boolean `summarize` with `default: true`, an exact-raw opt-out, and a retention
+   specification in `reasoning`. The shared schema encourages leaving it on for
+   routine Shell output and manual lookups; a tool/action name alone is not an
+   opt-out reason. Required verbatim gates and exact names/paths/fields,
+   source/diffs/evidence still use explicit false when this task needs them.
 
 ### Expected evidence
 

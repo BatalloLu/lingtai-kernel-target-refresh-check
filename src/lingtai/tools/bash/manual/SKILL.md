@@ -34,9 +34,11 @@ Use the schema for a short, deterministic command. Read one focused route before
 long-lived/coding-CLI work, scheduling, an unfamiliar workflow, or recovery.
 The selected dialect, policy, and working-directory sandbox remain boundaries.
 A-priori root `summarize` is on by default; specify what to retain in `reasoning`.
-Proactively set `summarize=false` for raw results, including this manual and its
-mandatory gates, exact names/paths, field presence, source, diffs, and evidence.
-Narrow raw reads; summaries are lossy and the raw original remains preserved.
+Keep it on for routine commands and manual lookups; neither Shell nor `manual`
+is itself a reason to opt out. Use `summarize=false` only when this task needs
+exact raw text (for example a verbatim mandatory gate, path, field, source or
+diff); explain that need in `reasoning` and narrow the read. Summaries are lossy;
+the raw original remains preserved for targeted recovery.
 
 ## Route by task
 
