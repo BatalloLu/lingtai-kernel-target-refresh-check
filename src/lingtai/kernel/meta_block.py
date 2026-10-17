@@ -1144,8 +1144,9 @@ def build_context_rebuild_hint(agent, usage: float) -> str | None:
         return None
     return (
         "context now above 85%: recording summaries does NOT itself rebuild the "
-        "active provider context. Prefer preparing a deliberate molt (tend changed "
-        "durable stores, write the session journal and a short handoff) over a "
+        "active provider context. Prefer preparing a deliberate molt (refresh Pad, "
+        "losslessly archive stale history to Knowledge with pointers, retain work "
+        "and holds, write the session journal and a short handoff) over a "
         "manual rebuild; a manual context(action='rebuild') is strongly "
         "discouraged as routine compaction because full replay is costly, can "
         "disturb prompt-prefix cache reuse, and keeps the bulky history. Reserve "

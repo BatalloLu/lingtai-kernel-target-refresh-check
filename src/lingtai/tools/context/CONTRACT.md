@@ -145,7 +145,11 @@ Agent-initiated molt requires a nonempty retrospective and a valid
 `knowledge/session-journal/<entry>/KNOWLEDGE.md` with session-journal
 frontmatter. Validation and keep-list checks occur before snapshot/archive/wipe
 or count mutation. The true system-forced `context_forget` path remains distinct
-and synthesizes its own model-visible call/result pair. Durable history and
+and synthesizes its own model-visible call/result pair.
+Before each deliberate molt, agent guidance requires reconciling Pad to current
+work, authority and holds, losslessly archiving superseded history to Knowledge
+with retrieval pointers. This is agent-maintained preparation, not runtime
+automatic rewriting or a new hard validation gate. Durable history and
 summary paths remain under `history/` and `system/summaries/`; notification files
 survive the shed. Eligible inactivity is an actionable safe-boundary molt reason,
 not a forced shed or automatic journal. Preserve unfinished authorized work and

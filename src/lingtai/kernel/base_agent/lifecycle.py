@@ -1011,7 +1011,9 @@ def _maybe_notify_auto_molt(agent) -> None:
                 f"at least {threshold:g} seconds and its current context exceeds "
                 f"100000 tokens. This eligible inactivity event is a valid "
                 f"actionable molt reason. Read the context manual "
-                f'(context(action="manual")), tend only changed durable stores, '
+                f'(context(action="manual")), refresh Pad and losslessly archive stale '
+                f"history to Knowledge with retrieval pointers, retaining active "
+                f"work and holds; "
                 f"write a valid session journal, then call context molt once "
                 f"at a safe idle boundary. After reorientation, remain IDLE "
                 f"until human input or other real work arrives. If authorized "
