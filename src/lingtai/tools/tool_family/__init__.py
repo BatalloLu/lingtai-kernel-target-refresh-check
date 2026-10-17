@@ -369,8 +369,9 @@ class ToolFamily:
                     "default": True,
                     "description": (
                         "A-priori result summarization is ON by default (omitted means true). "
-                        "Proactively set summarize=false whenever raw results are required: "
-                        "verbatim manuals and mandatory gates, exact names/paths, field presence, "
+                        "Keep it ON for routine Shell output and manual lookups; shell/manual alone "
+                        "is not a reason to opt out. Set summarize=false only when this task needs "
+                        "exact raw text, such as verbatim mandatory gates, names/paths, field presence, "
                         "source, diffs, or evidence. Specify what to retain in reasoning. "
                         "Raw output remains preserved; summaries are noncanonical and lossy. "
                         "Root result-presentation control, not action input or Context compression."

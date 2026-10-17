@@ -153,9 +153,11 @@ is emitted. Guarded by [LP001](BEHAVIORS.md#behavior-lp001).
   action's independent implementation input.
 - `summarize` is a root-only boolean with JSON Schema `default: true`; omission
   enables a-priori summarization. Explicit `false` requests raw presentation
-  (subject to existing caps/spills). Agents MUST proactively set it to `false`
-  whenever raw results are required: verbatim manuals and mandatory gates, exact
-  names/paths, field presence, source, diffs, or evidence. With summary enabled,
+  (subject to existing caps/spills). Agents SHOULD keep it enabled for routine
+  Shell output and manual lookups: the tool/action name alone is not an opt-out
+  reason. Agents MUST set it to `false` when the current task requires exact raw
+  text (such as a verbatim mandatory gate, name/path, field, source, diff or
+  evidence), explain that need in `reasoning`, and narrow the read. With summary enabled,
   `reasoning` MUST specify the retention contract. Generated summaries are lossy
   and noncanonical, not replacements for preserved raw evidence. Guarded by
   [LP003](BEHAVIORS.md#behavior-lp003). It is universal
