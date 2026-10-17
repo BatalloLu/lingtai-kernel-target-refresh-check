@@ -355,7 +355,8 @@ def test_apriori_default_shared_schema_and_unrelated_domain_isolation():
     schema = ToolFamily("shell", [ChildTool("probe", {"type": "object", "properties": {}}, lambda a: {})]).build_schema()
     assert schema["properties"]["summarize"]["default"] is True
     assert "summarize" not in schema["required"]
-    assert "routine Shell output and manual lookups" in schema["properties"]["summarize"]["description"]
+    assert "long, bulky output" in schema["properties"]["summarize"]["description"]
+    assert "short results" in schema["properties"]["summarize"]["description"]
     assert "exact raw text" in schema["properties"]["summarize"]["description"]
     for name in (None, "external", "Context.summarize", "CloudMail", "cloud-mail"):
         assert summary_requested({}, name) is False
