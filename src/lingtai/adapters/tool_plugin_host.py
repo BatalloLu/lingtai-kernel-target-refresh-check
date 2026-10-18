@@ -496,6 +496,12 @@ class _DaemonPresetToolCollector:
         self._official_tool_bindings: dict[str, Any] = {}
 
     @property
+    def working_dir(self) -> Path:
+        # Detached supervisor stubs expose the private runtime path, not the
+        # full Agent facade. Official plugins still receive a real WorkdirPort.
+        return Path(self._agent._working_dir)
+
+    @property
     def official_tool_plugins(self):
         return MappingProxyType(self._official_tool_plugins)
 
@@ -1111,6 +1117,21 @@ class AgentShutdownAdapter:
         return self._is_set()
 
 
+class AgentWorkflowLifecycleAdapter:
+    """Callback-only implementation of WorkflowLifecyclePort."""
+
+    __slots__ = ("_current", "_retain")
+
+    def __init__(self, current: Callable[[], Any | None], retain: Callable[[Any], None]):
+        self._current, self._retain = current, retain
+
+    def current_manager(self) -> Any | None:
+        return self._current()
+
+    def retain_manager(self, manager: Any) -> None:
+        self._retain(manager)
+
+
 class AgentTaskCardLifecycleAdapter:
     """The one current-Agent manager slot Task Card needs across refreshes."""
 
@@ -1378,11 +1399,17 @@ def agent_host_ports(
             ),
             log=agent._log,
         )
-    elif plugin_name == "shell":
+    elif plugin_name in {"shell", "workflow"}:
         ports["notifications"] = AgentNotificationAdapter(
             agent._enqueue_system_notification,
             lambda: agent._notification_store,
         )
+        if plugin_name == "workflow":
+            ports["shutdown"] = AgentShutdownAdapter(agent._shutdown.is_set)
+            ports["workflow_lifecycle"] = AgentWorkflowLifecycleAdapter(
+                lambda: getattr(agent, "_workflow_manager", None),
+                lambda manager: setattr(agent, "_workflow_manager", manager),
+            )
     elif plugin_name == "system":
         ports["system_runtime"] = agent_system_runtime(agent)
         ports["identity"] = AgentIdentityAdapter(
