@@ -79,6 +79,20 @@ def read_recipe_request(stream) -> tuple[dict, bool]:
 
 def execute(operation: str, value: dict, *, rendering_port=None) -> dict:
     interactive = operation == "recipe-apply" and "rendering_mode" in value
+    if "project_dir_b64" in value:
+        # Specialized native byte spelling only; leave every retained raw form
+        # and its validation/parser untouched. Decode before constructing Paths.
+        fields = {"project_dir_b64"}
+        if operation == "recipe-apply" and interactive and value.get("owner_mode") == "native":
+            fields |= {"lingtai_dir_b64", "language", "rendering_mode", "owner_mode"}
+        elif operation != "recipe-observe":
+            raise recipe_error("invalid_project_request")
+        _keys(value, fields)
+        from lingtai.adapters.project_recipe import decode_native_recipe_path
+        value = dict(value)
+        value["project_dir"] = decode_native_recipe_path(value.pop("project_dir_b64"))
+        if interactive:
+            value["lingtai_dir"] = decode_native_recipe_path(value.pop("lingtai_dir_b64"))
     if operation == "recipe-observe":
         _keys(value, {"project_dir"})
     elif operation == "recipe-apply":

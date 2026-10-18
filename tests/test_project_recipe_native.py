@@ -80,3 +80,42 @@ def test_unknown_native_transport_does_not_retry_or_write(tmp_path, reply):
         port.load_info()
     assert len(outgoing.getvalue().splitlines()) == 1
     assert not list(tmp_path.iterdir())
+
+
+def test_native_root_bytes_decode_at_filesystem_edge_and_observe(tmp_path):
+    import errno
+    import os
+    import sys
+    from pathlib import Path
+    from lingtai.adapters.project_recipe import decode_native_recipe_path
+    from lingtai.cli_project_recipe import execute
+
+    if os.name != "posix":
+        pytest.skip("arbitrary filename bytes are a POSIX filesystem case")
+    raw = os.fsencode(tmp_path) + b"/root-\xff"
+    root = Path(os.fsdecode(raw))
+    try:
+        root.mkdir()
+    except OSError as exc:
+        if sys.platform == "darwin" and exc.errno == errno.EILSEQ:
+            pytest.skip("filesystem refuses invalid-byte filename with EILSEQ")
+        raise
+    encoded = base64.b64encode(raw).decode("ascii")
+    assert os.fsencode(decode_native_recipe_path(encoded)) == raw
+    (root / ".recipe").mkdir()
+    (root / ".recipe/recipe.json").write_bytes(b'{"name":"fixture"}')
+    replacement = tmp_path / "root-\ufffd"
+    assert not replacement.exists()
+    observed = execute("recipe-observe", {"project_dir_b64": encoded})
+    assert observed["state"] == "changed" and observed["needs_apply"]
+    assert not replacement.exists()
+    assert execute("recipe-observe", {"project_dir_b64": ""})["state"] == "absent"
+
+
+@pytest.mark.parametrize("value", [None, 1, "!", "Zh==", "Zg==\n"])
+def test_native_path_bytes_require_canonical_base64(value):
+    from lingtai.adapters.project_recipe import decode_native_recipe_path
+    from lingtai.kernel.project import ProjectCreationError
+    with pytest.raises(ProjectCreationError) as caught:
+        decode_native_recipe_path(value)
+    assert caught.value.error.code == "invalid_project_request"

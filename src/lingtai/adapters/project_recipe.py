@@ -15,6 +15,20 @@ from lingtai.kernel.project.recipe import (
 )
 
 
+def decode_native_recipe_path(value: object) -> str:
+    """Decode only the specialized Go Recipe request at the filesystem edge."""
+    from lingtai.kernel.project.recipe import recipe_error
+    try:
+        if not isinstance(value, str):
+            raise ValueError("path bytes required")
+        raw = base64.b64decode(value, validate=True)
+        if base64.b64encode(raw).decode("ascii") != value:
+            raise ValueError("canonical path bytes required")
+        return os.fsdecode(raw)
+    except (ValueError, UnicodeError):
+        raise recipe_error("invalid_project_request") from None
+
+
 def _failure(phase: str, operation: str, path: Path, exc: Exception,
              source: bytes | None = None) -> RecipeFailure:
     native_path = getattr(exc, "filename", None) or path
