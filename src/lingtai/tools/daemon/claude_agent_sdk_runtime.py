@@ -394,12 +394,12 @@ async def _poll_live_interrupt(client, run_dir: "DaemonRunDir", stop: "asyncio.E
                     )
                 except Exception:
                     pass
-                return
+                continue
             try:
                 run_dir.append_event("daemon_interrupt_delivered")
             except Exception:
                 pass
-            return
+            continue
         try:
             await asyncio.wait_for(stop.wait(), timeout=0.5)
         except asyncio.TimeoutError:
@@ -569,6 +569,7 @@ async def _run_async(
                     run_dir.record_cli_tokens(
                         input=usage["input"], output=usage["output"],
                         cached=usage["cached"], thinking=usage["thinking"],
+                        raw=result.usage,
                     )
                 except Exception:
                     pass
@@ -812,7 +813,8 @@ async def _resume_async(
     try:
         await client.query(message)
         pending_tools: dict[str, str] = {}
-        result = await _drain_turn_with_interrupt(client, run_dir, pending_tools)
+        # Terminal resumes do not own the previous query's interrupt request.
+        result = await _drain_turn(client, run_dir, pending_tools)
         if result is None:
             raise ClaudeTurnError(
                 "claude SDK resume stream ended without a result", None
@@ -822,7 +824,7 @@ async def _resume_async(
         usage = _normalize_usage(result.usage)
         if usage is not None:
             try:
-                run_dir.record_cli_tokens(**usage)
+                run_dir.record_cli_tokens(**usage, raw=result.usage)
             except Exception:
                 pass
         if result.is_error:

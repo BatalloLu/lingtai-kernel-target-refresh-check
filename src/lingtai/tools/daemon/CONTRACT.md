@@ -473,7 +473,9 @@ query's boundary open, never a manager-wide reclaim. Acceptance is not
 delivery: `daemon_interrupt_delivered` proves the SDK call ran. Between-turn
 asks stay queued and cannot interrupt a successor. Per-turn
 `receive_messages()` readers never overlap, and interrupt-poller teardown
-completes before a successor query. Every human-origin turn's complete
+completes before a successor query. The poller remains eligible for new requests
+until that teardown, including after a failed delivery; terminal resumes never
+consume a previous live query's interrupt request. Every human-origin turn's complete
 result is durably saved (`<run>/turns/turn-<N>.txt` plus a bounded
 `daemon_turn` event) and, when the run continues past that turn, published
 as one compact non-terminal `kind="daemon_turn_result"` notice on the

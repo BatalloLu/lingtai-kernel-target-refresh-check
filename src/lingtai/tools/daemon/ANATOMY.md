@@ -369,7 +369,9 @@ requested that query's own bounded interrupt (`begin_live_turn`/
 `client.interrupt()` — acceptance is not delivery, and
 `daemon_interrupt_delivered`/`daemon_interrupt_delivery_failed` record the
 outcome. Between-turn asks stay queued and cannot interrupt a successor;
-poller teardown completes before the next query. `daemon_claude_sdk_init`
+poller teardown completes before the next query. The poller stays available for
+new requests until teardown; terminal resumes drain without the previous live
+query's interrupt poller. `daemon_claude_sdk_init`
 records only bounded model/tool/session evidence from the CLI's SDK
 SystemMessage/init, not configured-option echoes. Each human-origin Result
 is saved before a continuing-turn notice or the run's terminal commit;

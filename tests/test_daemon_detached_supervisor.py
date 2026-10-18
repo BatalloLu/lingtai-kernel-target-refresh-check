@@ -1186,6 +1186,10 @@ def test_claude_sdk_emanation_real_connect_query_result_end_to_end(
     assert state["state"] == "done"
     assert state["claude_session_id"] == "fake-claude-sdk-session"
     assert state["tokens"]["calls"] == 0  # UI-only usage, never the token ledger
+    usage_event = [json.loads(line) for line in run_dir.events_path.read_text().splitlines()
+                   if json.loads(line).get("event") == "cli_usage"][-1]
+    assert usage_event["raw"]["cache_read_input_tokens"] == 3
+    assert usage_event["raw"]["cache_creation_input_tokens"] == 2
     assert state.get("cli_tokens", {}).get("input") == 10
     assert state.get("cli_tokens", {}).get("output") == 5
 
@@ -1261,6 +1265,10 @@ def test_claude_sdk_resume_real_connect_query_result_end_to_end(
         "input": 17, "output": 8, "cached": 7, "thinking": 1, "calls": 2,
     }
     assert state["tokens"]["calls"] == 0  # CLI usage remains UI-only
+    usage_event = [json.loads(line) for line in run_dir.events_path.read_text().splitlines()
+                   if json.loads(line).get("event") == "cli_usage"][-1]
+    assert usage_event["raw"]["cache_read_input_tokens"] == 3
+    assert usage_event["raw"]["cache_creation_input_tokens"] == 2
     assert run_dir.result_path.read_text(encoding="utf-8") == "initial reply"
 
 
@@ -3649,3 +3657,67 @@ def test_control_receipt_stays_coherent_when_terminal_state_races_ask(tmp_path):
 # `_drain_turn` smoke test is superseded by the full production path proven
 # in test_claude_sdk_emanation_real_connect_query_result_end_to_end above,
 # which goes through DaemonManager's real backend dispatch.
+
+
+@pytest.mark.parametrize("terminal", ["timeout", "cancelled", "failed"])
+def test_claude_sdk_resume_ignores_prior_query_interrupt(tmp_path, monkeypatch, terminal):
+    import asyncio
+    from types import SimpleNamespace
+    import claude_agent_sdk
+    from lingtai.tools.daemon import claude_agent_sdk_runtime as runtime
+
+    run_dir = _make_run_dir(tmp_path)
+    run_dir.begin_live_turn()
+    assert run_dir.enqueue_live_followup("old query", interrupt=True) == "interrupt"
+    if terminal == "failed":
+        run_dir.mark_failed(RuntimeError("synthetic old failure"))
+    else:
+        getattr(run_dir, "mark_" + terminal)()
+    interrupts = []
+    class Client:
+        def __init__(self, **kwargs): pass
+        async def connect(self): pass
+        async def disconnect(self): pass
+        async def query(self, text): pass
+        async def interrupt(self): interrupts.append("wrong owner")
+    async def drain(*args):
+        await asyncio.sleep(0.02)
+        return SimpleNamespace(result="new reply", session_id="new", usage=None,
+                               is_error=False, terminal_reason=None)
+    monkeypatch.setattr(claude_agent_sdk, "ClaudeSDKClient", Client)
+    monkeypatch.setattr(runtime, "_build_options", lambda **kwargs: object())
+    monkeypatch.setattr(runtime, "_drain_turn", drain)
+    assert asyncio.run(runtime._resume_async(
+        run_dir=run_dir, message="new query", session_id="old", cwd=str(tmp_path),
+        cli_path="/unused/claude", mcp_servers={}, sdk_options={}, backend_env=None,
+    )) == "new reply"
+    assert interrupts == []
+
+
+@pytest.mark.parametrize("delivery_failed", [False, True])
+def test_claude_sdk_poller_services_later_requests(tmp_path, delivery_failed):
+    import asyncio
+    from lingtai.tools.daemon import claude_agent_sdk_runtime as runtime
+
+    run_dir = _make_run_dir(tmp_path)
+    run_dir.begin_live_turn()
+    async def exercise():
+        attempts, stop = [], asyncio.Event()
+        seen = [asyncio.Event(), asyncio.Event()]
+        class Client:
+            async def interrupt(self):
+                attempts.append(len(attempts))
+                seen[len(attempts) - 1].set()
+                if delivery_failed:
+                    raise RuntimeError("synthetic interrupt failure")
+        poller = asyncio.create_task(runtime._poll_live_interrupt(Client(), run_dir, stop))
+        try:
+            for i, event in enumerate(seen):
+                assert run_dir.enqueue_live_followup(str(i), interrupt=True) == "interrupt"
+                await asyncio.wait_for(event.wait(), timeout=2)
+            assert len(attempts) == 2
+        finally:
+            stop.set()
+            await asyncio.wait_for(poller, timeout=1)
+            run_dir.end_live_turn()
+    asyncio.run(exercise())
