@@ -1,5 +1,6 @@
 ---
 related_files:
+  - src/lingtai/kernel/project/configuration.py
   - src/lingtai/kernel/BEHAVIORS.md
   - src/lingtai/kernel/agent_readme/ANATOMY.md
   - src/lingtai/kernel/agent_readme/CONTRACT.md
@@ -392,7 +393,7 @@ This file is the top of the kernel anatomy tree. Each subfolder below has its ow
 - [`services/`](services/ANATOMY.md) — kernel-side service implementations: filesystem mailbox (`mail.py`), JSONL event/token-ledger sources plus additive SQLite query index (`logging.py`).
 - [`maintenance/`](maintenance/ANATOMY.md) — operator-run maintenance reporters; currently dry-run retention reporting only.
 - [`migrate/`](migrate/ANATOMY.md) — versioned, append-only migration Core plus the Core-owned seven-family `MigrationWorkspacePort`. Preset-domain migrations are `m<NNN>_<name>.py`; agent-workdir/init migrations are `agent_m<NNN>_<name>.py`. Transforms consume adapter-provided text and write through the Port; the production `PosixMigrationWorkspaceAdapter` and the composition roots that construct it live outside Core. See `migrate/ANATOMY.md` and `migrate/CONTRACT.md`.
-- [`project/`](project/ANATOMY.md) — fresh-only local Project Core: request/seed/result values and one `ProjectWorkspacePort`; the filesystem adapter and `project create` composition root live outside Core. See `project/ANATOMY.md` and `project/CONTRACT.md`.
+- [`project/`](project/ANATOMY.md) — headless seed, read-only membership and hidden interactive-creation Core; specialized workspace/discovery/Recipe/prerequisite Ports have outside adapters and actual `project create`/`project inspect`/`project create-interactive` CLI composition. This is not full Project-domain ownership. See `project/ANATOMY.md` and `project/CONTRACT.md`.
 - [`i18n/`](i18n/ANATOMY.md) — three-locale message catalog (en / zh / wen). Loaded by `t(language, key)`. Concrete tool strings now live in the `lingtai.tools` package (`lingtai/tools/i18n/`) and register into this cache via `register_strings` on import; the kernel keeps only machinery strings.
 
 ## Two-axis `_meta` boundary
@@ -445,3 +446,7 @@ sidecar. Daemon executors project a daemon-local `agent_meta.agent_state` throug
 communication state.
 
 - **The anatomy tree is being populated.** Every existing subfolder anatomy is listed in Composition; deeper anatomies will appear as agents do work in those folders. When you do work in a folder that lacks one, write it before leaving — see the convention skill for the writing checklist.
+
+Existing Project configuration is implemented by `src/lingtai/kernel/project/configuration.py`
+and governed by the Project Contract/PRJ003; outside filesystem and strict JSON
+composition adapters perform owner reads/writes, never runtime or fleet control.

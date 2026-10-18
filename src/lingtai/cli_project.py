@@ -18,6 +18,21 @@ from lingtai.kernel.project import (
 def add_project_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     project = subparsers.add_parser("project", help="Create a fresh local Project seed")
     commands = project.add_subparsers(dest="project_command", required=True)
+    inspect = commands.add_parser("inspect", help="Inspect Project members from a JSON stdin request")
+    inspect.set_defaults(as_json=True)
+    interactive = commands.add_parser(
+        "create-interactive", help="Create an approved Project via a JSON-lines stdin exchange"
+    )
+    interactive.set_defaults(as_json=True)
+    from lingtai.cli_project_configuration import OPERATIONS
+    for operation in OPERATIONS:
+        commands.add_parser(operation, help="Configure an existing Project from JSON stdin").set_defaults(as_json=True)
+    from lingtai.cli_project_recipe import OPERATIONS as RECIPE_OPERATIONS
+    for operation in RECIPE_OPERATIONS:
+        commands.add_parser(operation, help="Observe/apply a local Recipe from JSON stdin").set_defaults(as_json=True)
+    commands.add_parser("recipe-materialize", help="Materialize a Recipe via bound native I/O").set_defaults(as_json=True)
+    commands.add_parser("inventory-query", help="Query observed running Project inventory").set_defaults(as_json=True)
+    commands.add_parser("lifecycle", help="Run bound external Project lifecycle policy").set_defaults(as_json=True)
     create = commands.add_parser("create", help="Create one Project with one initial agent")
     create.add_argument("--dir", required=True, dest="project_dir", help="Existing project root directory")
     create.add_argument("--name", required=True, dest="agent_name", help="Initial agent name")
@@ -96,7 +111,105 @@ def _emit_error(error: ProjectError, *, as_json: bool) -> None:
         print(f"error[{error.code}]: {error.message}", file=sys.stderr)
 
 
+def _inspect_project() -> None:
+    from lingtai.adapters.project_inspection import FilesystemProjectInspectionAdapter
+    from lingtai.kernel.project.inspection import ProjectInspectionUseCase
+    from lingtai.adapters.project_inspection_exchange import (
+        JsonProjectInspectionAdapter, read_inspection_request,
+    )
+
+    try:
+        request = read_inspection_request(sys.stdin)
+        root = Path(request.project_dir).expanduser().resolve()
+        directory = FilesystemProjectInspectionAdapter(root)
+        exchange = (JsonProjectInspectionAdapter(directory, sys.stdin, sys.stdout)
+                    if request.init_observation_mode == "callback" else None)
+        result = ProjectInspectionUseCase(exchange if exchange is not None else directory).inspect()
+        payload = exchange.to_payload(result) if exchange is not None else result.to_payload()
+    except ProjectCreationError as exc:
+        _emit_error(exc.error, as_json=True)
+        raise SystemExit(1) from None
+    except Exception:
+        _emit_error(ProjectError("project_inspect_failed", "project members could not be observed"), as_json=True)
+        raise SystemExit(1) from None
+    # New-mode ASCII escaping preserves surrogate-bearing labels; base64 identity
+    # is authoritative. Ordinary-mode serialization remains exactly as before.
+    print(json.dumps(payload, ensure_ascii=exchange is not None, sort_keys=True), flush=True)
+
+
+def _create_interactive() -> None:
+    from lingtai.agent import load_preset
+    from lingtai.tools.psyche.settings import serialize_prompt_owner_document
+    from lingtai.adapters.project_creation_exchange import (
+        JsonCreationPrerequisiteAdapter, decode_creation_request, read_exchange_line,
+    )
+    from lingtai.adapters.project_creation_recipe import FilesystemCreationRecipeAdapter
+    from lingtai.adapters.project_interactive_workspace import FilesystemInteractiveWorkspaceAdapter
+    from lingtai.kernel.project.interactive_creation import InteractiveCreationUseCase
+
+    def selected_preset_loader(*args, **kwargs):
+        # Ordinary preset reads log legacy normalization paths/values. This one
+        # machine-protocol invocation must not leak them into stderr. Only this
+        # logger and actual load are scoped; Agent/other commands stay unchanged.
+        from lingtai.kernel.presets import log
+        disabled = log.disabled
+        try:
+            log.disabled = True
+            return load_preset(*args, **kwargs)
+        finally:
+            log.disabled = disabled
+
+    try:
+        request = decode_creation_request(read_exchange_line(sys.stdin))
+        workspace = FilesystemInteractiveWorkspaceAdapter(
+            Path(request.project_dir).resolve(), load_preset=selected_preset_loader,
+            serialize_psyche=serialize_prompt_owner_document,
+        )
+        result = InteractiveCreationUseCase(
+            workspace, FilesystemCreationRecipeAdapter(workspace),
+            JsonCreationPrerequisiteAdapter(sys.stdin, sys.stdout),
+        ).create(request)
+    except ProjectCreationError as exc:
+        payload = {"status": "error", "committed": False,
+                   "code": exc.error.code, "error": exc.error.message}
+        print(json.dumps(payload, sort_keys=True), file=sys.stderr)
+        raise SystemExit(1) from None
+    except Exception:
+        # No operation retries, raw exceptions, preset payloads or credentials.
+        print(json.dumps({"status": "error", "committed": False,
+                          "code": "interactive_create_failed",
+                          "error": "interactive Project creation could not complete"}), file=sys.stderr)
+        raise SystemExit(1) from None
+    # This is outside the rollback region: broken stdout after commit is an
+    # unknown transport outcome for the consumer, never a failed transaction.
+    print(json.dumps(result.to_payload(), ensure_ascii=False, sort_keys=True), flush=True)
+
+
 def handle_project_command(args: argparse.Namespace) -> None:
+    if args.project_command == "lifecycle":
+        from lingtai.cli_project_lifecycle import run_project_lifecycle
+        raise SystemExit(run_project_lifecycle())
+    if args.project_command == "inventory-query":
+        from lingtai.cli_project_inventory import run_inventory
+        raise SystemExit(run_inventory(args))
+    if args.project_command == "recipe-materialize":
+        from lingtai.cli_project_bundle import handle_bundle_command
+        handle_bundle_command()
+        return
+    from lingtai.cli_project_configuration import OPERATIONS, handle_configuration_command
+    if args.project_command in OPERATIONS:
+        handle_configuration_command(args.project_command)
+        return
+    from lingtai.cli_project_recipe import OPERATIONS as RECIPE_OPERATIONS, handle_recipe_command
+    if args.project_command in RECIPE_OPERATIONS:
+        handle_recipe_command(args.project_command)
+        return
+    if args.project_command == "create-interactive":
+        _create_interactive()
+        return
+    if args.project_command == "inspect":
+        _inspect_project()
+        return
     if args.project_command != "create":
         raise SystemExit(2)
     try:

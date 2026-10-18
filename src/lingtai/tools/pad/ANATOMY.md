@@ -12,6 +12,10 @@ related_files:
   - src/lingtai/tools/pad/glossary-zh.md
   - src/lingtai/tools/pad/glossary-wen.md
   - src/lingtai/intrinsic_skills/pad-manual/SKILL.md
+  - src/lingtai/kernel/project/interactive_creation.py
+  - src/lingtai/adapters/project_interactive_workspace.py
+  - tests/test_project_interactive_creation.py
+  - src/lingtai/kernel/project/CONTRACT.md
 maintenance: |
   Keep paths real, repo-relative, duplicate-free, and reciprocal with the paired
   Contract and parent/neighbor anatomies. Update this graph when symbols,
@@ -60,3 +64,8 @@ marked. Prompt `pad` and `system/system.md` are derived.
 
 See [PD001](BEHAVIORS.md#behavior-pd001) for lossless/idempotent migration and
 real init/rebuild/molt acceptance. No instruction-file bodies are auto-injected.
+
+The fresh interactive Project Core seed carries optional Recipe comment content
+as the current init `pad` seed; its outside workspace serializes that seed.
+Existing Agent startup remains the Pad materializer, with no new public action
+or hot-load path. The linked Project Contract owns the creation transaction.

@@ -1,5 +1,10 @@
 ---
 related_files:
+  - src/lingtai/intrinsic_skills/lingtai-recipe/SKILL.md
+  - src/lingtai/intrinsic_skills/lingtai-recipe/reference/recipe-format/SKILL.md
+  - src/lingtai/intrinsic_skills/lingtai-recipe/reference/export-recipe/SKILL.md
+  - src/lingtai/intrinsic_skills/lingtai-recipe/scripts/validate_recipe.py
+  - src/lingtai/intrinsic_skills/lingtai-recipe/assets/gitignore.template
   - ENVIRONMENT_VARIABLES.md
   - src/lingtai/ANATOMY.md
   - src/lingtai/agent.py

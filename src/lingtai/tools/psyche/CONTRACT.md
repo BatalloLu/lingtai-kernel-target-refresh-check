@@ -24,6 +24,9 @@ related_files:
   - src/lingtai/intrinsic_skills/psyche-manual/SKILL.md
   - src/lingtai/intrinsic_skills/psyche-manual/reference/settings/SKILL.md
   - tests/test_project_creation.py
+  - src/lingtai/adapters/project_interactive_workspace.py
+  - tests/test_project_interactive_creation.py
+  - src/lingtai/kernel/project/CONTRACT.md
 maintenance: |
   This component contract is governed by the root CONTRACT.md and owns the one
   public `psyche` root. Keep the paired ANATOMY.md, the psyche-manual
@@ -335,3 +338,9 @@ history. Initial startup/rebuild do not warn and no content is automatically
 changed. Effective environment threshold discovery uses System settings, not a
 new Psyche setting. The [Psyche manual](../../intrinsic_skills/psyche-manual/SKILL.md#loaded-memory-length-reminder)
 teaches the counts and safe response.
+
+Fresh interactive Project creation also calls this same serializer and resolved
+reader through its outside workspace adapter. Pending-staging validation precedes
+outer prerequisite persistence; no second owner schema or lifecycle action is
+introduced. See the linked Project Contract for the transaction, not this tool's
+public action surface.

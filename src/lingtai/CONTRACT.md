@@ -27,6 +27,9 @@ related_files:
   - src/lingtai/intrinsic_skills/system-manual/reference/substrate-manual/SKILL.md
   - ENVIRONMENT_VARIABLES.md
   - tests/test_init_reader.py
+  - src/lingtai/adapters/project_interactive_workspace.py
+  - tests/test_project_interactive_creation.py
+  - src/lingtai/kernel/project/CONTRACT.md
 maintenance: |
   Keep related_files complete and repo-relative: the paired ANATOMY.md, the
   canonical init.jsonc, real reader/writer/validator code, affected composition
@@ -273,3 +276,9 @@ Comment/comment_file now receive the existing unknown-field diagnostic with
 migrate-to-Pad guidance (strict rejection in the Psyche owner, warning in init).
 Old configs must remove those fields and use authorized Pad edits. No `.rules`
 consumer or `system/rules.md` injection exists; old files are left untouched.
+
+Fresh interactive Project creation consumes this same reader twice before
+publication: pending-snapshot materialization first, actual exact persisted
+preset second, with no input write-back. Its outside workspace validates the
+current Psyche owner separately. See the linked Project Contract for that
+operation's prerequisite ordering and outcomes; boot/refresh behavior is unchanged.

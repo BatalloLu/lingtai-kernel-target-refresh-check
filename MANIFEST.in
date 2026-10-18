@@ -54,3 +54,7 @@ graft src/lingtai/tools/avatar/manual
 graft src/lingtai/tools/daemon/manual
 graft src/lingtai/tools/mcp/skills
 graft src/lingtai/tools/web_search/manual
+
+# Fresh interactive Project creation owns its wheel/sdist Recipe resources.
+graft src/lingtai/kernel/project/recipe_assets
+recursive-include src/lingtai/kernel/project *.md

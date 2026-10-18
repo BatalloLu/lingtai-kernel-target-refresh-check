@@ -114,6 +114,7 @@ exclude = [
 ]
 
 [tool.setuptools.package-data]
+"lingtai.kernel.project" = ["recipe_assets/**/*", "ANATOMY.md", "CONTRACT.md", "BEHAVIORS.md"]
 "lingtai.kernel" = ["i18n/*.json"]
 # The agent-readme generator is its own subpackage, so its static template and
 # paired architecture documents need their own entry (package-data globs do not
