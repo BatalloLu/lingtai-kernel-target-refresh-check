@@ -17,12 +17,13 @@ Two closed document versions share ``<workdir>/settings/system.json``:
 
 Ordinary boot/refresh fields resolve once through
 :func:`resolve_runtime_policy` as ``valid env > valid v2 field > fixed
-default``. Two documented exceptions keep their live resolvers:
+default``. Three documented exceptions keep their live resolvers:
 the cache-miss budget (``env > v1/v2 > 2_000_000``; legacy
 ``manifest.cache_miss_budget`` is never a source) and the notification cap
 (Core parses ``LINGTAI_NOTIFICATION_MAX_CHARS`` itself, then asks the outer
 Agent for the v2 file value through :func:`resolve_notification_max_chars`,
-then its own 10,000 default; the 2048/10,000 clamp stays in Core).
+then its own 10,000 default; the 2048/10,000 clamp stays in Core), and the
+inactivity duration (Core env > validated v2 file > 7200 seconds).
 
 Kernel-fixed context-pressure safety thresholds (0.85 / 1.0 / 3 rounds /
 0.75) and the legacy ``molt_*`` fields are not System settings: any such key
@@ -312,7 +313,7 @@ SYSTEM_ENVIRONMENT_SETTING_SPECS: tuple[_EnvironmentSettingSpec, ...] = (
     _EnvironmentSettingSpec(
         "lifecycle.auto_molt_idle_seconds",
         ("LINGTAI_AUTO_MOLT_IDLE_SECONDS",),
-        1800.0,
+        7200.0,
         "auto_molt_idle",
     ),
     _EnvironmentSettingSpec(
@@ -489,8 +490,9 @@ RUNTIME_POLICY_FIELDS = (
     "activeness",
     "cache_miss_budget",
     "notification_max_chars",
+    "auto_molt_idle_seconds",
 )
-# Ordinary boot/refresh-time fields (the two live exceptions are excluded).
+# Ordinary boot/refresh-time fields (the three live exceptions are excluded).
 ORDINARY_POLICY_FIELDS = (
     "context_limit",
     "max_rpm",
@@ -607,6 +609,16 @@ def _validate_positive_int(value: Any) -> tuple[bool, Any]:
     return (_is_int(value) and value > 0), value
 
 
+def _validate_auto_molt_idle_seconds(value: Any) -> tuple[bool, Any]:
+    if type(value) not in (int, float):
+        return False, value
+    try:
+        seconds = float(value)
+    except OverflowError:
+        return False, value
+    return (math.isfinite(seconds) and seconds > 0), seconds
+
+
 _V2_VALIDATORS = {
     "context_limit": _validate_context_limit,
     "max_rpm": _validate_max_rpm,
@@ -617,6 +629,7 @@ _V2_VALIDATORS = {
     "activeness": _validate_activeness,
     "cache_miss_budget": _validate_positive_int,
     "notification_max_chars": _validate_positive_int,
+    "auto_molt_idle_seconds": _validate_auto_molt_idle_seconds,
 }
 
 
@@ -1097,7 +1110,9 @@ def _environment_current(resolver: str, root: Path) -> Any:
     if resolver == "auto_molt_idle":
         from lingtai.kernel.config import auto_molt_idle_seconds
 
-        return auto_molt_idle_seconds()
+        return auto_molt_idle_seconds(
+            read_runtime_policy_document(root).get("auto_molt_idle_seconds")
+        )
     if resolver == "agent_alive":
         from lingtai.kernel.config import HEARTBEAT_LIVENESS_SECONDS
 
@@ -1330,3 +1345,8 @@ def resolve_notification_max_chars(agent: Any) -> int | None:
     return read_runtime_policy_document(agent._working_dir).get(
         "notification_max_chars"
     )
+
+
+def resolve_auto_molt_idle_seconds(agent: Any) -> float | None:
+    """Supply the live validated v2 duration; Core resolves env and default."""
+    return read_runtime_policy_document(agent._working_dir).get("auto_molt_idle_seconds")

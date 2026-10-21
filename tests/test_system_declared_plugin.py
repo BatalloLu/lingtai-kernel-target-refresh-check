@@ -116,7 +116,7 @@ _EXPECTED_ANTHROPIC_DEFAULTS = {
     "nudge.folder_size_gb": 5.0,
     "lifecycle.active_stuck_threshold_seconds": 600.0,
     "lifecycle.agent_alive_threshold_seconds": 10.0,
-    "lifecycle.auto_molt_idle_seconds": 1800.0,
+    "lifecycle.auto_molt_idle_seconds": 7200.0,
     "prompt.tool_prose_section_enabled": False,
     "prompt.system_prompt_pressure_ratio": 0.4,
     "session_stats.refresh_seconds": 5.0,

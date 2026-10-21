@@ -225,8 +225,10 @@ An inactivity period is continuous IDLE and/or ASLEEP time on the injected
 monotonic lifecycle clock. IDLE↔ASLEEP preserves it; leaving both for ACTIVE,
 STUCK or SUSPENDED clears the anchor and successful-publication latch. Heartbeat
 publishes one ordinary `system.auto_molt` event per period only when elapsed time
-is at least `LINGTAI_AUTO_MOLT_IDLE_SECONDS` (default 1800; invalid/nonpositive/
-nonfinite → 1800, no disable value) AND CURRENT context is strictly above 100000
+is at least the positive finite duration resolved live as valid
+`LINGTAI_AUTO_MOLT_IDLE_SECONDS` > closed-v2 `settings/system.json`
+`auto_molt_idle_seconds` > 7200 seconds (no disable value) AND CURRENT context is
+strictly above 100000
 tokens. The loaded session's canonical `ChatInterface.estimate_context_tokens()`
 counts current system/tools/history, not cumulative input, since-molt spending or
 last provider input. Unloaded/unknown context is ineligible; this read never

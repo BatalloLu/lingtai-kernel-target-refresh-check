@@ -246,6 +246,12 @@ class Agent(BaseAgent):
 
         return resolve_notification_max_chars(self)
 
+    def resolve_auto_molt_idle_seconds(self) -> float | None:
+        """Expose the live System v2 duration; Core owns env/default precedence."""
+        from lingtai.tools.system.settings import resolve_auto_molt_idle_seconds
+
+        return resolve_auto_molt_idle_seconds(self)
+
     def resolve_runtime_policy(self) -> Any:
         """Resolve the System-owned ordinary runtime policy once per setup."""
         from lingtai.tools.system.settings import resolve_runtime_policy
