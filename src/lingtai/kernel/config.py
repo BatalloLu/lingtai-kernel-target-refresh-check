@@ -154,22 +154,24 @@ IDLE_SLEEP_TIMEOUT_SECONDS = 86400.0
 # Inactivity auto-molt reminder: one system notification after the agent has
 # been continuously IDLE and/or ASLEEP for this long. Read live at each
 # heartbeat evaluation; missing, blank, malformed, non-finite, zero, or negative
-# values fall back to the default (there is no disable value).
+# values fall through to the validated outer System value, then the default
+# (there is no disable value).
 AUTO_MOLT_IDLE_SECONDS_ENV = "LINGTAI_AUTO_MOLT_IDLE_SECONDS"
-DEFAULT_AUTO_MOLT_IDLE_SECONDS = 1800.0
+DEFAULT_AUTO_MOLT_IDLE_SECONDS = 7200.0
 
 
-def auto_molt_idle_seconds() -> float:
-    """Return the valid current environment threshold, or the default."""
+def auto_molt_idle_seconds(system_value: float | None = None) -> float:
+    """Resolve valid env > validated outer System value > two-hour default."""
+    fallback = DEFAULT_AUTO_MOLT_IDLE_SECONDS if system_value is None else system_value
     raw = os.environ.get(AUTO_MOLT_IDLE_SECONDS_ENV)
     if raw is None or not raw.strip():
-        return DEFAULT_AUTO_MOLT_IDLE_SECONDS
+        return fallback
     try:
         value = float(raw)
     except (TypeError, ValueError):
-        return DEFAULT_AUTO_MOLT_IDLE_SECONDS
+        return fallback
     if not math.isfinite(value) or value <= 0:
-        return DEFAULT_AUTO_MOLT_IDLE_SECONDS
+        return fallback
     return value
 
 

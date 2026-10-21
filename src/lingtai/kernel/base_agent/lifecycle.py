@@ -983,7 +983,8 @@ def _maybe_notify_auto_molt(agent) -> None:
     if since is None or getattr(agent, "_auto_molt_notified_since", None) == since:
         return
 
-    threshold = auto_molt_idle_seconds()
+    resolve = getattr(agent, "resolve_auto_molt_idle_seconds", None)
+    threshold = auto_molt_idle_seconds(resolve() if callable(resolve) else None)
     elapsed = agent._lifecycle_clock.monotonic_seconds() - since
     if elapsed < threshold:
         return

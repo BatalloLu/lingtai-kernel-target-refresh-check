@@ -182,10 +182,10 @@ def test_actual_molt_drop_reads_replacement_context(idle_agent, monkeypatch):
     assert agent._auto_molt_notified_since is None
 
 
-@pytest.mark.parametrize("raw,expected", [(None, 1800), ("1000", 1000), ("1800", 1800),
-    ("", 1800), ("bad", 1800), ("0", 1800), ("-1", 1800), ("nan", 1800),
-    ("inf", 1800), ("-inf", 1800)])
-def test_positive_finite_threshold_and_default_unchanged(monkeypatch, raw, expected):
+@pytest.mark.parametrize("raw,expected", [(None, 7200), ("1000", 1000), ("1800", 1800),
+    ("", 7200), ("bad", 7200), ("0", 7200), ("-1", 7200), ("nan", 7200),
+    ("inf", 7200), ("-inf", 7200)])
+def test_positive_finite_threshold_and_two_hour_default(monkeypatch, raw, expected):
     if raw is None:
         monkeypatch.delenv("LINGTAI_AUTO_MOLT_IDLE_SECONDS", raising=False)
     else:
@@ -193,7 +193,7 @@ def test_positive_finite_threshold_and_default_unchanged(monkeypatch, raw, expec
     assert auto_molt_idle_seconds() == expected
 
 
-def test_real_agent_startup_and_complete_prompt_build_load_idle_guidance(tmp_path):
+def test_real_agent_startup_and_complete_prompt_build_load_idle_guidance(tmp_path, monkeypatch):
     import json
     from unittest.mock import patch
     from lingtai.agent import Agent
@@ -206,8 +206,10 @@ def test_real_agent_startup_and_complete_prompt_build_load_idle_guidance(tmp_pat
     assert read_init(tmp_path).status.name == "FULLY_EFFECTIVE"
     service = make_mock_llm_service()
     service.provider, service.model = "openai", "gpt-6.1-sol"
+    monkeypatch.delenv("LINGTAI_AUTO_MOLT_IDLE_SECONDS", raising=False)
+    clock = make_test_lifecycle_clock()
     agent = Agent(service=service, agent_name="idle-guidance", working_dir=tmp_path,
-                  capabilities=[], addons=[])
+                  lifecycle_clock=clock, capabilities=[], addons=[])
     try:
         with patch("lingtai.agent.LLMService", return_value=service):
             agent._setup_from_init()
@@ -220,7 +222,54 @@ def test_real_agent_startup_and_complete_prompt_build_load_idle_guidance(tmp_pat
         assert "remain IDLE" in principle
         assert guidance.count("system.auto_molt") >= 2
         assert "defer the molt" in guidance
+        from lingtai.tools.system.settings import system_settings_provider
+
+        settings = tmp_path / "settings" / "system.json"
+        settings.parent.mkdir(exist_ok=True)
+        settings.write_text('{"schema_version":2,"auto_molt_idle_seconds":20}')
+        def current():
+            return next(row for row in system_settings_provider(tmp_path)()
+                        if row.key == "lifecycle.auto_molt_idle_seconds")
+        assert current().current == 20 and current().default == 7200
+        agent._session._chat = SimpleNamespace(interface=ChatInterface(), close=lambda: None)
+        monkeypatch.setattr(agent._chat.interface, "estimate_context_tokens", lambda: 100001)
+        clock.advance_monotonic(9)
+        _maybe_notify_auto_molt(agent)
+        assert not _events(agent)
+        # File edits are read live; no refresh, session creation or new timer.
+        settings.write_text('{"schema_version":2,"auto_molt_idle_seconds":10}')
+        clock.advance_monotonic(1)
+        _maybe_notify_auto_molt(agent)
+        _maybe_notify_auto_molt(agent)
+        assert len(_events(agent)) == 1
+        agent._set_state(AgentState.ACTIVE)
+        agent._set_state(AgentState.IDLE)
+        monkeypatch.setenv("LINGTAI_AUTO_MOLT_IDLE_SECONDS", "30")
+        assert current().current == 30
+        clock.advance_monotonic(10)
+        _maybe_notify_auto_molt(agent)
+        assert len(_events(agent)) == 1
+        clock.advance_monotonic(20)
+        _maybe_notify_auto_molt(agent)
+        assert len(_events(agent)) == 2
+        monkeypatch.setenv("LINGTAI_AUTO_MOLT_IDLE_SECONDS", "bad")
+        assert current().current == 10
         service.create_session.assert_not_called()
         service.generate.assert_not_called()
     finally:
         agent.stop(timeout=1.0)
+
+
+def test_system_duration_is_closed_positive_finite_and_v1_unchanged():
+    import json
+    from lingtai.tools.system.settings import _parse_runtime_policy_v2, _parse_settings
+
+    assert _parse_runtime_policy_v2('{"schema_version":2,"auto_molt_idle_seconds":7200.5}') == {
+        "auto_molt_idle_seconds": 7200.5,
+    }
+    for invalid in (None, True, 0, -1, "7200", float("nan"), float("inf"), 10 ** 400):
+        assert _parse_runtime_policy_v2(json.dumps({
+            "schema_version": 2, "auto_molt_idle_seconds": invalid, "max_rpm": 5,
+        })) is None  # Reject the whole document, not just the bad duration.
+    assert _parse_settings('{"schema_version":1,"cache_miss_budget":10}') == 10
+    assert _parse_settings('{"schema_version":1,"cache_miss_budget":10,"auto_molt_idle_seconds":7200}') is None

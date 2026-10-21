@@ -237,7 +237,12 @@ v2 `notification_max_chars` field is exposed only through
 `Agent.resolve_notification_max_chars()`; Core keeps the env-first read, the
 shared 2048/10000 clamp, and the 10,000 default. The kernel-fixed
 context-pressure thresholds and legacy `molt_*` fields are never System
-settings. `retired-test:test_system_runtime_policy` owns proof.
+settings. The live v2 `auto_molt_idle_seconds` positive finite field is
+exposed through `Agent.resolve_auto_molt_idle_seconds()`; heartbeat and SHOW
+share Core env > validated file > 7200-second resolution, without refresh for
+a file edit. The strict current-context gate and inactivity latch are unchanged.
+[BA009](../../kernel/base_agent/BEHAVIORS.md#behavior-ba009) guards this duration.
+`retired-test:test_system_runtime_policy` remains historical proof.
 
 ### Single sleep use case
 

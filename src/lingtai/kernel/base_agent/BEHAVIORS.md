@@ -283,7 +283,9 @@ Pass when the focused producer tests pass; fail on inferred duration or wall-tim
 2. Run `python -m pytest -q tests/test_tc_wake.py tests/test_aed_recovery.py tests/test_molt_notification_persistence.py` for adjacent safeguards.
 
 ### Expected evidence
-- [ ] Positive finite env duration wins; invalid/missing values use 1800.
+- [ ] Positive finite env duration wins over live v2 `auto_molt_idle_seconds`;
+      invalid/missing env falls through to the validated file or 7200 seconds.
+      Invalid duration rejects the whole v2 document; v1 remains unchanged.
 - [ ] At elapsed ≥ duration, context ≤100000 remains silent; >100000 publishes once. Before duration, even large context remains silent.
 - [ ] IDLE↔ASLEEP retains the period; leaving inactivity clears it. ASLEEP publication uses normal sync wake.
 - [ ] Unloaded/unknown context never creates a session; failed publication retries, only success latches.

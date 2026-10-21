@@ -105,11 +105,17 @@ The same `settings/system.json` file may be a closed v2 document naming any
 subset of the seven ordinary runtime-policy fields above plus `cache_miss_budget`
 (positive integer; see "Cache-miss budget" below) and `notification_max_chars`
 (positive integer; Core still clamps it to 2048–10000 and
-`LINGTAI_NOTIFICATION_MAX_CHARS` still wins), for example:
+`LINGTAI_NOTIFICATION_MAX_CHARS` still wins), and `auto_molt_idle_seconds`
+(positive finite seconds, default 7200), for example:
 
 ```json
-{"schema_version": 2, "context_limit": 200000, "max_rpm": 30, "streaming": true}
+{"schema_version": 2, "context_limit": 200000, "auto_molt_idle_seconds": 7200}
 ```
+
+The inactivity duration resolves live on each eligible heartbeat as valid env >
+valid v2 file > 7200 seconds; a file edit needs no refresh. A persisted env-file
+edit still needs refresh. The continuous IDLE/ASLEEP and strict current-context
+>100000 gate are unchanged; this changes cadence, not cache-hit guarantees.
 
 Booleans never stand in for numbers, `NaN`/`Infinity` are rejected, and an
 unknown, duplicate, or invalid key rejects the whole document so nothing is
@@ -255,7 +261,7 @@ shown. `LINGTAI_CODEX_WS` is a compatibility alias under the single
 | `nudge.folder_size_gb` (`LINGTAI_NUDGE_FOLDER_SIZE_GB`) | `5`; positive finite decimal GB; invalid → 5 | Every folder-size evaluation | number |
 | `lifecycle.active_stuck_threshold_seconds` (`LINGTAI_ACTIVE_STUCK_THRESHOLD_S`) | `600`; finite numeric seconds floored to 30; parse failure or non-finite value → 600 | Each ACTIVE watchdog evaluation | number |
 | `lifecycle.agent_alive_threshold_seconds` (`LINGTAI_AGENT_ALIVE_THRESHOLD_SEC`) | `10`; positive finite seconds; invalid → 10 | Kernel import/start (restart required); SHOW reports the imported effective constant | number |
-| `lifecycle.auto_molt_idle_seconds` (`LINGTAI_AUTO_MOLT_IDLE_SECONDS`) | `1800`; positive finite seconds of continuous IDLE and/or ASLEEP before one molt reminder; invalid, zero, or negative → 1800 (no disable value) | Each heartbeat evaluation while inactive and not yet reminded; no restart for a direct process-environment change | number |
+| `lifecycle.auto_molt_idle_seconds` (`LINGTAI_AUTO_MOLT_IDLE_SECONDS`) | `7200`; positive finite seconds; valid env > valid v2 `auto_molt_idle_seconds` > default (no disable value) | Each inactive, unnotified heartbeat; System-file edits are live, env-file edits need refresh | number |
 | `prompt.tool_prose_section_enabled` (`LINGTAI_TOOL_PROSE_SECTION_ENABLED`) | off; `1/true/yes/on`; everything else off | Every prompt rebuild/provider payload | boolean |
 | `prompt.system_prompt_pressure_ratio` (`LINGTAI_SYSTEM_PROMPT_PRESSURE_RATIO`) | `0.4`; finite `0 < value < 1`; invalid → 0.4 | Every metadata snapshot | number |
 | `session_stats.refresh_seconds` (`LINGTAI_SESSION_STATS_REFRESH_SECONDS`) | `5`; positive finite seconds; invalid → 5 | Every Agent Record throttle check | number |

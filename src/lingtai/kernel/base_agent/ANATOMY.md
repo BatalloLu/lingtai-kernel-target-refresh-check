@@ -181,8 +181,9 @@ Generic agent kernel. Single class `BaseAgent` with methods distributed across 6
 - `_inactive_since_monotonic` / `_auto_molt_notified_since` — process-local
   continuous-inactivity anchor and successful-publication latch, maintained by
   `_set_state` (IDLE↔ASLEEP keeps; ACTIVE/STUCK/SUSPENDED clears).
-  `lifecycle.py::_maybe_notify_auto_molt` checks the existing positive env
-  duration, then reads loaded `SessionManager.chat.interface.estimate_context_tokens()`
+  `lifecycle.py::_maybe_notify_auto_molt` resolves the positive duration via
+  Core env > outer `Agent.resolve_auto_molt_idle_seconds()` System-file hook >
+  7200-second default, then reads loaded `SessionManager.chat.interface.estimate_context_tokens()`
   for the strict >100000 CURRENT-context gate without creating a session.
   Heartbeat calls it before alarm/sync. No work classification or episode
   generation exists. Guarded by [BA009](BEHAVIORS.md#behavior-ba009).
